@@ -64,6 +64,27 @@ The major decisions are captured in Architecture Decision Records:
 - [ADR-0006: Expose a Versioned REST API for the MVP](adr/0006-versioned-rest-api.md)
 - [ADR-0007: Defer Bank Sync, CSV Import, and AI Summaries from MVP](adr/0007-mvp-deferrals.md)
 
+ADRs and specs have different jobs:
+
+- ADRs answer why the team chose a direction.
+- Specs answer exactly how the chosen behavior or contract must work.
+
+Use ADRs for significant architectural choices, alternatives, tradeoffs, and consequences. Use specs for implementation-ready contracts such as pace-engine behavior, snapshot JSON shape, API response conventions, auth/session rules, date/time semantics, and SRS traceability.
+
+Specs live in [docs/specs](specs/README.md) and are serially tracked like ADRs:
+
+```text
+docs/
+  adr/
+    0001-layered-modular-monolith.md
+  specs/
+    0001-pace-engine-behavior.md
+    0002-snapshot-json-schema.md
+    0003-auth-session-security.md
+```
+
+ADR numbers never change once created. Spec numbers also never change once created, but specs are expected to evolve more often. A spec may move from `Draft` to `Accepted` to `Superseded`. If a spec changes materially but still describes the same contract, update it in place. If it replaces the contract, create a new spec and mark the old one `Superseded`.
+
 Gate result: each major decision is tied to at least one architectural driver.
 
 ## 4. Model and Harden
@@ -118,4 +139,3 @@ PDR/CDR review checklist:
 - Are post-MVP features isolated rather than partially built into the MVP core?
 
 Gate result: a teammate or AI coding agent should be able to implement from `DESIGN.md`, these ADRs, and the plan files without asking what the architecture meant.
-
