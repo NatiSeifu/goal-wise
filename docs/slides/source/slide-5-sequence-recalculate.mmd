@@ -1,0 +1,24 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial", "primaryColor": "#eef4ff", "primaryTextColor": "#1f2f57", "primaryBorderColor": "#37558f", "lineColor": "#2f3542", "actorBorder": "#37558f", "actorBkg": "#eef4ff", "actorTextColor": "#1f2f57", "noteBkgColor": "#eaf7ef", "noteTextColor": "#25613b", "noteBorderColor": "#4f9468", "activationBkgColor": "#f9fbff", "activationBorderColor": "#37558f"}}}%%
+sequenceDiagram
+    actor User as User
+    participant UI as React + Vite UI
+    participant API as FastAPI Backend
+    participant Engine as Pace Engine
+    participant DB as Database
+
+    User->>UI: save goal or financial input
+    UI->>API: POST/PATCH /api/v1/...<br/>session cookie + CSRF token
+
+    Note over API: validate request<br/>enforce ownership<br/>reject missing inputs
+
+    API->>DB: persist user-owned change
+    API->>DB: load normalized planning inputs
+    API->>Engine: calculate_pace(input,<br/>timestamp, time_zone)
+
+    Note over Engine: deterministic pace-v1<br/>AI-free calculation
+
+    Engine-->>API: safe-to-spend,<br/>shortfall, pace status
+    API->>DB: insert immutable<br/>calculation snapshot
+    DB-->>API: snapshot saved
+    API-->>UI: dashboard JSON<br/>from snapshot
+    UI-->>User: updated dashboard<br/>+ calculation details
