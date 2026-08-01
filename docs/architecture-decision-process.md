@@ -63,6 +63,8 @@ The major decisions are captured in Architecture Decision Records:
 - [ADR-0005: Use Server-Side Sessions and Ownership Checks](adr/0005-auth-sessions-and-ownership.md)
 - [ADR-0006: Expose a Versioned REST API for the MVP](adr/0006-versioned-rest-api.md)
 - [ADR-0007: Defer Bank Sync, CSV Import, and AI Summaries from MVP](adr/0007-mvp-deferrals.md)
+- [ADR-0008: Use React and Vite for the MVP Frontend](adr/0008-react-vite-frontend.md)
+- [ADR-0009: Deploy the Course MVP on Railway](adr/0009-railway-deployment.md)
 
 ADRs and specs have different jobs:
 
@@ -93,7 +95,7 @@ The selected model keeps change-prone concerns isolated:
 
 ```mermaid
 flowchart LR
-    UI[React or Next.js UI] --> API[FastAPI /api/v1]
+    UI[React + Vite UI] --> API[FastAPI /api/v1]
     API --> Services[Application Services]
     Services --> Engine[Pure Pace Engine]
     Services --> Repos[Repositories]

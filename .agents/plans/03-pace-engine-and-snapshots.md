@@ -27,17 +27,22 @@ def calculate_pace(input: PaceInput) -> PaceResult:
 ## Formula Rules
 
 - Use integer cents for all monetary inputs and intermediate values.
-- Generate income and expense occurrences after the calculation timestamp and on or before target date.
+- Generate date-only income and expense occurrences in the user's local calendar.
+- Include only income and expense occurrences with an occurrence date greater than the user's local calculation date and less than or equal to the target date.
+- Exclude same-day income and planned-expense occurrences from future forecasts because the MVP does not collect occurrence times.
 - Exclude unconfirmed income from forecast resources.
-- Calculate remaining weeks as at least one week.
+- Calculate remaining weeks as at least one week using calendar days from the user's local calculation date to the target date.
 - Round weekly safe-to-spend down to the nearest whole U.S. dollar after dividing discretionary capacity by remaining weeks.
 - If forecast resources are below goal gap, weekly safe-to-spend is zero and projected shortfall is positive.
-- Evaluate pace status in this order: Completed, Off Pace, Ahead, At Risk, On Track.
+- Calculate expected savings to date using linear progress from goal start date and initial saved amount to target amount at target date.
 - Use tolerance `max($25, 5% of target amount)` for Ahead and At Risk.
+- Evaluate pace status in this order: Completed when goal gap is zero; Off Pace when forecast resources are below goal gap; Ahead when current savings exceeds expected savings by at least tolerance; At Risk when current savings trails expected savings by at least tolerance; otherwise On Track.
 
 ## Snapshot Service
 
 - Normalize all current user inputs into a stable JSON shape.
+- Include user-authored goal, income, and planned-expense names in snapshot inputs when they help explain the calculation.
+- Do not copy raw transaction descriptions into immutable snapshots; use minimized transaction calculation facts only.
 - Run the pace engine with an explicit calculation timestamp.
 - Insert a `CalculationSnapshot` row with formula version, trigger, normalized input JSON, result JSON, and UTC timestamp.
 - Never update snapshot contents after insert.
@@ -76,6 +81,7 @@ flowchart LR
 - Pure unit tests for each formula component.
 - Determinism test for byte-equivalent results with identical normalized inputs.
 - Snapshot immutability test.
+- Snapshot schema test proves raw transaction descriptions are excluded.
 - API integration test proves valid input change creates a new snapshot.
 - Weekly plan test proves current week opening allowance is not replaced by midweek recalculation.
 
@@ -85,4 +91,3 @@ flowchart LR
 - Calculation results match SRS formula semantics.
 - Services create immutable snapshots for valid recalculation triggers.
 - Dashboard endpoint can read the latest snapshot and current weekly plan.
-

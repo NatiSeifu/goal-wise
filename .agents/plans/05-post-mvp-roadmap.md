@@ -44,7 +44,7 @@ Preserve the broader SRS requirements without forcing them into the first build.
 
 ## Production Hardening
 
-- Add login rate limiting by account and source address.
+- Extend login rate limiting with production monitoring, alerting, and tuning.
 - Add dependency vulnerability scanning.
 - Add secret scanning.
 - Add structured redaction tests for logs.
@@ -60,4 +60,3 @@ Preserve the broader SRS requirements without forcing them into the first build.
 4. Production security hardening.
 5. AI summaries and AI evaluation.
 6. Advanced recommendations.
-

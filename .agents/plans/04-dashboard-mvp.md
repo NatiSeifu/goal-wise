@@ -19,7 +19,7 @@ Primary navigation should expose Dashboard, Goal, Income, Expenses, and Account.
 
 When required inputs are complete:
 
-- Goal name, target amount, current saved amount, target date, and progress percentage.
+- Goal name, target amount, current saved amount, target date, and backend-provided progress percentage.
 - Pace status.
 - Current weekly opening allowance.
 - Latest weekly safe-to-spend.
@@ -39,6 +39,8 @@ When inputs are incomplete:
 - The "How was this calculated?" interaction should reveal calculation details from the latest snapshot.
 - Unconfirmed income should be visibly separated from confirmed income.
 - Off Pace should show projected shortfall and weekly safe-to-spend as zero.
+- React must not calculate financial outputs, pace status, goal feasibility, projected shortfall, weekly safe-to-spend, remaining weeks, expected savings to date, current-week remainder, or official progress percentage.
+- React may format backend values, map status enums to labels/icons/colors, use backend-provided percentages for progress bar width, manage form state, and sort or filter already-returned lists for UI convenience.
 
 ```mermaid
 stateDiagram-v2
@@ -68,6 +70,7 @@ stateDiagram-v2
 - Missing-input states prevent misleading safe-to-spend output.
 - Editing income, expense, or goal data updates the displayed result.
 - "How was this calculated?" displays the formula inputs and formula version.
+- Dashboard values are rendered from backend API responses without duplicating pace-engine formulas.
 - Mobile viewport smoke test confirms forms and dashboard do not overflow.
 - Accessibility smoke test checks labels, focus states, and keyboard navigation for primary workflow.
 
@@ -75,5 +78,5 @@ stateDiagram-v2
 
 - A demo user can complete the primary workflow in under five minutes.
 - Dashboard values come from backend calculation snapshots, not frontend financial logic.
+- Official progress percentage and current-week remainder come from the backend.
 - UI remains usable when no AI provider exists.
-

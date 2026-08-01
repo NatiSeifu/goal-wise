@@ -9,9 +9,13 @@ ADRs explain why the architecture is shaped a certain way. Specs define exactly 
 Specs are serially numbered for stable references:
 
 ```text
-0001-pace-engine-behavior.md
-0002-snapshot-json-schema.md
-0003-auth-session-security.md
+0001-auth-session-security.md
+0002-api-response-conventions.md
+0003-pace-engine-behavior.md
+0004-snapshot-json-schema.md
+0005-date-time-semantics.md
+0006-railway-deployment.md
+0007-srs-traceability-and-mvp-scope.md
 ```
 
 Rules:
@@ -33,23 +37,25 @@ Use one of these statuses:
 ## Recommended Header
 
 ```markdown
-# SPEC-0001: Pace Engine Behavior
+# SPEC-0001: Auth and Session Security
 
 Status: Draft
-Last Updated: 2026-07-31
-Related ADRs: ADR-0002, ADR-0003, ADR-0004
+Last Updated: 2026-08-01
+Related ADRs: ADR-0005, ADR-0008
 ```
+
+## Index
+
+| Spec | Title | Status |
+| --- | --- | --- |
+| [0001](0001-auth-session-security.md) | Auth and Session Security | Accepted |
+| [0002](0002-api-response-conventions.md) | API Response Conventions | Accepted |
+| [0003](0003-pace-engine-behavior.md) | Pace Engine Behavior | Accepted |
+| [0004](0004-snapshot-json-schema.md) | Snapshot JSON Schema | Accepted |
+| [0005](0005-date-time-semantics.md) | Date and Time Semantics | Accepted |
+| [0006](0006-railway-deployment.md) | Railway Deployment | Accepted |
+| [0007](0007-srs-traceability-and-mvp-scope.md) | SRS Traceability and MVP Scope | Accepted |
 
 ## Initial Spec Candidates
 
-These are likely worth adding before implementation:
-
-| Spec | Purpose |
-| --- | --- |
-| SPEC-0001: Pace Engine Behavior | Exact formulas, pace-status decision tree, rounding, and golden scenarios |
-| SPEC-0002: Snapshot JSON Schema | Stable normalized input and result JSON shapes |
-| SPEC-0003: Auth and Session Security | Password hashing, session storage, cookies, CSRF, and logout behavior |
-| SPEC-0004: API Response Conventions | Success envelopes, validation errors, auth errors, and ownership failures |
-| SPEC-0005: Date and Time Semantics | UTC timestamps, user-local dates, recurrence expansion, and weekly plan boundaries |
-| SPEC-0006: SRS Traceability | Mapping from SRS requirements to ADRs, specs, endpoints, models, and tests |
-
+No additional specs are currently identified.

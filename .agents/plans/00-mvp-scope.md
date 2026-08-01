@@ -2,11 +2,12 @@
 
 ## Objective
 
-Convert the GoalWise SRS into a lightweight, buildable MVP that proves the core product loop: a user signs in, enters one savings goal and manual financial assumptions, receives a deterministic weekly safe-to-spend amount, and can inspect how it was calculated.
+Convert the broader GoalWise SRS into a lightweight, buildable course MVP/PDR subset that proves the core product loop: a user signs in, enters one savings goal and manual financial assumptions, receives a deterministic weekly safe-to-spend amount, and can inspect how it was calculated.
 
 ## MVP Includes
 
 - Account registration, login, logout, authenticated access, and user-owned data isolation.
+- Login rate limiting after 5 failed attempts within 10 minutes by account and source.
 - One active savings goal with target amount, current saved amount, start date, target date, and time zone.
 - Manual financial profile with starting cash, balance-as-of date, and reserve buffer.
 - Manual income sources with confirmed or unconfirmed confidence.
@@ -23,7 +24,7 @@ Convert the GoalWise SRS into a lightweight, buildable MVP that proves the core 
 - Account export, confirmed account deletion, and backup retention workflows.
 - Automatic Monday background jobs for weekly plan creation.
 - Advanced recommendation lists, especially month-end spending suggestions and AI-like coaching.
-- Production load tests, uptime monitoring, and full WCAG audit evidence.
+- Full production load tests, uptime monitoring outside the course demo window, and full WCAG audit evidence.
 - Multiple simultaneous goals, live banking, transfers, payments, credit, tax, investment, or advisory features.
 
 ## Requirement Mapping
@@ -32,6 +33,7 @@ Convert the GoalWise SRS into a lightweight, buildable MVP that proves the core 
 - Partially implement now: weekly plan behavior from `FR-PACE-007` through `FR-PACE-009` using dashboard-access creation instead of a background scheduler.
 - Defer: `FR-TXN-001` through `FR-TXN-008`, `FR-AI-001` through `FR-AI-007`, `FR-DATA-001`, `FR-DATA-002`, `FR-UI-005` through `FR-UI-007`.
 - Keep as design constraints now: money as integer cents, formula versioning, no bank credentials, protected endpoints, deterministic calculations, no sensitive values in logs.
+- This mapping describes the current MVP increment, not the complete SRS v1.0 implementation.
 
 ## Implementation Steps
 
@@ -47,8 +49,8 @@ Convert the GoalWise SRS into a lightweight, buildable MVP that proves the core 
 
 - A new user can register, log in, create one goal, enter financial assumptions, and view a valid weekly safe-to-spend result.
 - Unauthenticated users cannot access private data.
+- Login throttling blocks repeated failed attempts without revealing whether an email exists.
 - A user cannot read or modify another user's goal or financial data by changing identifiers.
 - Changing a valid goal or financial input creates a new calculation snapshot.
 - The dashboard explains the current formula inputs without requiring a page reload after save.
 - Pace-engine golden tests pass for on-track, off-pace, completed, ahead, at-risk, and less-than-one-week scenarios.
-

@@ -6,11 +6,11 @@ GoalWise is a lightweight goal-oriented budgeting MVP. The backend owns authenti
 
 ## Architecture
 
-The backend is a FastAPI service with SQLAlchemy models and Alembic migrations. SQLite is acceptable for local development and automated tests; the schema must remain PostgreSQL-compatible for hosted deployment. The frontend communicates with a versioned JSON REST API under `/api/v1`.
+The backend is a FastAPI service with SQLAlchemy models and Alembic migrations. SQLite is acceptable for local development and automated tests; the schema must remain PostgreSQL-compatible for Railway-hosted PostgreSQL deployment. The frontend communicates with a versioned JSON REST API under `/api/v1`.
 
 ```mermaid
 flowchart LR
-    Browser[React or Next.js UI] -->|JSON over /api/v1| API[FastAPI Routers]
+    Browser[React + Vite UI] -->|JSON over /api/v1| API[FastAPI Routers]
     API --> Schemas[Pydantic Schemas]
     API --> Auth[Auth Dependency]
     API --> Services[Service Layer]
@@ -32,7 +32,9 @@ flowchart LR
 
 ## Core Data Model
 
-All money is stored as integer cents. Date-only values represent the user's local calendar date. Timestamps are stored in UTC. Each private row belongs to one `user_id`, and every protected endpoint must enforce server-side ownership.
+All money is stored as integer cents. Date-only values represent the user's local calendar date. Timestamps are stored in UTC. Date/time semantics are specified in `SPEC-0005`. Each private row belongs to one `user_id`, and every protected endpoint must enforce server-side ownership.
+
+`Goal.status` is the goal lifecycle status: `active`, `completed`, or `archived`. Calculation results separately include `pace_status`: `Completed`, `Off Pace`, `Ahead`, `At Risk`, or `On Track`.
 
 ```mermaid
 erDiagram
@@ -146,15 +148,25 @@ Required outputs:
 Calculation rules:
 
 - `current_cash = starting cash + accepted inflows after balance-as-of date - accepted outflows after balance-as-of date`.
-- Include only confirmed income occurrences after the calculation timestamp and on or before the target date.
-- Include active planned expense occurrences after the calculation timestamp and on or before the target date.
+- Income and planned-expense occurrences are date-only local calendar events. Include only occurrences with an occurrence date greater than the user's local calculation date and less than or equal to the target date.
+- Same-day income and planned-expense occurrences are excluded from future forecasts because the MVP does not collect occurrence times.
+- On first financial profile setup, suggest `reserve_buffer_cents` as 5% of confirmed future income rounded up to the nearest whole U.S. dollar; require the user to confirm or replace it before the first calculation.
+- If confirmed future income is zero, the suggested reserve buffer may be `$0`.
+- After confirmation, reserve buffer is user-controlled and must not silently change when income changes.
 - `forecast_resources = current cash + confirmed future income - planned future expenses - reserve buffer`.
 - `goal_gap = max(0, target amount - current saved amount)`.
 - `discretionary_capacity = forecast resources - goal gap`.
-- `remaining_weeks = max(1, ceiling(calendar days from calculation date to target date / 7))`.
+- `remaining_weeks = max(1, ceiling(calendar days from the user's local calculation date to target date / 7))`.
 - `weekly_safe_to_spend = max(0, floor(discretionary capacity / remaining weeks) rounded down to whole dollars)`.
 - `projected_shortfall = max(0, goal gap - forecast resources)`.
-- Pace status order: Completed, Off Pace, Ahead, At Risk, On Track.
+- Pace status uses expected savings to date from linear progress between the goal start date and target date.
+- Pace status tolerance is `max($25, 5% of target amount)`.
+- Pace status is evaluated in order:
+  - `Completed` when `goal_gap_cents = 0`.
+  - `Off Pace` when `forecast_resources_cents < goal_gap_cents`.
+  - `Ahead` when current saved amount exceeds expected savings to date by at least the tolerance.
+  - `At Risk` when current saved amount trails expected savings to date by at least the tolerance.
+  - `On Track` otherwise.
 
 ```mermaid
 sequenceDiagram
@@ -205,14 +217,21 @@ Response conventions:
 
 - Success responses return JSON objects, not bare arrays when metadata may be needed later.
 - Validation failures return HTTP `422` with field-level errors.
-- Unauthorized requests return `401`; authenticated users without ownership return `404` or `403` consistently by endpoint policy, with no leaked financial content.
+- Unauthorized requests return `401`.
+- Authenticated users requesting missing private resources or resources owned by another user receive `404`, with no leaked financial content.
+- Reserve `403` for future role-based or account-state authorization failures, not MVP cross-user ownership failures.
 - Unexpected errors return a generic message and log only non-sensitive metadata.
 
 ## Security and Privacy Choices
 
-- Hash passwords with Argon2id, or bcrypt if Argon2id is unavailable in the chosen Python stack.
+- Hash passwords with Argon2id.
 - Require passwords of at least 12 characters.
-- Use secure, HTTP-only session cookies for browser sessions.
+- Use database-backed server-side sessions.
+- Store only a hash of the opaque session token in the database.
+- Store the raw session token only in a secure, HTTP-only browser cookie.
+- Use `Secure=false` only for local HTTP development; use `Secure=true` in hosted environments.
+- Use `SameSite=Lax` for same-site frontend/backend deployment. If frontend and backend are hosted cross-site, use `SameSite=None`, `Secure=true`, explicit CORS allowlists, and CSRF verification.
+- Require CSRF tokens for authenticated `POST`, `PUT`, `PATCH`, and `DELETE` requests.
 - Expire sessions after inactivity and revoke the current session on logout.
 - Perform ownership checks in service/repository methods for every user-owned resource.
 - Validate all client input server-side for type, range, length, date validity, enum values, and money bounds.
@@ -227,4 +246,3 @@ Response conventions:
 - Background weekly snapshot scheduler; MVP may create or refresh weekly plans on authenticated dashboard access.
 - Full production load testing and uptime monitoring.
 - Native mobile apps, bank integrations, and multi-goal support.
-

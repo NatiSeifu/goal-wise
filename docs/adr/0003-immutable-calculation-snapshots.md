@@ -22,6 +22,8 @@ Create an immutable `CalculationSnapshot` after each valid input change when req
 
 Snapshots are inserted and never updated.
 
+The exact JSON shapes are defined in [SPEC-0004: Snapshot JSON Schema](../specs/0004-snapshot-json-schema.md). Snapshot inputs include user-authored planning labels for explainability, but transaction entries use minimized calculation facts and do not copy raw transaction descriptions into immutable history.
+
 ```mermaid
 sequenceDiagram
     participant UI as Form or Dashboard
@@ -66,11 +68,12 @@ Negative:
 
 - Snapshot JSON shape must remain stable.
 - Sensitive financial values must be protected in logs and access controls.
+- Raw transaction descriptions are kept out of immutable snapshots, so detailed transaction insight must query the user-owned `Transaction` table.
 - Storage grows with each valid input change.
 
 ## Verification
 
 - Snapshot immutability test proves existing snapshots are not edited.
+- Snapshot schema tests prove required keys are present and raw transaction descriptions are absent.
 - API integration test proves valid input changes create new snapshots.
 - Dashboard endpoint reads from latest snapshot rather than recalculating in the frontend.
-

@@ -6,7 +6,7 @@ Implement the MVP data entry surface for one active goal and manual financial as
 
 ## Data Model
 
-- Add `Goal` with user ownership, name, target cents, initial saved cents, current saved cents, start date, target date, status, and optional archive timestamp.
+- Add `Goal` with user ownership, name, target cents, initial saved cents, current saved cents, start date, target date, lifecycle status, and optional archive timestamp.
 - Add `FinancialProfile` with user ownership, starting cash cents, balance-as-of date, and reserve buffer cents.
 - Add `IncomeSource` with user ownership, name, amount cents, next payment date, frequency, confidence, and active flag.
 - Add `PlannedExpense` with user ownership, name, amount cents, next due date, frequency, classification, and active flag.
@@ -33,6 +33,8 @@ Allowed planned expense classifications:
 - `GET /api/v1/goals/active` returns the active goal or a missing-goal state.
 - `POST /api/v1/goals` creates the first active goal and rejects a second active goal.
 - `PATCH /api/v1/goals/{goal_id}` updates valid goal fields and preserves ownership.
+- Goal lifecycle status values are `active`, `completed`, and `archived`.
+- Goal lifecycle status is separate from calculated `pace_status`.
 - `GET /api/v1/financial-profile` returns the current profile or a missing-profile state.
 - `PUT /api/v1/financial-profile` creates or replaces the current profile.
 - CRUD income sources and planned expenses through resource endpoints listed in `DESIGN.md`.
@@ -45,10 +47,14 @@ Allowed planned expense classifications:
 - Target date must be later than the user's current local date.
 - Starting cash cannot be negative for MVP.
 - Balance-as-of date cannot be in the future.
+- Date-only validation uses the user's configured IANA time zone.
 - Money inputs are accepted as decimal dollar strings or numbers at the API boundary, then converted to integer cents before storage.
 - Names and descriptions must have bounded lengths.
 - Unconfirmed income remains visible but excluded from forecast resources.
-- Reserve buffer should default to 5% of confirmed future income rounded up to a whole dollar, but the user must be able to override it before calculation.
+- On first financial profile setup, suggest a reserve buffer equal to 5% of confirmed future income rounded up to the nearest whole U.S. dollar.
+- If confirmed future income is zero, the suggested reserve buffer may be `$0`.
+- Require the user to confirm or replace the suggested reserve buffer before the first valid pace calculation.
+- After confirmation, reserve buffer is user-controlled and should not silently change when income changes.
 
 ## Recalculation Hook
 
@@ -73,9 +79,11 @@ flowchart TD
 - Goal creation rejects invalid money, dates, and second active goal.
 - Goal updates create snapshots only when required inputs exist.
 - Financial profile rejects future balance-as-of dates.
+- Financial profile setup suggests a 5% rounded-up reserve buffer and allows `$0` when confirmed future income is zero.
+- First calculation is skipped until the reserve buffer is confirmed or replaced.
 - Confirmed income is included in normalized inputs; unconfirmed income is excluded from forecast totals.
 - Active expenses are included; deactivated expenses are excluded.
-- Ownership tests cover goal, profile, income, and expense endpoints.
+- Ownership tests cover goal, profile, income, and expense endpoints, and assert cross-user access returns `404`.
 
 ## Completion Criteria
 
@@ -83,4 +91,3 @@ flowchart TD
 - Backend stores money only as integer cents.
 - All protected records are isolated by user.
 - Recalculation hook is ready for the pace engine plan.
-

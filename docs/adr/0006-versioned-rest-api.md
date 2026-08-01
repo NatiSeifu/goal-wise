@@ -51,5 +51,5 @@ Negative:
 - API integration tests cover MVP endpoints.
 - Validation failures return `422` with field-level errors.
 - Unauthorized requests return `401`.
-- Ownership failures return `404` or `403` consistently by endpoint policy without leaking financial content.
-
+- Missing private resources and cross-user ownership failures return `404` without leaking financial content.
+- `403` is reserved for future role-based or account-state authorization failures.

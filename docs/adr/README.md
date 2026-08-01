@@ -15,6 +15,8 @@ ADRs preserve why the architecture is shaped the way it is. Diagrams use Mermaid
 | [0005](0005-auth-sessions-and-ownership.md) | Use Server-Side Sessions and Ownership Checks | Accepted |
 | [0006](0006-versioned-rest-api.md) | Expose a Versioned REST API for the MVP | Accepted |
 | [0007](0007-mvp-deferrals.md) | Defer Bank Sync, CSV Import, and AI Summaries from MVP | Accepted |
+| [0008](0008-react-vite-frontend.md) | Use React and Vite for the MVP Frontend | Accepted |
+| [0009](0009-railway-deployment.md) | Deploy the Course MVP on Railway | Accepted |
 
 ## Template
 
@@ -26,4 +28,3 @@ Each ADR uses this shape:
 - Options Considered
 - Consequences
 - Verification
-
