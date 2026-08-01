@@ -1,8 +1,9 @@
 # ADR-0007: Defer Bank Sync, CSV Import, and AI Summaries from MVP
 
-## Status
-
-Accepted
+- **Status:** Accepted
+- **Date:** 2026-08-01
+- **Deciders:** Nati Seifu
+- **Related requirements:** FR-TXN-001 to FR-TXN-008, FR-AI-001 to FR-AI-007, FR-DATA-001, FR-DATA-002, FR-PACE-007 to FR-PACE-009, FR-PACE-011, NFR-REL-001, NFR-REL-003, NFR-AIQ-001 to NFR-AIQ-003
 
 ## Context
 
@@ -12,7 +13,7 @@ The MVP must prove that a user can manually enter assumptions and receive an exp
 
 ## Decision
 
-Defer these SRS capabilities from the current MVP increment:
+We will defer these SRS capabilities from the current MVP increment:
 
 - Live bank sync and bank credential handling.
 - CSV import, duplicate detection, transaction correction UI, and row-level import reports.
@@ -39,32 +40,34 @@ flowchart TD
     Scheduler[Weekly Scheduler] -. post-MVP .-> Snapshots
 ```
 
-## Options Considered
+## Alternatives considered
 
-| Option | Tradeoffs |
-| --- | --- |
-| Progressive MVP subset of the SRS | Keeps MVP buildable while preserving the SRS as the broader source of truth. Requires explicit traceability so deferrals are not mistaken for forgotten requirements. |
-| Implement the full SRS immediately | Most complete, but much larger than the current course MVP/PDR increment. Adds CSV import, correction flows, export/delete, AI evals, scheduler operations, and more security surface. |
-| Edit the SRS down to match MVP | Removes mismatch, but loses the approved broader requirements and roadmap context. |
-| Defer complex integrations without traceability | Fastest documentation path, but weak for review because Must/Should requirements appear contradictory. |
+- **Progressive MVP subset of the SRS** - Chosen because it keeps the MVP buildable while preserving the SRS as the broader source of truth. It requires explicit traceability so deferrals are not mistaken for forgotten requirements.
+- **Implement the full SRS immediately** - Rejected because it is much larger than the current course MVP/PDR increment and adds CSV import, correction flows, export/delete, AI evals, scheduler operations, and more security surface.
+- **Edit the SRS down to match MVP** - Rejected because it loses the approved broader requirements and roadmap context.
+- **Defer complex integrations without traceability** - Rejected because Must/Should requirements would appear contradictory during review.
 
 ## Consequences
 
-Positive:
+**Positive:**
 
 - The first implementation can focus on the core user value.
 - The architecture avoids premature agentic or integration complexity.
 - Security review scope is smaller.
 
-Negative:
+**Negative:**
 
 - Manual data entry limits realism.
 - Some SRS requirements remain roadmap items.
 - Reviewers may ask how deferred features fit later, so the roadmap must stay explicit.
 
-## Verification
+**Neutral / follow-ups:**
 
 - MVP navigation must not imply unsupported bank sync, AI, export/delete, or transaction correction flows are available.
 - `SPEC-0007` must identify requirements as Implement Now, Partial, Deferred, or Design Constraint.
 - README or docs must preserve deferred requirements and roadmap order.
 - Future features must integrate through services and normalized inputs rather than changing the pace engine into a provider-specific module.
+
+## AI assistance & provenance
+
+AI helped compare the SRS against the MVP architecture and draft the traceability categories. The project owner confirmed this package is a progressive MVP subset rather than the whole SRS. We verified the decision through [SPEC-0007](../specs/0007-srs-traceability-and-mvp-scope.md), which marks requirements as Implement Now, Partial, Deferred, or Design Constraint.

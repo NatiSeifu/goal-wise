@@ -4,6 +4,8 @@ This directory contains Architecture Decision Records for GoalWise.
 
 ADRs preserve why the architecture is shaped the way it is. Diagrams use Mermaid so they can render in Markdown tools that support Mermaid.
 
+Use [template.md](template.md) when creating a new ADR.
+
 ## Index
 
 | ADR | Title | Status |
@@ -22,9 +24,10 @@ ADRs preserve why the architecture is shaped the way it is. Diagrams use Mermaid
 
 Each ADR uses this shape:
 
-- Status
+- `# ADR-NNNN: <short decision title>`
+- Metadata: Status, Date, Deciders, Related requirements
 - Context
 - Decision
-- Options Considered
-- Consequences
-- Verification
+- Alternatives considered
+- Consequences: Positive, Negative, Neutral / follow-ups
+- AI assistance & provenance
