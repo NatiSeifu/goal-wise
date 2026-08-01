@@ -16,6 +16,7 @@ Specs are serially numbered for stable references:
 0005-date-time-semantics.md
 0006-railway-deployment.md
 0007-srs-traceability-and-mvp-scope.md
+0008-project-structure.md
 ```
 
 Rules:
@@ -55,6 +56,7 @@ Related ADRs: ADR-0005, ADR-0008
 | [0005](0005-date-time-semantics.md) | Date and Time Semantics | Accepted |
 | [0006](0006-railway-deployment.md) | Railway Deployment | Accepted |
 | [0007](0007-srs-traceability-and-mvp-scope.md) | SRS Traceability and MVP Scope | Accepted |
+| [0008](0008-project-structure.md) | Project Structure | Accepted |
 
 ## Initial Spec Candidates
 
