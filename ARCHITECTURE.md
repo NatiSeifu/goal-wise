@@ -1,0 +1,78 @@
+# GoalWise Architecture
+
+GoalWise is a progressive MVP/PDR subset of the broader SRS. The current architecture proves the core planning loop: authenticate, enter one goal and manual financial assumptions, calculate an explainable weekly safe-to-spend result, store immutable snapshots, and render the dashboard.
+
+This file holds the high-level system diagram. More focused diagrams and decision details live in:
+
+- [Architecture decision process](docs/architecture-decision-process.md)
+- [Architecture Decision Records](docs/adr/README.md)
+- [Implementation Specs](docs/specs/README.md)
+- [Backend design](DESIGN.md)
+
+## High-Level System
+
+```mermaid
+flowchart TB
+    User["User Browser"] --> Frontend["React + Vite Frontend"]
+
+    subgraph Railway["Railway Hosted MVP"]
+        Frontend -->|"HTTPS JSON /api/v1<br/>credentials included<br/>CSRF header on unsafe methods"| API["FastAPI Backend"]
+
+        API --> Routers["API Routers"]
+        Routers --> Schemas["Pydantic Schemas"]
+        Routers --> Auth["Auth + CSRF Dependencies"]
+        Auth --> Sessions[("Session Table<br/>hashed tokens")]
+
+        Routers --> Services["Application Services"]
+        Services --> Ownership["Ownership Checks"]
+        Services --> Normalizer["Input Normalizer"]
+        Services --> Pace["Pace Engine<br/>pace-v1 deterministic"]
+        Services --> Snapshots["Snapshot Writer"]
+        Services --> Dashboard["Dashboard Read Model"]
+
+        Normalizer --> Pace
+        Pace --> Snapshots
+        Snapshots --> Dashboard
+
+        Services --> Repos["Repositories"]
+        Repos --> ORM["SQLAlchemy Models"]
+        ORM --> DB[("Railway PostgreSQL")]
+        Sessions --> DB
+    end
+
+    Frontend -->|"render backend values only"| DashboardUI["Dashboard + Forms"]
+    Dashboard -->|"dashboard JSON"| Frontend
+
+    subgraph Deferred["Deferred Later Increments"]
+        CSV["CSV Import + Corrections"]
+        AI["AI Summaries"]
+        Export["Export + Account Deletion"]
+        Scheduler["Monday Scheduler"]
+    end
+
+    CSV -. "normalized inputs" .-> Services
+    AI -. "aggregate snapshot payload only" .-> Snapshots
+    Export -. "user-owned data" .-> Services
+    Scheduler -. "creates weekly plans" .-> Services
+```
+
+## Boundary Rules
+
+- The backend is the source of truth for authentication, authorization, validation, financial calculations, snapshots, dashboard metrics, and ownership checks.
+- The React frontend must not duplicate pace-engine formulas or official dashboard metric formulas.
+- The pace engine is deterministic and AI-free.
+- Calculation snapshots are immutable and versioned.
+- User-owned resource access is enforced server-side; cross-user private resource access returns `404`.
+- Runtime AI, CSV import, export/delete, and background scheduling are deferred from the current MVP subset.
+
+## Deployment Shape
+
+```mermaid
+flowchart LR
+    Browser["Browser"] --> FE["Railway Frontend<br/>React + Vite static build"]
+    FE -->|"HTTPS /api/v1"| BE["Railway API<br/>FastAPI"]
+    BE --> PG[("Railway PostgreSQL")]
+    BE --> Env["Railway Service Variables"]
+```
+
+Hosted cookies use `Secure=true`. Same-site deployment uses `SameSite=Lax`; cross-site deployment uses `SameSite=None`, explicit CORS allowlists, credentials, and CSRF verification.

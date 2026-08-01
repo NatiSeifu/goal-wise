@@ -1,0 +1,26 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial", "primaryColor": "#f8fafc", "primaryTextColor": "#0f172a", "primaryBorderColor": "#334155", "lineColor": "#475569", "secondaryColor": "#eef2ff", "tertiaryColor": "#ecfdf5"}}}%%
+flowchart LR
+    User["User"] --> UI["React + Vite<br/>Frontend"]
+    UI --> API["FastAPI<br/>Backend API"]
+
+    API --> Auth["Auth + Ownership<br/>CSRF + Sessions"]
+    API --> Services["Application<br/>Services"]
+    Services --> Engine["Deterministic Pace<br/>Engine"]
+    Engine --> Snapshot["Immutable Calculation<br/>Snapshots"]
+    Services --> DB[("PostgreSQL hosted<br/>SQLite local/test")]
+    Snapshot --> DB
+    DB --> Dashboard["Dashboard<br/>Safe-to-Spend + Status"]
+    Dashboard --> UI
+
+    CSV["CSV Transaction<br/>Import"] -. "later input source" .-> Services
+    LLM["Optional LLM<br/>Summary Layer"] -. "summarizes only" .-> Snapshot
+
+    classDef core fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#0f172a;
+    classDef deterministic fill:#dcfce7,stroke:#15803d,stroke-width:3px,color:#052e16;
+    classDef data fill:#fef3c7,stroke:#b45309,stroke-width:2px,color:#451a03;
+    classDef optional fill:#f3e8ff,stroke:#7e22ce,stroke-width:2px,stroke-dasharray: 6 4,color:#3b0764;
+
+    class UI,API,Auth,Services,Dashboard core;
+    class Engine deterministic;
+    class DB,Snapshot data;
+    class CSV,LLM optional;
