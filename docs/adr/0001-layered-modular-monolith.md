@@ -1,8 +1,9 @@
 # ADR-0001: Use a Layered Modular Monolith
 
-## Status
-
-Accepted
+- **Status:** Accepted
+- **Date:** 2026-08-01
+- **Deciders:** Nati Seifu
+- **Related requirements:** FR-AUTH-001 to FR-AUTH-005, FR-GOAL-001 to FR-GOAL-005, FR-FIN-001 to FR-FIN-007, FR-PACE-001, FR-PACE-006, FR-UI-001 to FR-UI-004, NFR-SEC-005, NFR-MNT-001, NFR-MNT-002
 
 ## Context
 
@@ -12,7 +13,7 @@ The main architectural drivers are deliverability, determinism, privacy, explain
 
 ## Decision
 
-Use a layered modular monolith:
+We will use a layered modular monolith:
 
 - FastAPI routers for HTTP endpoints under `/api/v1`.
 - Pydantic schemas for request and response validation.
@@ -35,34 +36,35 @@ flowchart LR
     Snapshot --> Repo
 ```
 
-## Options Considered
+## Alternatives considered
 
-| Option | Tradeoffs |
-| --- | --- |
-| Layered modular monolith | Best fit for MVP speed, simple deployment, local testability, and clear boundaries. Requires discipline to avoid service and repository leakage. |
-| Client-heavy application | Faster initial UI work, but financial logic would be easier to tamper with, harder to test centrally, and harder to audit. |
-| Microservices | Clear independent service boundaries, but operational complexity and distributed data consistency are unjustified for one product loop. |
-| Event-driven architecture | Strong audit and automation story, but asynchronous projections are unnecessary for the MVP dashboard and would slow delivery. |
-| AI-agentic architecture | Flexible for ambiguous workflows, but a poor fit for deterministic financial calculation and review defensibility. |
+- **Layered modular monolith** - Chosen because it best fits MVP speed, simple deployment, local testability, and clear boundaries. It requires discipline to avoid service and repository leakage.
+- **Client-heavy application** - Rejected because financial logic would be easier to tamper with, harder to test centrally, and harder to audit.
+- **Microservices** - Rejected because operational complexity and distributed data consistency are unjustified for one product loop.
+- **Event-driven architecture** - Rejected because asynchronous projections are unnecessary for the MVP dashboard and would slow delivery.
+- **AI-agentic architecture** - Rejected because it is a poor fit for deterministic financial calculation and review defensibility.
 
 ## Consequences
 
-Positive:
+**Positive:**
 
 - The MVP can run as one backend service and one frontend.
 - The pace engine can be tested with pure golden tests.
 - User ownership and validation rules can be enforced centrally.
 - Future adapters can be added around the core instead of inside it.
 
-Negative:
+**Negative:**
 
 - The codebase must maintain clear module boundaries manually.
 - If future traffic or team ownership grows, modules may need to be extracted later.
 
-## Verification
+**Neutral / follow-ups:**
 
 - Routers must not contain financial calculation logic.
 - The pace engine must not import FastAPI, SQLAlchemy, session, frontend, or AI modules.
 - Service tests must cover ownership checks and recalculation behavior.
 - Golden tests must cover the pace engine independently of the database.
 
+## AI assistance & provenance
+
+AI helped draft the architecture alternatives, Mermaid diagram, and verification checklist. The decision to use a layered modular monolith was made by the project owner after comparing the options against the SRS drivers for deliverability, determinism, privacy, explainability, and maintainability. We verified the result by tracing the layers to the MVP workflow and by requiring tests that keep routers, services, repositories, and the pure pace engine separated.

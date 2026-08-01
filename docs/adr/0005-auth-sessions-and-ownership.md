@@ -1,8 +1,9 @@
 # ADR-0005: Use Server-Side Sessions and Ownership Checks
 
-## Status
-
-Accepted
+- **Status:** Accepted
+- **Date:** 2026-08-01
+- **Deciders:** Nati Seifu
+- **Related requirements:** FR-AUTH-001 to FR-AUTH-005, FR-DATA-002, NFR-SEC-001, NFR-SEC-003, NFR-SEC-004, NFR-SEC-005, NFR-SEC-006, NFR-PRI-002, AB-01, AB-02
 
 ## Context
 
@@ -10,7 +11,7 @@ GoalWise stores private user financial assumptions and savings goals. The MVP is
 
 ## Decision
 
-Use Argon2id for password hashing. Use database-backed server-side sessions for browser authentication. The browser stores only an opaque session token in a secure HTTP-only cookie; the database stores only a hash of that token.
+We will use Argon2id for password hashing. Use database-backed server-side sessions for browser authentication. The browser stores only an opaque session token in a secure HTTP-only cookie; the database stores only a hash of that token.
 
 Require CSRF protection for authenticated state-changing requests. The backend issues a per-session CSRF token on login and `/api/v1/me`; the React frontend sends it in an `X-CSRF-Token` header for `POST`, `PUT`, `PATCH`, and `DELETE` requests.
 
@@ -34,19 +35,17 @@ flowchart TD
     BadID[Client-supplied user_id] -. rejected or ignored .-> Service
 ```
 
-## Options Considered
+## Alternatives considered
 
-| Option | Tradeoffs |
-| --- | --- |
-| Database-backed sessions with HTTP-only cookies | Best MVP fit. Good browser security posture, simple logout/revocation, inspectable sessions, and works with SQLite locally and PostgreSQL hosted. Requires one lookup per authenticated request and CSRF checks. |
-| Redis-backed sessions | Fast expiration and good production scaling, but adds infrastructure that the MVP does not otherwise need. |
-| JWT access tokens in browser storage | Common for APIs, but logout/revocation is harder and browser storage increases token exposure risk. |
-| Stateless signed cookies | Simple infrastructure, but revocation and session invalidation are harder. |
-| No auth for MVP demo | Faster prototype, but violates privacy and core requirements. |
+- **Database-backed sessions with HTTP-only cookies** - Chosen because this has a good browser security posture, simple logout/revocation, inspectable sessions, and works with SQLite locally and PostgreSQL hosted. It requires one lookup per authenticated request and CSRF checks.
+- **Redis-backed sessions** - Rejected because fast expiration and production scaling do not justify adding Redis to the MVP.
+- **JWT access tokens in browser storage** - Rejected because logout/revocation is harder and browser storage increases token exposure risk.
+- **Stateless signed cookies** - Rejected because revocation and session invalidation are harder.
+- **No auth for MVP demo** - Rejected because it violates privacy and core access-control requirements.
 
 ## Consequences
 
-Positive:
+**Positive:**
 
 - Session revocation on logout is straightforward.
 - Client JavaScript cannot read HTTP-only cookies.
@@ -54,14 +53,14 @@ Positive:
 - Ownership rules are centralized in backend services and repositories.
 - Cross-user resource existence is not revealed through response codes.
 
-Negative:
+**Negative:**
 
 - Cookie security settings must be configured correctly per environment.
 - Session storage must be created and tested.
 - Each authenticated request requires session lookup and expiration checks.
 - Login rate limiting must be implemented for the MVP after 5 failed attempts within 10 minutes by account and source.
 
-## Verification
+**Neutral / follow-ups:**
 
 - Auth tests cover register, login, logout, invalid credentials, and protected endpoint rejection.
 - CSRF tests cover missing, invalid, and valid tokens for state-changing authenticated requests.
@@ -69,3 +68,7 @@ Negative:
 - Cross-user access tests prove users cannot fetch or mutate another user's records by changing identifiers.
 - Cross-user access tests must assert `404`, not `403`.
 - Logs must exclude passwords, session tokens, full email addresses, and exact financial values.
+
+## AI assistance & provenance
+
+AI helped compare authentication and session-storage options and draft the threat-oriented checks. The project owner chose Argon2id, database-backed sessions, HTTP-only cookies, CSRF protection, and ownership-filtered queries after discussing local storage versus cookie storage and session revocation trade-offs. We verified the decision against the SRS security requirements, especially FR-AUTH-001 to FR-AUTH-005 and NFR-SEC-003 to NFR-SEC-005.

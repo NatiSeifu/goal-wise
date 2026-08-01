@@ -1,8 +1,9 @@
 # ADR-0006: Expose a Versioned REST API for the MVP
 
-## Status
-
-Accepted
+- **Status:** Accepted
+- **Date:** 2026-08-01
+- **Deciders:** Nati Seifu
+- **Related requirements:** FR-AUTH-001 to FR-AUTH-005, FR-GOAL-001 to FR-GOAL-005, FR-FIN-001 to FR-FIN-007, FR-PACE-001, FR-PACE-006, FR-UI-001 to FR-UI-004, NFR-SEC-005, NFR-MNT-001
 
 ## Context
 
@@ -10,7 +11,7 @@ The frontend needs predictable operations for auth, the active goal, financial p
 
 ## Decision
 
-Expose a versioned JSON REST API under `/api/v1`. Keep endpoint names resource-based and predictable. Return JSON objects rather than bare arrays where metadata may be needed later.
+We will expose a versioned JSON REST API under `/api/v1`. Keep endpoint names resource-based and predictable. Return JSON objects rather than bare arrays where metadata may be needed later.
 
 ```mermaid
 flowchart LR
@@ -24,32 +25,34 @@ flowchart LR
     UI --> Snapshots[/api/v1/calculation-snapshots/latest]
 ```
 
-## Options Considered
+## Alternatives considered
 
-| Option | Tradeoffs |
-| --- | --- |
-| Versioned REST | Predictable, easy to test, fits CRUD-heavy MVP, and aligns with FastAPI/OpenAPI docs. |
-| GraphQL | Flexible client queries, but unnecessary complexity for the MVP resource model. |
-| RPC-style endpoints | Simple for actions, but weaker resource consistency and harder long-term discoverability. |
-| WebSocket-first API | Useful for real-time collaboration, but not needed for manual budgeting forms and dashboard refreshes. |
+- **Versioned REST** - Chosen because it is predictable, easy to test, fits the CRUD-heavy MVP, and aligns with FastAPI/OpenAPI docs.
+- **GraphQL** - Rejected because flexible client queries do not justify the extra complexity for the MVP resource model.
+- **RPC-style endpoints** - Rejected because action names are simple at first but weaker for resource consistency and long-term discoverability.
+- **WebSocket-first API** - Rejected because real-time collaboration is not needed for manual budgeting forms and dashboard refreshes.
 
 ## Consequences
 
-Positive:
+**Positive:**
 
 - OpenAPI documentation can describe the contract.
 - Tests can target stable endpoint names and response shapes.
 - The frontend can use a small API client wrapper.
 
-Negative:
+**Negative:**
 
 - Some dashboard read models are not pure CRUD resources.
 - Versioning discipline is required if response contracts change.
 
-## Verification
+**Neutral / follow-ups:**
 
 - API integration tests cover MVP endpoints.
 - Validation failures return `422` with field-level errors.
 - Unauthorized requests return `401`.
 - Missing private resources and cross-user ownership failures return `404` without leaking financial content.
 - `403` is reserved for future role-based or account-state authorization failures.
+
+## AI assistance & provenance
+
+AI helped draft the API alternatives and endpoint sketch. The project owner chose versioned REST because the SRS describes a browser UI with predictable goal, financial input, dashboard, and snapshot operations rather than dynamic query composition or real-time collaboration. We verified the decision by tracing `/api/v1` resources to the MVP workflow and by documenting response conventions in the related specs.
