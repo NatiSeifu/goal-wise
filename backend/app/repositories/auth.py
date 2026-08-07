@@ -1,11 +1,13 @@
 """Authentication persistence queries."""
 
 from datetime import datetime
+from typing import cast
 
-from sqlalchemy import select
+from sqlalchemy import delete, func, select
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session
 
-from app.models import User, UserSession
+from app.models import LoginAttempt, User, UserSession
 
 
 def get_user_by_normalized_email(
@@ -92,3 +94,56 @@ def revoke_session(
     user_session.revoked_at = revoked_at
     db_session.flush()
     return user_session
+
+
+def record_failed_login_attempt(
+    db_session: Session,
+    *,
+    email_normalized: str,
+    source_hash: str,
+    failed_at: datetime,
+) -> LoginAttempt:
+    login_attempt = LoginAttempt(
+        email_normalized=email_normalized,
+        source_hash=source_hash,
+        failed_at=failed_at,
+    )
+    db_session.add(login_attempt)
+    db_session.flush()
+    return login_attempt
+
+
+def count_recent_failed_login_attempts(
+    db_session: Session,
+    *,
+    email_normalized: str,
+    source_hash: str,
+    since: datetime,
+) -> int:
+    count = db_session.scalar(
+        select(func.count()).select_from(LoginAttempt).where(
+            LoginAttempt.email_normalized == email_normalized,
+            LoginAttempt.source_hash == source_hash,
+            LoginAttempt.failed_at >= since,
+        ),
+    )
+    return int(count or 0)
+
+
+def clear_failed_login_attempts(
+    db_session: Session,
+    *,
+    email_normalized: str,
+    source_hash: str,
+) -> int:
+    result = cast(
+        CursorResult[tuple[object, ...]],
+        db_session.execute(
+            delete(LoginAttempt).where(
+                LoginAttempt.email_normalized == email_normalized,
+                LoginAttempt.source_hash == source_hash,
+            ),
+        ),
+    )
+    db_session.flush()
+    return result.rowcount

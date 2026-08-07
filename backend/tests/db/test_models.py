@@ -5,7 +5,7 @@ import pytest
 from app.db.base import Base
 from app.db.session import make_engine, make_session_factory
 from app.db.types import utc_now
-from app.models import User, UserSession
+from app.models import LoginAttempt, User, UserSession
 from sqlalchemy import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -28,6 +28,7 @@ def session(engine: Engine) -> Session:
 def test_metadata_registers_auth_tables() -> None:
     assert "users" in Base.metadata.tables
     assert "sessions" in Base.metadata.tables
+    assert "login_attempts" in Base.metadata.tables
 
 
 def test_user_and_session_round_trip(session: Session) -> None:
@@ -119,3 +120,17 @@ def test_session_model_does_not_store_raw_tokens() -> None:
     assert "csrf_token" not in column_names
     assert "session_token_hash" in column_names
     assert "csrf_token_hash" in column_names
+
+
+def test_login_attempt_round_trip(session: Session) -> None:
+    login_attempt = LoginAttempt(
+        email_normalized="nati@example.com",
+        source_hash="source-hash",
+        failed_at=utc_now(),
+    )
+    session.add(login_attempt)
+    session.commit()
+    session.refresh(login_attempt)
+
+    assert login_attempt.id
+    assert login_attempt.source_hash == "source-hash"

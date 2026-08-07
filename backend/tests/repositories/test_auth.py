@@ -5,11 +5,14 @@ from app.db.base import Base
 from app.db.session import make_engine, make_session_factory
 from app.db.types import utc_now
 from app.repositories.auth import (
+    clear_failed_login_attempts,
+    count_recent_failed_login_attempts,
     create_session,
     create_user,
     get_active_session_by_token_hash,
     get_session_by_token_hash,
     get_user_by_normalized_email,
+    record_failed_login_attempt,
     revoke_session,
 )
 from sqlalchemy import Engine
@@ -175,4 +178,96 @@ def test_get_active_session_returns_unexpired_unrevoked_session(
             now=now,
         )
         == user_session
+    )
+
+
+def test_count_recent_failed_login_attempts_filters_by_email_source_and_window(
+    db_session: Session,
+) -> None:
+    now = utc_now()
+    record_failed_login_attempt(
+        db_session,
+        email_normalized="nati@example.com",
+        source_hash="source-hash",
+        failed_at=now - timedelta(minutes=1),
+    )
+    record_failed_login_attempt(
+        db_session,
+        email_normalized="nati@example.com",
+        source_hash="source-hash",
+        failed_at=now - timedelta(minutes=9),
+    )
+    record_failed_login_attempt(
+        db_session,
+        email_normalized="nati@example.com",
+        source_hash="source-hash",
+        failed_at=now - timedelta(minutes=11),
+    )
+    record_failed_login_attempt(
+        db_session,
+        email_normalized="other@example.com",
+        source_hash="source-hash",
+        failed_at=now - timedelta(minutes=1),
+    )
+    record_failed_login_attempt(
+        db_session,
+        email_normalized="nati@example.com",
+        source_hash="other-source-hash",
+        failed_at=now - timedelta(minutes=1),
+    )
+    db_session.commit()
+
+    count = count_recent_failed_login_attempts(
+        db_session,
+        email_normalized="nati@example.com",
+        source_hash="source-hash",
+        since=now - timedelta(minutes=10),
+    )
+
+    assert count == 2
+
+
+def test_clear_failed_login_attempts_removes_email_and_source_pair_only(
+    db_session: Session,
+) -> None:
+    now = utc_now()
+    record_failed_login_attempt(
+        db_session,
+        email_normalized="nati@example.com",
+        source_hash="source-hash",
+        failed_at=now,
+    )
+    record_failed_login_attempt(
+        db_session,
+        email_normalized="other@example.com",
+        source_hash="source-hash",
+        failed_at=now,
+    )
+    db_session.commit()
+
+    removed_count = clear_failed_login_attempts(
+        db_session,
+        email_normalized="nati@example.com",
+        source_hash="source-hash",
+    )
+    db_session.commit()
+
+    assert removed_count == 1
+    assert (
+        count_recent_failed_login_attempts(
+            db_session,
+            email_normalized="nati@example.com",
+            source_hash="source-hash",
+            since=now - timedelta(minutes=10),
+        )
+        == 0
+    )
+    assert (
+        count_recent_failed_login_attempts(
+            db_session,
+            email_normalized="other@example.com",
+            source_hash="source-hash",
+            since=now - timedelta(minutes=10),
+        )
+        == 1
     )
