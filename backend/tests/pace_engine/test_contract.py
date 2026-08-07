@@ -195,7 +195,7 @@ def test_rejects_invalid_result_values() -> None:
 
 
 def test_pace_engine_has_no_forbidden_dependencies() -> None:
-    forbidden_imports = {
+    forbidden_import_roots = {
         "fastapi",
         "sqlalchemy",
         "app.api",
@@ -203,6 +203,7 @@ def test_pace_engine_has_no_forbidden_dependencies() -> None:
         "app.models",
         "app.repositories",
         "app.services",
+        "openai",
     }
     package_dir = Path(__file__).parents[2] / "app" / "pace_engine"
 
@@ -215,4 +216,9 @@ def test_pace_engine_has_no_forbidden_dependencies() -> None:
             elif isinstance(node, ast.ImportFrom) and node.module is not None:
                 imported_modules.add(node.module)
 
-    assert imported_modules.isdisjoint(forbidden_imports)
+    assert not {
+        module
+        for module in imported_modules
+        for forbidden_root in forbidden_import_roots
+        if module == forbidden_root or module.startswith(f"{forbidden_root}.")
+    }
