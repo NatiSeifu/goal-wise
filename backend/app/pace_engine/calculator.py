@@ -4,7 +4,77 @@ from calendar import monthrange
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from app.pace_engine.types import IncomeConfidence, PaceInput, PaceStatus, RecurrenceFrequency
+from app.pace_engine.types import (
+    FORMULA_VERSION,
+    IncomeConfidence,
+    PaceInput,
+    PaceResult,
+    PaceStatus,
+    RecurrenceFrequency,
+)
+
+# Public orchestration
+
+
+def calculate_pace(input_data: PaceInput) -> PaceResult:
+    current_cash = current_cash_cents(input_data)
+    confirmed_future_income = confirmed_future_income_cents(input_data)
+    planned_future_expenses = planned_future_expenses_cents(input_data)
+    forecast_resources = forecast_resources_cents(
+        current_cash_cents=current_cash,
+        confirmed_future_income_cents=confirmed_future_income,
+        planned_future_expenses_cents=planned_future_expenses,
+        reserve_buffer_cents=input_data.reserve_buffer_cents,
+    )
+    goal_gap = goal_gap_cents(
+        target_cents=input_data.target_cents,
+        current_saved_cents=input_data.current_saved_cents,
+    )
+    discretionary_capacity = discretionary_capacity_cents(
+        forecast_resources_cents=forecast_resources,
+        goal_gap_cents=goal_gap,
+    )
+    weeks_remaining = remaining_weeks(
+        input_data.calculated_at,
+        input_data.user_time_zone,
+        input_data.target_date,
+    )
+    safe_to_spend = weekly_safe_to_spend_cents(discretionary_capacity, weeks_remaining)
+    projected_shortfall = projected_shortfall_cents(
+        goal_gap_cents=goal_gap,
+        forecast_resources_cents=forecast_resources,
+    )
+    expected_savings = expected_savings_to_date_cents(
+        initial_saved_cents=input_data.initial_saved_cents,
+        target_cents=input_data.target_cents,
+        start_date=input_data.start_date,
+        target_date=input_data.target_date,
+        calculated_at=input_data.calculated_at,
+        user_time_zone=input_data.user_time_zone,
+    )
+    pace_status = evaluate_pace_status(
+        goal_gap_cents=goal_gap,
+        forecast_resources_cents=forecast_resources,
+        current_saved_cents=input_data.current_saved_cents,
+        expected_savings_to_date_cents=expected_savings,
+        tolerance_cents=pace_tolerance_cents(input_data.target_cents),
+    )
+    return PaceResult(
+        formula_version=FORMULA_VERSION,
+        current_cash_cents=current_cash,
+        confirmed_future_income_cents=confirmed_future_income,
+        planned_future_expenses_cents=planned_future_expenses,
+        reserve_buffer_cents=input_data.reserve_buffer_cents,
+        forecast_resources_cents=forecast_resources,
+        goal_gap_cents=goal_gap,
+        discretionary_capacity_cents=discretionary_capacity,
+        remaining_weeks=weeks_remaining,
+        weekly_safe_to_spend_cents=safe_to_spend,
+        projected_shortfall_cents=projected_shortfall,
+        expected_savings_to_date_cents=expected_savings,
+        pace_status=pace_status,
+    )
+
 
 # Date and recurrence helpers
 
