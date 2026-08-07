@@ -158,9 +158,7 @@ class PaceResult:
         _require_int_cents("discretionary_capacity_cents", self.discretionary_capacity_cents)
         if self.remaining_weeks < 1:
             raise ValueError("remaining_weeks must be at least 1")
-        _require_non_negative_cents(
-            "weekly_safe_to_spend_cents", self.weekly_safe_to_spend_cents
-        )
+        _require_non_negative_cents("weekly_safe_to_spend_cents", self.weekly_safe_to_spend_cents)
         _require_non_negative_cents("projected_shortfall_cents", self.projected_shortfall_cents)
         _require_non_negative_cents(
             "expected_savings_to_date_cents", self.expected_savings_to_date_cents
