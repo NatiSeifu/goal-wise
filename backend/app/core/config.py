@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Literal, Self
 
-from pydantic import SecretStr, model_validator
+from pydantic import SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 EnvironmentName = Literal["local", "test", "staging", "production"]
@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     secure_cookies: bool = False
     cookie_samesite: SameSitePolicy = "lax"
     allowed_frontend_origin: str = "http://localhost:5173"
+
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        if value.startswith("postgresql://"):
+            return value.replace("postgresql://", "postgresql+psycopg://", 1)
+        return value
 
     @property
     def is_production(self) -> bool:

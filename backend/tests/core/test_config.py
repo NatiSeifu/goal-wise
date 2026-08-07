@@ -19,6 +19,12 @@ def test_settings_accept_explicit_hosted_database_url() -> None:
     assert settings.database_url == "postgresql+psycopg://example"
 
 
+def test_settings_normalize_bare_postgres_database_url() -> None:
+    settings = Settings(database_url="postgresql://example", session_secret="secret")
+
+    assert settings.database_url == "postgresql+psycopg://example"
+
+
 def test_production_rejects_default_session_secret() -> None:
     with pytest.raises(ValidationError, match="SESSION_SECRET"):
         Settings(environment="production", secure_cookies=True)
