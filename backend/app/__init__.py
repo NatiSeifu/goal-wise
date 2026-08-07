@@ -1,0 +1,1 @@
+"""GoalWise backend application package."""
