@@ -78,7 +78,7 @@ Expected dependency categories:
 
 Success criteria:
 
-- dependencies install with `python3 -m pip install -e "backend[dev]"`;
+- dependencies install with `uv venv` and `make backend-sync`;
 - `make backend-check` passes;
 - no application code imports unavailable packages.
 

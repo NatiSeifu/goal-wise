@@ -1,18 +1,23 @@
-.PHONY: backend-format backend-lint backend-typecheck backend-test backend-check check
+.PHONY: backend-sync backend-format backend-lint backend-typecheck backend-test backend-check check
 
-PYTHON ?= python3
+UV ?= uv
+BACKEND_PROJECT ?= backend
+BACKEND_UV_ENV ?= ../.venv
+
+backend-sync:
+	cd $(BACKEND_PROJECT) && UV_PROJECT_ENVIRONMENT=$(BACKEND_UV_ENV) $(UV) sync --extra dev
 
 backend-format:
-	cd backend && $(PYTHON) -m ruff format app tests
+	cd $(BACKEND_PROJECT) && UV_PROJECT_ENVIRONMENT=$(BACKEND_UV_ENV) $(UV) run ruff format app tests
 
 backend-lint:
-	cd backend && $(PYTHON) -m ruff check app tests
+	cd $(BACKEND_PROJECT) && UV_PROJECT_ENVIRONMENT=$(BACKEND_UV_ENV) $(UV) run ruff check app tests
 
 backend-typecheck:
-	cd backend && $(PYTHON) -m mypy
+	cd $(BACKEND_PROJECT) && UV_PROJECT_ENVIRONMENT=$(BACKEND_UV_ENV) $(UV) run mypy
 
 backend-test:
-	cd backend && $(PYTHON) -m pytest
+	cd $(BACKEND_PROJECT) && UV_PROJECT_ENVIRONMENT=$(BACKEND_UV_ENV) $(UV) run pytest
 
 backend-check: backend-lint backend-typecheck backend-test
 
