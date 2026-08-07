@@ -96,6 +96,17 @@ def revoke_session(
     return user_session
 
 
+def touch_session(
+    db_session: Session,
+    *,
+    user_session: UserSession,
+    last_seen_at: datetime,
+) -> UserSession:
+    user_session.last_seen_at = last_seen_at
+    db_session.flush()
+    return user_session
+
+
 def record_failed_login_attempt(
     db_session: Session,
     *,
