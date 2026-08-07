@@ -8,9 +8,12 @@ from app.pace_engine.calculator import (
     confirmed_future_income_cents,
     current_cash_cents,
     discretionary_capacity_cents,
+    evaluate_pace_status,
+    expected_savings_to_date_cents,
     forecast_resources_cents,
     future_occurrence_dates,
     goal_gap_cents,
+    pace_tolerance_cents,
     planned_future_expenses_cents,
     projected_shortfall_cents,
     remaining_weeks,
@@ -23,6 +26,7 @@ from app.pace_engine.types import (
     IncomeConfidence,
     IncomeSourceInput,
     PaceInput,
+    PaceStatus,
     PlannedExpenseInput,
     RecurrenceFrequency,
 )
@@ -249,3 +253,94 @@ def test_reserve_buffer_suggestion_uses_confirmed_income_and_rounds_up(
     confirmed_income: int, expected: int
 ) -> None:
     assert suggest_reserve_buffer_cents(confirmed_income) == expected
+
+
+@pytest.mark.parametrize(
+    ("calculated_at", "expected"),
+    [
+        (datetime(2026, 7, 31, 16, 0, tzinfo=UTC), 10_000),
+        (datetime(2026, 8, 1, 16, 0, tzinfo=UTC), 10_000),
+        (datetime(2026, 8, 16, 16, 0, tzinfo=UTC), 55_000),
+        (datetime(2026, 8, 31, 16, 0, tzinfo=UTC), 100_000),
+        (datetime(2026, 9, 1, 16, 0, tzinfo=UTC), 100_000),
+    ],
+)
+def test_expected_savings_to_date_uses_clamped_linear_progress(
+    calculated_at: datetime, expected: int
+) -> None:
+    assert (
+        expected_savings_to_date_cents(
+            initial_saved_cents=10_000,
+            target_cents=100_000,
+            start_date=date(2026, 8, 1),
+            target_date=date(2026, 8, 31),
+            calculated_at=calculated_at,
+            user_time_zone="America/Los_Angeles",
+        )
+        == expected
+    )
+
+
+def test_expected_savings_to_date_uses_floor_for_fractional_progress() -> None:
+    assert (
+        expected_savings_to_date_cents(
+            initial_saved_cents=0,
+            target_cents=100,
+            start_date=date(2026, 8, 1),
+            target_date=date(2026, 8, 4),
+            calculated_at=datetime(2026, 8, 2, 16, 0, tzinfo=UTC),
+            user_time_zone="America/Los_Angeles",
+        )
+        == 33
+    )
+
+
+@pytest.mark.parametrize(
+    ("target_cents", "expected"),
+    [
+        (1, 2_500),
+        (49_999, 2_500),
+        (50_000, 2_500),
+        (100_000, 5_000),
+        (100_001, 5_000),
+    ],
+)
+def test_pace_tolerance_is_larger_of_25_dollars_or_5_percent(
+    target_cents: int, expected: int
+) -> None:
+    assert pace_tolerance_cents(target_cents) == expected
+
+
+def test_pace_tolerance_rejects_non_positive_target() -> None:
+    with pytest.raises(ValueError, match="target_cents must be positive"):
+        pace_tolerance_cents(0)
+
+
+@pytest.mark.parametrize(
+    ("goal_gap", "forecast", "current_saved", "expected_savings", "tolerance", "expected"),
+    [
+        (0, -1, 0, 100_000, 2_500, PaceStatus.COMPLETED),
+        (75_000, 74_999, 150_000, 100_000, 2_500, PaceStatus.OFF_PACE),
+        (75_000, 75_000, 102_500, 100_000, 2_500, PaceStatus.AHEAD),
+        (75_000, 75_000, 97_500, 100_000, 2_500, PaceStatus.AT_RISK),
+        (75_000, 75_000, 97_501, 100_000, 2_500, PaceStatus.ON_TRACK),
+    ],
+)
+def test_evaluate_pace_status_uses_specified_decision_order(
+    goal_gap: int,
+    forecast: int,
+    current_saved: int,
+    expected_savings: int,
+    tolerance: int,
+    expected: PaceStatus,
+) -> None:
+    assert (
+        evaluate_pace_status(
+            goal_gap_cents=goal_gap,
+            forecast_resources_cents=forecast,
+            current_saved_cents=current_saved,
+            expected_savings_to_date_cents=expected_savings,
+            tolerance_cents=tolerance,
+        )
+        is expected
+    )

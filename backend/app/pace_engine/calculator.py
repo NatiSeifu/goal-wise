@@ -4,7 +4,9 @@ from calendar import monthrange
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from app.pace_engine.types import IncomeConfidence, PaceInput, RecurrenceFrequency
+from app.pace_engine.types import IncomeConfidence, PaceInput, PaceStatus, RecurrenceFrequency
+
+# Date and recurrence helpers
 
 
 def calculation_local_date(calculated_at: datetime, user_time_zone: str) -> date:
@@ -29,6 +31,9 @@ def future_occurrence_dates(
 
 def current_cash_cents(input_data: PaceInput) -> int:
     return input_data.starting_cash_cents
+
+
+# Aggregate and money helpers
 
 
 def confirmed_future_income_cents(input_data: PaceInput) -> int:
@@ -108,6 +113,56 @@ def suggest_reserve_buffer_cents(confirmed_future_income_cents: int) -> int:
     if confirmed_future_income_cents < 0:
         raise ValueError("confirmed_future_income_cents must be non-negative")
     return _ceil_div(confirmed_future_income_cents, 2_000) * 100
+
+
+# Pace status helpers
+
+
+def expected_savings_to_date_cents(
+    *,
+    initial_saved_cents: int,
+    target_cents: int,
+    start_date: date,
+    target_date: date,
+    calculated_at: datetime,
+    user_time_zone: str,
+) -> int:
+    total_days = (target_date - start_date).days
+    if total_days <= 0:
+        return target_cents
+
+    elapsed_days = (calculation_local_date(calculated_at, user_time_zone) - start_date).days
+    clamped_elapsed_days = min(max(elapsed_days, 0), total_days)
+    savings_delta_cents = target_cents - initial_saved_cents
+    return initial_saved_cents + (savings_delta_cents * clamped_elapsed_days) // total_days
+
+
+def pace_tolerance_cents(target_cents: int) -> int:
+    if target_cents <= 0:
+        raise ValueError("target_cents must be positive")
+    return max(2_500, target_cents // 20)
+
+
+def evaluate_pace_status(
+    *,
+    goal_gap_cents: int,
+    forecast_resources_cents: int,
+    current_saved_cents: int,
+    expected_savings_to_date_cents: int,
+    tolerance_cents: int,
+) -> PaceStatus:
+    if goal_gap_cents == 0:
+        return PaceStatus.COMPLETED
+    if forecast_resources_cents < goal_gap_cents:
+        return PaceStatus.OFF_PACE
+    if current_saved_cents - expected_savings_to_date_cents >= tolerance_cents:
+        return PaceStatus.AHEAD
+    if expected_savings_to_date_cents - current_saved_cents >= tolerance_cents:
+        return PaceStatus.AT_RISK
+    return PaceStatus.ON_TRACK
+
+
+# Internal helpers
 
 
 def _expand_occurrences(
