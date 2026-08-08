@@ -1,4 +1,21 @@
 services:
+  backend:
+    build:
+      context: ./backend
+      target: production
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    environment:
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql+psycopg://goalwise:goalwise_dev_password@postgres:5432/goalwise_dev
+      SESSION_SECRET: local-dev-session-secret-change-me
+      SECURE_COOKIES: "false"
+      COOKIE_SAMESITE: lax
+      ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   postgres:
     image: postgres:16-alpine
     ports:

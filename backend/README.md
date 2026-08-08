@@ -59,6 +59,26 @@ curl http://localhost:8000/health
 curl http://localhost:8000/ready
 ```
 
+Run the production backend image with the Compose database:
+
+```sh
+make backend-stack-up
+curl http://localhost:8000/health
+curl http://localhost:8000/ready
+make backend-stack-down
+```
+
+If port `8000` is already in use, override the host port:
+
+```sh
+BACKEND_PORT=18000 make backend-stack-up
+curl http://localhost:18000/health
+```
+
+Inside Docker Compose, the backend connects to PostgreSQL through the service name
+`postgres`. From your host machine, use `localhost` or `127.0.0.1` in
+`DATABASE_URL`.
+
 ## Browser Runtime Settings
 
 The backend allows credentialed browser requests from `ALLOWED_FRONTEND_ORIGIN`.
