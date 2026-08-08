@@ -63,12 +63,20 @@ def update_goal(
     *,
     goal: Goal,
     name: str,
+    target_cents: int,
+    initial_saved_cents: int,
     current_saved_cents: int,
+    start_date: date,
+    target_date: date,
     status: str,
     archived_at: datetime | None = None,
 ) -> Goal:
     goal.name = name
+    goal.target_cents = target_cents
+    goal.initial_saved_cents = initial_saved_cents
     goal.current_saved_cents = current_saved_cents
+    goal.start_date = start_date
+    goal.target_date = target_date
     goal.status = status
     goal.archived_at = archived_at
     db_session.flush()

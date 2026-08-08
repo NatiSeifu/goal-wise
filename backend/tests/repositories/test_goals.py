@@ -139,7 +139,11 @@ def test_update_goal_changes_owned_record(db_session: Session) -> None:
         db_session,
         goal=goal,
         name="New name",
+        target_cents=100000,
+        initial_saved_cents=0,
         current_saved_cents=25000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
         status="active",
     )
     db_session.commit()
