@@ -35,6 +35,7 @@ Key project documents:
 - [SRS](docs/srs/goal-wise-srs-v1.md)
 - [Architecture overview](ARCHITECTURE.md)
 - [Backend design](DESIGN.md)
+- [Product context](docs/PRODUCT_CONTEXT.md)
 - [Contributing guidelines](CONTRIBUTING.md)
 - [Architecture decision process](docs/architecture-decision-process.md)
 - [ADRs](docs/adr/README.md)

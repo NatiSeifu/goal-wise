@@ -10,6 +10,7 @@ Before making changes, read:
 - [README.md](README.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [DESIGN.md](DESIGN.md)
+- [Product context](docs/PRODUCT_CONTEXT.md)
 
 For architecture or behavior changes, also consult:
 
@@ -81,6 +82,21 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md):
 - Open PRs back into `development` unless instructed otherwise.
 - Do not merge your own PR.
 - Use consistent commit descriptors such as `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, and `chore:`.
+
+## UI Mockup Workflow
+
+Follow [SPEC-0009](docs/specs/0009-ui-mockup-and-screenshot-workflow.md) before creating UI mockups, frontend screenshots, or SRS visual assets.
+
+Treat `docs/PRODUCT_CONTEXT.md`, the SRS scope mapping, ADRs, specs, and backend contracts as product truth. Visual references may guide layout, tone, and hierarchy, but they do not define supported capabilities.
+
+Agents must warn the user before:
+
+- inventing metrics, entities, filters, actions, or navigation not represented in the specs or backend contracts;
+- showing deferred features as current MVP behavior;
+- presenting AI as calculating or overriding financial results;
+- using standalone generated UI images when the purpose is an SRS or slide screenshot of the app.
+
+Prefer implemented UI rendered in a browser, then exported to deterministic PNGs with fixed viewport sizes. Use image generation only for illustrations or visual concepts, not for authoritative app screenshots.
 
 ## Release Operations
 
