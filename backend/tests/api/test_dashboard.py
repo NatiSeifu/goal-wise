@@ -1,12 +1,14 @@
 from collections.abc import Generator
+from datetime import UTC, datetime
 
 import pytest
 from app.api.constants import SESSION_COOKIE_NAME
+from app.api.dependencies import utc_now
 from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db_session, make_engine, make_session_factory
 from app.main import app
-from app.models import CalculationSnapshot
+from app.models import CalculationSnapshot, WeeklyPlan
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
@@ -32,8 +34,17 @@ def client(engine: Engine) -> Generator[TestClient, None, None]:
     def override_settings() -> Settings:
         return Settings(environment="test", session_secret=TEST_SESSION_SECRET)
 
+    now_counter = 0
+
+    def override_utc_now() -> datetime:
+        nonlocal now_counter
+        value = datetime(2026, 8, 8, 12, 0, now_counter, tzinfo=UTC)
+        now_counter += 1
+        return value
+
     app.dependency_overrides[get_db_session] = override_db_session
     app.dependency_overrides[get_settings] = override_settings
+    app.dependency_overrides[utc_now] = override_utc_now
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
@@ -150,6 +161,41 @@ def test_dashboard_returns_values_from_latest_snapshot(
         "changed_from_previous"
     ]
     assert _snapshot_count(engine) == snapshot_count_before
+    weekly_plans = _weekly_plans(engine)
+    assert len(weekly_plans) == 1
+    assert weekly_plans[0].created_from_snapshot_id == latest_snapshot.id
+
+
+def test_dashboard_does_not_replace_current_week_opening_allowance(
+    client: TestClient,
+    engine: Engine,
+) -> None:
+    csrf_token = _complete_required_setup(client)
+    first_dashboard = client.get("/api/v1/dashboard")
+    first_plan = _weekly_plans(engine)[0]
+    first_opening_allowance = first_dashboard.json()["item"]["pace"][
+        "current_week_opening_allowance_cents"
+    ]
+
+    client.post(
+        "/api/v1/income-sources",
+        json=_income_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    latest_snapshot = _latest_snapshot(engine)
+    second_dashboard = client.get("/api/v1/dashboard")
+
+    body = second_dashboard.json()["item"]
+    assert second_dashboard.status_code == 200
+    assert body["snapshot_id"] == latest_snapshot.id
+    assert body["pace"]["weekly_safe_to_spend_cents"] == latest_snapshot.result_json[
+        "outputs"
+    ]["weekly_safe_to_spend_cents"]
+    assert body["pace"]["current_week_opening_allowance_cents"] == first_opening_allowance
+    assert body["pace"]["current_week_remainder_cents"] == first_opening_allowance
+    weekly_plans = _weekly_plans(engine)
+    assert len(weekly_plans) == 1
+    assert weekly_plans[0].id == first_plan.id
 
 
 def _register(client: TestClient, *, email: str = "nati@example.com") -> str:
@@ -232,3 +278,8 @@ def _latest_snapshot(engine: Engine) -> CalculationSnapshot:
         )
         assert snapshot is not None
         return snapshot
+
+
+def _weekly_plans(engine: Engine) -> list[WeeklyPlan]:
+    with Session(engine) as db_session:
+        return list(db_session.scalars(select(WeeklyPlan).order_by(WeeklyPlan.week_start)))

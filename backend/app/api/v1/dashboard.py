@@ -20,6 +20,7 @@ from app.services.recalculation_boundary import (
     RecalculationStatus,
     prepare_pace_input_for_user,
 )
+from app.services.weekly_plans import get_or_create_current_week_plan
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -45,7 +46,21 @@ def get_dashboard(
             ),
         )
 
-    return DashboardResponse(item=_ready_dashboard_item(snapshot))
+    weekly_plan = get_or_create_current_week_plan(
+        db_session,
+        user_id=current_session.user.id,
+        user_time_zone=current_session.user.time_zone,
+        snapshot=snapshot,
+        now=now,
+    )
+    db_session.commit()
+    return DashboardResponse(
+        item=_ready_dashboard_item(
+            snapshot,
+            current_week_opening_allowance_cents=weekly_plan.opening_allowance_cents,
+            current_week_remainder_cents=weekly_plan.opening_allowance_cents,
+        ),
+    )
 
 
 def _setup_required_dashboard_item(
@@ -77,7 +92,12 @@ def _setup_required_dashboard_item(
     )
 
 
-def _ready_dashboard_item(snapshot: CalculationSnapshot) -> DashboardItem:
+def _ready_dashboard_item(
+    snapshot: CalculationSnapshot,
+    *,
+    current_week_opening_allowance_cents: int,
+    current_week_remainder_cents: int,
+) -> DashboardItem:
     result_json = snapshot.result_json
     normalized_input_json = snapshot.normalized_input_json
     outputs = _dict_value(result_json, "outputs")
@@ -102,10 +122,8 @@ def _ready_dashboard_item(snapshot: CalculationSnapshot) -> DashboardItem:
             projected_shortfall_cents=int(outputs["projected_shortfall_cents"]),
             remaining_weeks=int(outputs["remaining_weeks"]),
             progress_percentage=float(outputs["progress_percentage"]),
-            current_week_opening_allowance_cents=int(
-                outputs["current_week_opening_allowance_cents"],
-            ),
-            current_week_remainder_cents=int(outputs["current_week_remainder_cents"]),
+            current_week_opening_allowance_cents=current_week_opening_allowance_cents,
+            current_week_remainder_cents=current_week_remainder_cents,
         ),
         explanation=_dict_value(result_json, "explanation"),
         changed_from_previous=_dict_value(result_json, "changed_from_previous"),

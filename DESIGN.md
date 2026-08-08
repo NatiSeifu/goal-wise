@@ -44,6 +44,7 @@ erDiagram
     USER ||--o{ PLANNED_EXPENSE : owns
     USER ||--o{ TRANSACTION : owns
     USER ||--o{ CALCULATION_SNAPSHOT : owns
+    USER ||--o{ WEEKLY_PLAN : owns
     GOAL ||--o{ CALCULATION_SNAPSHOT : produces
     GOAL ||--o{ WEEKLY_PLAN : has
     CALCULATION_SNAPSHOT ||--o{ WEEKLY_PLAN : seeds
@@ -121,6 +122,7 @@ erDiagram
         date week_start
         integer opening_allowance_cents
         uuid created_from_snapshot_id
+        datetime created_at
     }
 ```
 

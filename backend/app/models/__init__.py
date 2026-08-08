@@ -8,6 +8,7 @@ from app.models.login_attempt import LoginAttempt
 from app.models.planned_expense import PlannedExpense
 from app.models.session import UserSession
 from app.models.user import User
+from app.models.weekly_plan import WeeklyPlan
 
 __all__ = [
     "CalculationSnapshot",
@@ -18,4 +19,5 @@ __all__ = [
     "PlannedExpense",
     "User",
     "UserSession",
+    "WeeklyPlan",
 ]
