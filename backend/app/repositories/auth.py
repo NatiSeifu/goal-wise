@@ -143,7 +143,9 @@ def count_recent_failed_login_attempts(
     since: datetime,
 ) -> int:
     count = db_session.scalar(
-        select(func.count()).select_from(LoginAttempt).where(
+        select(func.count())
+        .select_from(LoginAttempt)
+        .where(
             LoginAttempt.email_normalized == email_normalized,
             LoginAttempt.source_hash == source_hash,
             LoginAttempt.failed_at >= since,

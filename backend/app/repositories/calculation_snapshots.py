@@ -96,9 +96,7 @@ def list_snapshots_for_user(
 ) -> list[CalculationSnapshot]:
     return list(
         db_session.scalars(
-            _latest_snapshot_query()
-            .where(CalculationSnapshot.user_id == user_id)
-            .limit(limit),
+            _latest_snapshot_query().where(CalculationSnapshot.user_id == user_id).limit(limit),
         ),
     )
 
