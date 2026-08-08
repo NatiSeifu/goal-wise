@@ -6,6 +6,7 @@ from app.db.base import Base
 from app.db.session import make_engine, make_session_factory
 from app.db.types import utc_now
 from app.models import (
+    CalculationSnapshot,
     FinancialProfile,
     Goal,
     IncomeSource,
@@ -41,6 +42,7 @@ def test_metadata_registers_auth_tables() -> None:
     assert "financial_profiles" in Base.metadata.tables
     assert "income_sources" in Base.metadata.tables
     assert "planned_expenses" in Base.metadata.tables
+    assert "calculation_snapshots" in Base.metadata.tables
 
 
 def test_user_and_session_round_trip(session: Session) -> None:
@@ -251,3 +253,62 @@ def test_user_has_at_most_one_active_goal(session: Session) -> None:
 
     with pytest.raises(IntegrityError):
         session.commit()
+
+
+def test_calculation_snapshot_round_trip(session: Session) -> None:
+    user = User(
+        email_normalized="snapshot@example.com",
+        password_hash="argon2-hash-placeholder",
+        time_zone="America/Los_Angeles",
+    )
+    session.add(user)
+    session.flush()
+    goal = Goal(
+        user_id=user.id,
+        name="Emergency fund",
+        target_cents=300000,
+        initial_saved_cents=50000,
+        current_saved_cents=75000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
+        status="active",
+    )
+    session.add(goal)
+    session.flush()
+
+    calculated_at = utc_now()
+    snapshot = CalculationSnapshot(
+        user_id=user.id,
+        goal_id=goal.id,
+        formula_version="pace-v1",
+        trigger="goal_updated",
+        normalized_input_json={
+            "schema_version": "snapshot-input-v1",
+            "formula_version": "pace-v1",
+        },
+        result_json={
+            "schema_version": "snapshot-result-v1",
+            "formula_version": "pace-v1",
+        },
+        calculated_at=calculated_at,
+    )
+    session.add(snapshot)
+    session.commit()
+    session.refresh(snapshot)
+
+    assert UUID(snapshot.id).version == 4
+    assert snapshot.user_id == user.id
+    assert snapshot.goal_id == goal.id
+    assert snapshot.user == user
+    assert snapshot.goal == goal
+    assert snapshot.normalized_input_json["schema_version"] == "snapshot-input-v1"
+    assert snapshot.result_json["schema_version"] == "snapshot-result-v1"
+    assert snapshot.calculated_at.tzinfo is UTC
+    assert snapshot.created_at.tzinfo is UTC
+
+
+def test_calculation_snapshot_model_is_insert_only_shape() -> None:
+    column_names = set(CalculationSnapshot.__table__.columns.keys())
+
+    assert "created_at" in column_names
+    assert "updated_at" not in column_names
