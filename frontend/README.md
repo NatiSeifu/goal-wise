@@ -20,6 +20,15 @@ Run frontend checks:
 make frontend-check
 ```
 
+Configure the backend origin for local API calls with:
+
+```sh
+cp frontend/.env.example frontend/.env
+```
+
+`VITE_API_BASE_URL` should point at the FastAPI backend, such as
+`http://127.0.0.1:8000` for local development.
+
 The frontend may format backend-provided values for display, but it must not
 duplicate the backend `pace-v1` calculation formulas or official dashboard
 metric logic.
