@@ -61,6 +61,8 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+goalwise.db
+goalwise.db-journal
 
 # Flask stuff:
 instance/
@@ -220,3 +222,5 @@ __marimo__/
 .streamlit/secrets.toml
 
 ./agents
+.vscode/
+.codex/

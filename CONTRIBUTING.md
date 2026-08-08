@@ -28,6 +28,10 @@ docs/readme-guidelines
 - Do not merge your own PR.
 - Prefer a linear history. Rebase feature branches before merge.
 
+## Releases
+
+Use `main` as the release/demo-ready branch. Release workflow details are documented in [docs/release-process.md](docs/release-process.md).
+
 ## Commit Messages
 
 Use short, consistent commit descriptors:
@@ -69,6 +73,7 @@ Before opening a PR:
 - Run the relevant tests or explain why they were not run.
 - Check `git status --short` for accidental files.
 - Make sure generated caches, secrets, and local environment files are not committed.
+- For backend changes, use `make backend-format`, `make backend-lint`, `make backend-typecheck`, and `make backend-test` once the backend scaffold and dev dependencies are installed.
 
 ## CI and Testing
 
@@ -83,3 +88,5 @@ Expected CI gates once implementation begins:
 - Basic security checks for secrets and dependency risk.
 
 PRs should not rely on CI alone. The author is responsible for running the relevant local checks before review.
+
+Backend Python tooling is configured in `backend/pyproject.toml`.
