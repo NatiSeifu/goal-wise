@@ -28,6 +28,26 @@ The MVP architecture uses:
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the high-level system view and [DESIGN.md](DESIGN.md) for backend design details.
 
+## Backend Runtime
+
+Backend tooling uses `uv` with the project environment at `.venv`.
+
+Common backend commands:
+
+```text
+make backend-sync
+make backend-check
+make backend-db-up
+make backend-stack-up
+make backend-migrate
+make backend-migration-current
+```
+
+`make backend-migrate` applies Alembic migrations to the configured `DATABASE_URL`. Local development may use SQLite; deploy-readiness work should also verify migrations against PostgreSQL before hosted demo use.
+
+The local PostgreSQL Compose workflow is documented in [backend/README.md](backend/README.md).
+Backend CI runs on pull requests to `development` for backend-related changes.
+
 ## Documentation
 
 Key project documents:

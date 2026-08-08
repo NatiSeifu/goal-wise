@@ -75,8 +75,19 @@ Same-site deployment is preferred because it keeps cookies and CSRF simpler.
 
 - Use Railway PostgreSQL for hosted environments.
 - Use SQLite only for local development and automated tests.
+- Use local PostgreSQL through Docker Compose for deploy-readiness smoke checks.
 - SQLAlchemy models and Alembic migrations must stay PostgreSQL-compatible.
 - Run migrations against Railway PostgreSQL before demo use.
+
+Migration commands are exposed from the repo root:
+
+```text
+make backend-migrate
+make backend-migration-current
+make backend-migration-downgrade
+```
+
+These commands run Alembic through the backend `uv` environment and use the configured `DATABASE_URL`.
 
 ## Build and Runtime
 
@@ -97,6 +108,7 @@ Backend:
 - Hosted cookies must use `Secure=true`.
 - Session tokens must remain HTTP-only cookies.
 - CORS must allow only the deployed frontend origin.
+- CORS must allow credentials and the `X-CSRF-Token` request header.
 - CSRF remains required for authenticated unsafe methods.
 - Do not commit Railway secrets or local `.env` files.
 
@@ -111,4 +123,3 @@ Required checks:
 - Register, login, logout, and CSRF-protected unsafe request flow works in the hosted environment.
 - CORS rejects an unapproved origin.
 - Health endpoint is reachable during the demo window.
-

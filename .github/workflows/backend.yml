@@ -1,0 +1,72 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - development
+    paths:
+      - ".github/workflows/backend.yml"
+      - "Makefile"
+      - "backend/**"
+      - "docker-compose.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: goalwise
+          POSTGRES_PASSWORD: goalwise_dev_password
+          POSTGRES_DB: goalwise_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U goalwise -d goalwise_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Sync backend dependencies
+        run: cd backend && UV_PROJECT_ENVIRONMENT=../.venv uv sync --frozen --extra dev
+
+      - name: Run backend checks
+        run: make backend-check
+
+      - name: Run PostgreSQL migration smoke
+        env:
+          DATABASE_URL: postgresql+psycopg://goalwise:goalwise_dev_password@127.0.0.1:5432/goalwise_ci
+          ENVIRONMENT: test
+          SESSION_SECRET: test-session-secret
+          SECURE_COOKIES: "false"
+          COOKIE_SAMESITE: lax
+          ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
+        run: |
+          cd backend
+          UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen alembic upgrade head
+          UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen alembic current
+
+      - name: Build backend image
+        run: make backend-image-build

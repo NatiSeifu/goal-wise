@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: production
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    environment:
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql+psycopg://goalwise:goalwise_dev_password@postgres:5432/goalwise_dev
+      SESSION_SECRET: local-dev-session-secret-change-me
+      SECURE_COOKIES: "false"
+      COOKIE_SAMESITE: lax
+      ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: goalwise
+      POSTGRES_PASSWORD: goalwise_dev_password
+      POSTGRES_DB: goalwise_dev
+    volumes:
+      - goalwise_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goalwise -d goalwise_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  goalwise_postgres_data:
