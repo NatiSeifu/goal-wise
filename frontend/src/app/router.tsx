@@ -2,10 +2,10 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import { AppShell } from "../components/layout/AppShell.tsx";
 import { RequireAuth } from "../features/auth/RequireAuth.tsx";
-import { PlaceholderRoute } from "../routes/app/PlaceholderRoute.tsx";
 import { LoginRoute } from "../routes/auth/LoginRoute.tsx";
 import { CalculationRoute } from "../routes/calculation/CalculationRoute.tsx";
 import { DashboardRoute } from "../routes/dashboard/DashboardRoute.tsx";
+import { FinancialInputsRoute } from "../routes/financial-inputs/FinancialInputsRoute.tsx";
 import { GoalRoute } from "../routes/goal/GoalRoute.tsx";
 import { RegisterRoute } from "../routes/auth/RegisterRoute.tsx";
 import { LandingRoute } from "../routes/landing/LandingRoute.tsx";
@@ -41,12 +41,7 @@ export const router = createBrowserRouter([
       },
       {
         path: routes.financialInputs,
-        element: (
-          <PlaceholderRoute
-            title="Financial inputs"
-            description="This route will manage manual cash, reserve, income, and planned expense assumptions."
-          />
-        ),
+        element: <FinancialInputsRoute />,
       },
       {
         path: routes.calculation,
