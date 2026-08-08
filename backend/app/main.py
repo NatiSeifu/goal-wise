@@ -5,9 +5,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.api.errors import ApiError, error_response, validation_error_response
+from app.api.health import router as health_router
 from app.api.v1.router import api_router
 
 app = FastAPI(title="GoalWise API")
+app.include_router(health_router)
 app.include_router(api_router)
 
 
