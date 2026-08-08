@@ -82,6 +82,65 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md):
 - Do not merge your own PR.
 - Use consistent commit descriptors such as `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, and `chore:`.
 
+## Release Operations
+
+Follow [docs/release-process.md](docs/release-process.md) for release policy. Use this section for agent execution details.
+
+Use a separate worktree for release, tag, and GitHub Release operations so active implementation work in the base worktree is not disturbed.
+
+Recommended setup:
+
+```bash
+git fetch origin --tags
+git worktree add --detach /private/tmp/goal-wise-release-worktree origin/development
+```
+
+Before opening a release PR:
+
+- Verify the worktree points at latest `origin/development`.
+- Run `make backend-sync` if the worktree has a fresh virtual environment.
+- Run `make backend-check`.
+- Check for an existing `development -> main` PR.
+- Open the release PR from `development` to `main`.
+- Format the PR body using the release-candidate structure in `docs/release-process.md`.
+
+Before tagging:
+
+- Confirm the release PR is merged.
+- Fetch latest `main` and tags.
+- Confirm the intended tag does not already exist.
+- Tag the merged `main` commit, not `development` and not a feature branch.
+- Prefer annotated tags.
+
+Tag command pattern:
+
+```bash
+git fetch origin --tags
+git tag -a vX.Y.Z origin/main -m "vX.Y.Z - <milestone name>"
+git push origin vX.Y.Z
+```
+
+Before creating a GitHub Release:
+
+- Confirm the tag exists on the remote.
+- Confirm a GitHub Release does not already exist for that tag.
+- Use cleaned release notes from the merged release PR.
+- Do not include the "Release Candidate" instruction block in the final GitHub Release notes.
+
+GitHub Release command pattern:
+
+```bash
+gh release create vX.Y.Z \
+  --title "vX.Y.Z - <milestone name>" \
+  --notes "<release notes>"
+```
+
+After creating the release, verify:
+
+```bash
+gh release view vX.Y.Z --json tagName,name,url,isDraft,isPrerelease,targetCommitish
+```
+
 ## Verification
 
 Run relevant checks before finishing a change. If tests or checks are not available yet, state what was reviewed manually.
@@ -98,4 +157,3 @@ For implementation changes:
 - Prioritize pace-engine golden tests for calculation behavior.
 - Include cross-user access tests for protected resources.
 - Include auth/session/CSRF tests for authentication changes.
-
