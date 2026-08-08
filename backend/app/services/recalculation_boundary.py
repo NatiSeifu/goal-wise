@@ -6,6 +6,7 @@ from enum import StrEnum
 
 from sqlalchemy.orm import Session
 
+from app.models import FinancialProfile, Goal, IncomeSource, PlannedExpense
 from app.pace_engine.types import (
     FORMULA_VERSION,
     ExpenseClassification,
@@ -39,6 +40,10 @@ class RecalculationReadiness:
     status: RecalculationStatus
     missing_inputs: tuple[MissingInput, ...]
     pace_input: PaceInput | None
+    goal: Goal | None = None
+    financial_profile: FinancialProfile | None = None
+    income_sources: tuple[IncomeSource, ...] = ()
+    planned_expenses: tuple[PlannedExpense, ...] = ()
 
 
 def prepare_pace_input_for_user(
@@ -66,6 +71,9 @@ def prepare_pace_input_for_user(
             pace_input=None,
         )
 
+    source_records = tuple(list_active_income_sources(db_session, user_id=user_id))
+    expense_records = tuple(list_active_planned_expenses(db_session, user_id=user_id))
+
     income_sources = tuple(
         IncomeSourceInput(
             name=income_source.name,
@@ -75,7 +83,7 @@ def prepare_pace_input_for_user(
             confidence=IncomeConfidence(income_source.confidence),
             active=income_source.active,
         )
-        for income_source in list_active_income_sources(db_session, user_id=user_id)
+        for income_source in source_records
     )
     planned_expenses = tuple(
         PlannedExpenseInput(
@@ -86,7 +94,7 @@ def prepare_pace_input_for_user(
             classification=ExpenseClassification(planned_expense.classification),
             active=planned_expense.active,
         )
-        for planned_expense in list_active_planned_expenses(db_session, user_id=user_id)
+        for planned_expense in expense_records
     )
 
     return RecalculationReadiness(
@@ -107,4 +115,8 @@ def prepare_pace_input_for_user(
             income_sources=income_sources,
             planned_expenses=planned_expenses,
         ),
+        goal=goal,
+        financial_profile=profile,
+        income_sources=source_records,
+        planned_expenses=expense_records,
     )

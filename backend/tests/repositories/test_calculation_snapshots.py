@@ -106,11 +106,16 @@ def test_get_latest_snapshot_for_user_filters_by_owner_and_uses_deterministic_or
     )
     db_session.commit()
 
-    assert get_latest_snapshot_for_user(db_session, user_id=user.id) == third_same_time
+    expected_latest_same_time = max(
+        second_same_time,
+        third_same_time,
+        key=lambda snapshot: snapshot.id,
+    )
+    assert get_latest_snapshot_for_user(db_session, user_id=user.id) == expected_latest_same_time
     assert get_latest_snapshot_for_user(db_session, user_id=other_user.id).goal_id == other_goal.id
     assert list_snapshots_for_user(db_session, user_id=user.id, limit=10) == [
-        third_same_time,
-        second_same_time,
+        expected_latest_same_time,
+        min(second_same_time, third_same_time, key=lambda snapshot: snapshot.id),
         first,
     ]
 
