@@ -59,6 +59,18 @@ curl http://localhost:8000/health
 curl http://localhost:8000/ready
 ```
 
+## Browser Runtime Settings
+
+The backend allows credentialed browser requests from `ALLOWED_FRONTEND_ORIGIN`.
+For local React development, the default is:
+
+```text
+ALLOWED_FRONTEND_ORIGIN=http://localhost:5173
+```
+
+The frontend must call the API with credentials enabled so the HTTP-only session
+cookie is included. Unsafe authenticated requests must also send `X-CSRF-Token`.
+
 Stop the database:
 
 ```sh

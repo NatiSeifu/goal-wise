@@ -108,6 +108,7 @@ Backend:
 - Hosted cookies must use `Secure=true`.
 - Session tokens must remain HTTP-only cookies.
 - CORS must allow only the deployed frontend origin.
+- CORS must allow credentials and the `X-CSRF-Token` request header.
 - CSRF remains required for authenticated unsafe methods.
 - Do not commit Railway secrets or local `.env` files.
 
