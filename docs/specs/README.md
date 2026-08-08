@@ -17,6 +17,7 @@ Specs are serially numbered for stable references:
 0006-railway-deployment.md
 0007-srs-traceability-and-mvp-scope.md
 0008-project-structure.md
+0009-ui-mockup-and-screenshot-workflow.md
 ```
 
 Rules:
@@ -57,6 +58,7 @@ Related ADRs: ADR-0005, ADR-0008
 | [0006](0006-railway-deployment.md) | Railway Deployment | Accepted |
 | [0007](0007-srs-traceability-and-mvp-scope.md) | SRS Traceability and MVP Scope | Accepted |
 | [0008](0008-project-structure.md) | Project Structure | Accepted |
+| [0009](0009-ui-mockup-and-screenshot-workflow.md) | UI Mockup and Screenshot Workflow | Accepted |
 
 ## Initial Spec Candidates
 
