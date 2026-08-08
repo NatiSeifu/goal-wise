@@ -36,7 +36,9 @@ v1.0.0
 
 Before the full MVP is complete, prefer `v0.x.0` milestone releases. Reserve `v1.0.0` for the course/demo-ready MVP.
 
-## Release Notes
+## Release PR and Release Notes
+
+The `development -> main` PR should be written as a release candidate. After the PR merges, reuse the same structure for the GitHub Release notes.
 
 Release notes should be human-readable and based on:
 
@@ -45,18 +47,40 @@ Release notes should be human-readable and based on:
 - verification results;
 - known limitations or deferred scope.
 
-Recommended structure:
+Use this structure for release PRs and GitHub Releases:
 
 ```md
+## Release Candidate
+
+Recommended tag after merge:
+
+`vX.Y.Z`
+
+Suggested release title:
+
+`vX.Y.Z - <milestone name>`
+
 ## Summary
-- ...
+
+<One short paragraph explaining what stable milestone this release represents.>
+
+## Added
+
+- <Capability or workflow added>
+- <Capability or workflow added>
 
 ## Verification
-- ...
 
-## Notes
-- ...
+- `<command>`
+- `<result>`
+
+## Known Limitations
+
+- <Deferred or intentionally missing scope>
+- <Known caveat>
 ```
+
+Do not list every internal commit. Summarize user-visible or reviewer-relevant capabilities. Pre-`v1.0.0` releases may represent coherent implementation milestones, but they should not tag half-finished slices such as "model only" or "repository only" work.
 
 ## When to Add Release Branches
 
