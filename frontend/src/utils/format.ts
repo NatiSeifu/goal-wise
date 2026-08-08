@@ -20,6 +20,18 @@ export function formatCents(cents: number) {
   return currencyFormatter.format(cents / 100);
 }
 
+export function centsToDollarInput(cents: number) {
+  return (cents / 100).toFixed(2);
+}
+
+export function dollarInputToCents(value: string) {
+  const normalized = value.trim();
+  if (normalized === "") {
+    return 0;
+  }
+  return Math.round(Number(normalized) * 100);
+}
+
 export function formatDate(date: IsoDate) {
   return dateFormatter.format(new Date(`${date}T00:00:00Z`));
 }

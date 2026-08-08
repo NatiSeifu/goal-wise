@@ -6,6 +6,7 @@ import { PlaceholderRoute } from "../routes/app/PlaceholderRoute.tsx";
 import { LoginRoute } from "../routes/auth/LoginRoute.tsx";
 import { CalculationRoute } from "../routes/calculation/CalculationRoute.tsx";
 import { DashboardRoute } from "../routes/dashboard/DashboardRoute.tsx";
+import { GoalRoute } from "../routes/goal/GoalRoute.tsx";
 import { RegisterRoute } from "../routes/auth/RegisterRoute.tsx";
 import { LandingRoute } from "../routes/landing/LandingRoute.tsx";
 import { routes } from "./routes.ts";
@@ -36,12 +37,7 @@ export const router = createBrowserRouter([
       },
       {
         path: routes.goal,
-        element: (
-          <PlaceholderRoute
-            title="Goal setup"
-            description="This route will manage the one active savings goal supported by the MVP."
-          />
-        ),
+        element: <GoalRoute />,
       },
       {
         path: routes.financialInputs,
