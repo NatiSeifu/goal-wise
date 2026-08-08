@@ -12,6 +12,10 @@ from app.db.base import Base
 from app.db.types import UUID_STRING_LENGTH, UTCDateTime, new_uuid_str, utc_now
 
 if TYPE_CHECKING:
+    from app.models.financial_profile import FinancialProfile
+    from app.models.goal import Goal
+    from app.models.income_source import IncomeSource
+    from app.models.planned_expense import PlannedExpense
     from app.models.session import UserSession
 
 
@@ -44,6 +48,22 @@ class User(Base):
     )
 
     sessions: Mapped[list[UserSession]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    goals: Mapped[list[Goal]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    financial_profile: Mapped[FinancialProfile | None] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    income_sources: Mapped[list[IncomeSource]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    planned_expenses: Mapped[list[PlannedExpense]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

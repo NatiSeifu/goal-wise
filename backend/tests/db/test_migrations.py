@@ -20,9 +20,13 @@ def test_initial_migration_runs_against_sqlite(tmp_path: Path) -> None:
 
     assert set(inspector.get_table_names()) >= {
         "alembic_version",
+        "financial_profiles",
+        "goals",
+        "income_sources",
         "login_attempts",
-        "users",
+        "planned_expenses",
         "sessions",
+        "users",
     }
     assert _column_names(inspector.get_columns("users")) >= {
         "id",
@@ -48,6 +52,54 @@ def test_initial_migration_runs_against_sqlite(tmp_path: Path) -> None:
         "source_hash",
         "failed_at",
     }
+    assert _column_names(inspector.get_columns("goals")) >= {
+        "id",
+        "user_id",
+        "name",
+        "target_cents",
+        "initial_saved_cents",
+        "current_saved_cents",
+        "start_date",
+        "target_date",
+        "status",
+        "archived_at",
+        "created_at",
+        "updated_at",
+    }
+    assert _column_names(inspector.get_columns("financial_profiles")) >= {
+        "id",
+        "user_id",
+        "starting_cash_cents",
+        "balance_as_of_date",
+        "reserve_buffer_cents",
+        "reserve_buffer_confirmed",
+        "created_at",
+        "updated_at",
+    }
+    assert _column_names(inspector.get_columns("income_sources")) >= {
+        "id",
+        "user_id",
+        "name",
+        "amount_cents",
+        "next_date",
+        "frequency",
+        "confidence",
+        "active",
+        "created_at",
+        "updated_at",
+    }
+    assert _column_names(inspector.get_columns("planned_expenses")) >= {
+        "id",
+        "user_id",
+        "name",
+        "amount_cents",
+        "next_date",
+        "frequency",
+        "classification",
+        "active",
+        "created_at",
+        "updated_at",
+    }
 
 
 def test_initial_migration_can_downgrade_sqlite(tmp_path: Path) -> None:
@@ -67,6 +119,10 @@ def test_initial_migration_can_downgrade_sqlite(tmp_path: Path) -> None:
     assert "users" not in inspector.get_table_names()
     assert "sessions" not in inspector.get_table_names()
     assert "login_attempts" not in inspector.get_table_names()
+    assert "goals" not in inspector.get_table_names()
+    assert "financial_profiles" not in inspector.get_table_names()
+    assert "income_sources" not in inspector.get_table_names()
+    assert "planned_expenses" not in inspector.get_table_names()
 
 
 def _column_names(columns: list[dict[str, object]]) -> set[str]:
