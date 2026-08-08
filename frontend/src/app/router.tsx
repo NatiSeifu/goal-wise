@@ -4,6 +4,8 @@ import { AppShell } from "../components/layout/AppShell.tsx";
 import { RequireAuth } from "../features/auth/RequireAuth.tsx";
 import { PlaceholderRoute } from "../routes/app/PlaceholderRoute.tsx";
 import { LoginRoute } from "../routes/auth/LoginRoute.tsx";
+import { CalculationRoute } from "../routes/calculation/CalculationRoute.tsx";
+import { DashboardRoute } from "../routes/dashboard/DashboardRoute.tsx";
 import { RegisterRoute } from "../routes/auth/RegisterRoute.tsx";
 import { LandingRoute } from "../routes/landing/LandingRoute.tsx";
 import { routes } from "./routes.ts";
@@ -30,12 +32,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: routes.dashboard,
-        element: (
-          <PlaceholderRoute
-            title="Dashboard"
-            description="This route will render backend-owned safe-to-spend, pace status, shortfall, and snapshot data."
-          />
-        ),
+        element: <DashboardRoute />,
       },
       {
         path: routes.goal,
@@ -57,12 +54,7 @@ export const router = createBrowserRouter([
       },
       {
         path: routes.calculation,
-        element: (
-          <PlaceholderRoute
-            title="Calculation details"
-            description="This route will explain the latest deterministic pace-v1 result and immutable snapshot."
-          />
-        ),
+        element: <CalculationRoute />,
       },
     ],
   },
