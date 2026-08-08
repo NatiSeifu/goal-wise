@@ -75,6 +75,7 @@ Same-site deployment is preferred because it keeps cookies and CSRF simpler.
 
 - Use Railway PostgreSQL for hosted environments.
 - Use SQLite only for local development and automated tests.
+- Use local PostgreSQL through Docker Compose for deploy-readiness smoke checks.
 - SQLAlchemy models and Alembic migrations must stay PostgreSQL-compatible.
 - Run migrations against Railway PostgreSQL before demo use.
 

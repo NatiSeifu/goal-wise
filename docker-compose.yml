@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: goalwise
+      POSTGRES_PASSWORD: goalwise_dev_password
+      POSTGRES_DB: goalwise_dev
+    volumes:
+      - goalwise_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goalwise -d goalwise_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  goalwise_postgres_data:

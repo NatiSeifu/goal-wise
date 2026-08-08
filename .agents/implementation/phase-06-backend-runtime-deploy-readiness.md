@@ -99,19 +99,19 @@ Success criteria:
 - commands work from the repo root;
 - existing SQLite migration tests continue to pass.
 
-## Slice 3 - Docker Compose Local Backend Stack
+## Slice 3 - Docker Compose Local PostgreSQL Stack
 
 Build:
 
-- `docker-compose.yml` or equivalent compose file for backend + PostgreSQL;
+- `docker-compose.yml` or equivalent compose file for local PostgreSQL;
 - persistent named volume for Postgres data;
 - health check for Postgres;
-- backend service env configured to use the compose Postgres host;
+- backend env example configured to use the compose Postgres host from the developer machine;
 - `.env.example` updates if needed.
 
 Success criteria:
 
-- `docker compose up` starts PostgreSQL and the backend;
+- `docker compose up` starts PostgreSQL;
 - backend can connect to PostgreSQL through `DATABASE_URL`;
 - migrations can run against the compose database;
 - host ports are documented;
