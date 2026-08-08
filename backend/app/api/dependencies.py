@@ -23,6 +23,13 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 CsrfHeaderDep = Annotated[str | None, Header(alias="X-CSRF-Token")]
 
 
+def utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
+NowDep = Annotated[datetime, Depends(utc_now)]
+
+
 def require_current_session(
     request: Request,
     db_session: DbSessionDep,

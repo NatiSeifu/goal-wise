@@ -6,8 +6,9 @@ from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db_session, make_engine, make_session_factory
 from app.main import app
+from app.models import CalculationSnapshot
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
+from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 TEST_SESSION_SECRET = "test-session-secret"
@@ -77,6 +78,22 @@ def test_create_and_get_active_goal(client: TestClient) -> None:
     assert create_response.json()["item"]["status"] == "active"
     assert get_response.status_code == 200
     assert get_response.json()["item"]["id"] == create_response.json()["item"]["id"]
+
+
+def test_create_goal_without_profile_does_not_create_snapshot(
+    client: TestClient,
+    engine: Engine,
+) -> None:
+    csrf_token = _register(client)
+
+    response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 201
+    assert _snapshot_count(engine) == 0
 
 
 def test_create_goal_validation_errors_use_field_envelope(client: TestClient) -> None:
@@ -161,3 +178,8 @@ def _goal_payload() -> dict[str, object]:
         "start_date": "2026-08-01",
         "target_date": "2026-12-31",
     }
+
+
+def _snapshot_count(engine: Engine) -> int:
+    with Session(engine) as db_session:
+        return len(list(db_session.scalars(select(CalculationSnapshot))))

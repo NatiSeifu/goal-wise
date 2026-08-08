@@ -6,8 +6,9 @@ from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db_session, make_engine, make_session_factory
 from app.main import app
+from app.models import CalculationSnapshot
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
+from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 TEST_SESSION_SECRET = "test-session-secret"
@@ -76,6 +77,53 @@ def test_financial_profile_put_creates_and_replaces(client: TestClient) -> None:
     assert replace_response.json()["item"]["starting_cash_cents"] == 125000
 
 
+def test_financial_profile_put_creates_snapshot_when_goal_exists(
+    client: TestClient,
+    engine: Engine,
+) -> None:
+    csrf_token = _register(client)
+    goal_response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert goal_response.status_code == 201
+
+    profile_response = client.put(
+        "/api/v1/financial-profile",
+        json=_profile_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    snapshots = _snapshots(engine)
+    assert profile_response.status_code == 200
+    assert len(snapshots) == 1
+    assert snapshots[0].trigger == "financial_profile_updated"
+    assert snapshots[0].normalized_input_json["goal"]["name"] == "Emergency fund"
+
+
+def test_unconfirmed_reserve_buffer_does_not_create_snapshot(
+    client: TestClient,
+    engine: Engine,
+) -> None:
+    csrf_token = _register(client)
+    goal_response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert goal_response.status_code == 201
+
+    profile_response = client.put(
+        "/api/v1/financial-profile",
+        json={**_profile_payload(), "reserve_buffer_confirmed": False},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert profile_response.status_code == 200
+    assert _snapshots(engine) == []
+
+
 def test_income_source_crud_uses_active_list_and_soft_delete(client: TestClient) -> None:
     csrf_token = _register(client)
 
@@ -103,6 +151,26 @@ def test_income_source_crud_uses_active_list_and_soft_delete(client: TestClient)
     assert patch_response.json()["item"]["confidence"] == "unconfirmed"
     assert delete_response.status_code == 204
     assert list_after_delete.json() == {"items": []}
+
+
+def test_income_source_write_creates_snapshot_when_inputs_complete(
+    client: TestClient,
+    engine: Engine,
+) -> None:
+    csrf_token = _complete_required_setup(client)
+
+    create_response = client.post(
+        "/api/v1/income-sources",
+        json=_income_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    snapshots = _snapshots(engine)
+    assert create_response.status_code == 201
+    assert [snapshot.trigger for snapshot in snapshots] == [
+        "income_source_created",
+        "financial_profile_updated",
+    ]
 
 
 def test_income_source_validation_errors_use_field_envelope(client: TestClient) -> None:
@@ -150,6 +218,32 @@ def test_planned_expense_crud_uses_active_list_and_soft_delete(client: TestClien
     assert list_after_delete.json() == {"items": []}
 
 
+def test_planned_expense_delete_creates_snapshot_when_inputs_complete(
+    client: TestClient,
+    engine: Engine,
+) -> None:
+    csrf_token = _complete_required_setup(client)
+    create_response = client.post(
+        "/api/v1/planned-expenses",
+        json=_expense_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    expense_id = create_response.json()["item"]["id"]
+
+    delete_response = client.delete(
+        f"/api/v1/planned-expenses/{expense_id}",
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    snapshots = _snapshots(engine)
+    assert delete_response.status_code == 204
+    assert [snapshot.trigger for snapshot in snapshots] == [
+        "planned_expense_deactivated",
+        "planned_expense_created",
+        "financial_profile_updated",
+    ]
+
+
 def test_planned_expense_cross_user_delete_returns_404(client: TestClient) -> None:
     owner_csrf = _register(client, email="owner@example.com")
     create_response = client.post(
@@ -194,6 +288,34 @@ def _profile_payload() -> dict[str, object]:
     }
 
 
+def _goal_payload() -> dict[str, object]:
+    return {
+        "name": "Emergency fund",
+        "target_cents": 300000,
+        "initial_saved_cents": 50000,
+        "current_saved_cents": 75000,
+        "start_date": "2026-08-01",
+        "target_date": "2026-12-31",
+    }
+
+
+def _complete_required_setup(client: TestClient) -> str:
+    csrf_token = _register(client)
+    goal_response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert goal_response.status_code == 201
+    profile_response = client.put(
+        "/api/v1/financial-profile",
+        json=_profile_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert profile_response.status_code == 200
+    return csrf_token
+
+
 def _income_payload() -> dict[str, object]:
     return {
         "name": "Campus job",
@@ -212,3 +334,15 @@ def _expense_payload() -> dict[str, object]:
         "frequency": "monthly",
         "classification": "essential",
     }
+
+
+def _snapshots(engine: Engine) -> list[CalculationSnapshot]:
+    with Session(engine) as db_session:
+        return list(
+            db_session.scalars(
+                select(CalculationSnapshot).order_by(
+                    CalculationSnapshot.calculated_at.desc(),
+                    CalculationSnapshot.id.desc(),
+                ),
+            ),
+        )

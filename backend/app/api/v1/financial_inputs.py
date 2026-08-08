@@ -1,10 +1,10 @@
 """Financial input API routes."""
 
-from datetime import UTC, datetime
+from datetime import datetime
 
 from fastapi import APIRouter, Response
 
-from app.api.dependencies import CsrfSessionDep, CurrentSessionDep, DbSessionDep
+from app.api.dependencies import CsrfSessionDep, CurrentSessionDep, DbSessionDep, NowDep
 from app.api.errors import error_response, validation_error_response
 from app.models import FinancialProfile, IncomeSource, PlannedExpense
 from app.schemas.financial_inputs import (
@@ -34,6 +34,7 @@ from app.services.financial_inputs import (
     update_planned_expense_for_user,
     upsert_financial_profile_for_user,
 )
+from app.services.snapshot_calculation import calculate_and_snapshot_for_user
 
 profile_router = APIRouter(prefix="/financial-profile", tags=["financial-profile"])
 income_router = APIRouter(prefix="/income-sources", tags=["income-sources"])
@@ -57,6 +58,7 @@ def put_financial_profile(
     payload: FinancialProfileRequest,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> FinancialProfileItemResponse | Response:
     try:
         profile = upsert_financial_profile_for_user(
@@ -67,7 +69,14 @@ def put_financial_profile(
             reserve_buffer_cents=payload.reserve_buffer_cents,
             reserve_buffer_confirmed=payload.reserve_buffer_confirmed,
             user_time_zone=current_session.user.time_zone,
-            now=_utc_now(),
+            now=now,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="financial_profile_updated",
+            calculated_at=now,
         )
     except FinancialInputValidationError as exc:
         db_session.rollback()
@@ -96,6 +105,7 @@ def create_income_source(
     payload: IncomeSourceRequest,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> IncomeSourceItemResponse | Response:
     try:
         income_source = create_income_source_for_user(
@@ -106,6 +116,13 @@ def create_income_source(
             next_date=payload.next_date,
             frequency=payload.frequency,
             confidence=payload.confidence,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="income_source_created",
+            calculated_at=now,
         )
     except FinancialInputValidationError as exc:
         db_session.rollback()
@@ -121,6 +138,7 @@ def update_income_source(
     payload: IncomeSourceRequest,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> IncomeSourceItemResponse | Response:
     try:
         income_source = update_income_source_for_user(
@@ -132,6 +150,13 @@ def update_income_source(
             next_date=payload.next_date,
             frequency=payload.frequency,
             confidence=payload.confidence,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="income_source_updated",
+            calculated_at=now,
         )
     except FinancialInputNotFoundError:
         db_session.rollback()
@@ -149,12 +174,20 @@ def delete_income_source(
     income_source_id: str,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> Response:
     try:
         deactivate_income_source_for_user(
             db_session,
             user_id=current_session.user.id,
             income_source_id=income_source_id,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="income_source_deactivated",
+            calculated_at=now,
         )
     except FinancialInputNotFoundError:
         db_session.rollback()
@@ -186,6 +219,7 @@ def create_planned_expense(
     payload: PlannedExpenseRequest,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> PlannedExpenseItemResponse | Response:
     try:
         planned_expense = create_planned_expense_for_user(
@@ -196,6 +230,13 @@ def create_planned_expense(
             next_date=payload.next_date,
             frequency=payload.frequency,
             classification=payload.classification,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="planned_expense_created",
+            calculated_at=now,
         )
     except FinancialInputValidationError as exc:
         db_session.rollback()
@@ -211,6 +252,7 @@ def update_planned_expense(
     payload: PlannedExpenseRequest,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> PlannedExpenseItemResponse | Response:
     try:
         planned_expense = update_planned_expense_for_user(
@@ -222,6 +264,13 @@ def update_planned_expense(
             next_date=payload.next_date,
             frequency=payload.frequency,
             classification=payload.classification,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="planned_expense_updated",
+            calculated_at=now,
         )
     except FinancialInputNotFoundError:
         db_session.rollback()
@@ -239,12 +288,20 @@ def delete_planned_expense(
     planned_expense_id: str,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> Response:
     try:
         deactivate_planned_expense_for_user(
             db_session,
             user_id=current_session.user.id,
             planned_expense_id=planned_expense_id,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="planned_expense_deactivated",
+            calculated_at=now,
         )
     except FinancialInputNotFoundError:
         db_session.rollback()
@@ -278,5 +335,18 @@ def _planned_expense_response(planned_expense: PlannedExpense) -> PlannedExpense
     return PlannedExpenseResponse.model_validate(planned_expense)
 
 
-def _utc_now() -> datetime:
-    return datetime.now(UTC)
+def _snapshot_after_write(
+    db_session: DbSessionDep,
+    *,
+    user_id: str,
+    user_time_zone: str,
+    trigger: str,
+    calculated_at: datetime,
+) -> None:
+    calculate_and_snapshot_for_user(
+        db_session,
+        user_id=user_id,
+        user_time_zone=user_time_zone,
+        trigger=trigger,
+        calculated_at=calculated_at,
+    )

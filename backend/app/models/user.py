@@ -12,6 +12,7 @@ from app.db.base import Base
 from app.db.types import UUID_STRING_LENGTH, UTCDateTime, new_uuid_str, utc_now
 
 if TYPE_CHECKING:
+    from app.models.calculation_snapshot import CalculationSnapshot
     from app.models.financial_profile import FinancialProfile
     from app.models.goal import Goal
     from app.models.income_source import IncomeSource
@@ -64,6 +65,10 @@ class User(Base):
         cascade="all, delete-orphan",
     )
     planned_expenses: Mapped[list[PlannedExpense]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    calculation_snapshots: Mapped[list[CalculationSnapshot]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

@@ -1,10 +1,10 @@
 """Goal input API routes."""
 
-from datetime import UTC, datetime
+from datetime import datetime
 
 from fastapi import APIRouter, Response
 
-from app.api.dependencies import CsrfSessionDep, CurrentSessionDep, DbSessionDep
+from app.api.dependencies import CsrfSessionDep, CurrentSessionDep, DbSessionDep, NowDep
 from app.api.errors import error_response, validation_error_response
 from app.models import Goal
 from app.schemas.goal_inputs import GoalItemResponse, GoalRequest, GoalResponse
@@ -15,6 +15,7 @@ from app.services.goal_inputs import (
     get_active_goal_for_user,
     update_goal_for_user,
 )
+from app.services.snapshot_calculation import calculate_and_snapshot_for_user
 
 router = APIRouter(prefix="/goals", tags=["goals"])
 
@@ -36,6 +37,7 @@ def create_goal(
     payload: GoalRequest,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> GoalItemResponse | Response:
     try:
         goal = create_goal_for_user(
@@ -48,7 +50,14 @@ def create_goal(
             start_date=payload.start_date,
             target_date=payload.target_date,
             user_time_zone=current_session.user.time_zone,
-            now=_utc_now(),
+            now=now,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="goal_created",
+            calculated_at=now,
         )
     except GoalInputValidationError as exc:
         db_session.rollback()
@@ -64,6 +73,7 @@ def update_goal(
     payload: GoalRequest,
     current_session: CsrfSessionDep,
     db_session: DbSessionDep,
+    now: NowDep,
 ) -> GoalItemResponse | Response:
     try:
         goal = update_goal_for_user(
@@ -77,7 +87,14 @@ def update_goal(
             start_date=payload.start_date,
             target_date=payload.target_date,
             user_time_zone=current_session.user.time_zone,
-            now=_utc_now(),
+            now=now,
+        )
+        _snapshot_after_write(
+            db_session,
+            user_id=current_session.user.id,
+            user_time_zone=current_session.user.time_zone,
+            trigger="goal_updated",
+            calculated_at=now,
         )
     except GoalNotFoundError:
         db_session.rollback()
@@ -100,5 +117,18 @@ def _goal_response(goal: Goal | None) -> GoalResponse | None:
     return GoalResponse.model_validate(goal)
 
 
-def _utc_now() -> datetime:
-    return datetime.now(UTC)
+def _snapshot_after_write(
+    db_session: DbSessionDep,
+    *,
+    user_id: str,
+    user_time_zone: str,
+    trigger: str,
+    calculated_at: datetime,
+) -> None:
+    calculate_and_snapshot_for_user(
+        db_session,
+        user_id=user_id,
+        user_time_zone=user_time_zone,
+        trigger=trigger,
+        calculated_at=calculated_at,
+    )
