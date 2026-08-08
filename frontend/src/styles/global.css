@@ -1,0 +1,144 @@
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--gw-color-canvas);
+}
+
+body {
+  margin: 0;
+  color: var(--gw-color-ink);
+}
+
+a {
+  color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--gw-focus-ring);
+}
+
+.page-shell {
+  display: grid;
+  min-height: 100vh;
+  align-content: center;
+  gap: var(--gw-space-8);
+  padding: clamp(1.5rem, 4vw, 4rem);
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gw-space-3);
+  width: fit-content;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.brand-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  color: var(--gw-color-green);
+  background: var(--gw-color-green-soft);
+  border-radius: var(--gw-radius-md);
+}
+
+.intro-panel {
+  max-width: 52rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background: var(--gw-color-panel);
+  border-radius: var(--gw-radius-lg);
+  box-shadow: var(--gw-shadow-panel);
+}
+
+.intro-panel h1 {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(2.75rem, 8vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.intro-copy {
+  max-width: 68ch;
+  margin: var(--gw-space-6) 0 0;
+  color: var(--gw-color-muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gw-space-3);
+  margin-top: var(--gw-space-8);
+}
+
+.button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--gw-space-4);
+  border-radius: var(--gw-radius-md);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.button.primary {
+  color: #ffffff;
+  background: var(--gw-color-green);
+}
+
+.button.secondary {
+  color: var(--gw-color-ink);
+  background: var(--gw-color-green-soft);
+}
+
+.detail-grid {
+  display: grid;
+  max-width: 52rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gw-space-4);
+}
+
+.detail-panel {
+  padding: var(--gw-space-6);
+  background: var(--gw-color-panel);
+  border-radius: var(--gw-radius-lg);
+  box-shadow: 0 12px 34px rgba(32, 45, 67, 0.08);
+}
+
+.detail-panel h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.detail-panel p {
+  margin: var(--gw-space-3) 0 0;
+  color: var(--gw-color-muted);
+  line-height: 1.55;
+}
+
+@media (max-width: 560px) {
+  .intro-panel h1 {
+    max-width: 11ch;
+    font-size: 2.8rem;
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
