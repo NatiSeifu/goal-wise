@@ -28,6 +28,10 @@ docs/readme-guidelines
 - Do not merge your own PR.
 - Prefer a linear history. Rebase feature branches before merge.
 
+## Releases
+
+Use `main` as the release/demo-ready branch. Release workflow details are documented in [docs/release-process.md](docs/release-process.md).
+
 ## Commit Messages
 
 Use short, consistent commit descriptors:
