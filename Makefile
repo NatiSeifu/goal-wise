@@ -1,8 +1,9 @@
-.PHONY: backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs check
+.PHONY: backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs backend-image-build backend-image-run check
 
 UV ?= uv
 BACKEND_PROJECT ?= backend
 BACKEND_UV_ENV ?= ../.venv
+BACKEND_IMAGE ?= goalwise-backend:local
 
 backend-sync:
 	cd $(BACKEND_PROJECT) && UV_PROJECT_ENVIRONMENT=$(BACKEND_UV_ENV) $(UV) sync --extra dev
@@ -38,5 +39,11 @@ backend-db-down:
 
 backend-db-logs:
 	docker compose logs -f postgres
+
+backend-image-build:
+	docker build --target production -t $(BACKEND_IMAGE) $(BACKEND_PROJECT)
+
+backend-image-run:
+	docker run --rm -p 8000:8000 $(BACKEND_IMAGE)
 
 check: backend-check
