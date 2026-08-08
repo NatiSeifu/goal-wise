@@ -1,11 +1,19 @@
-from datetime import UTC, timedelta
+from datetime import UTC, date, timedelta
 from uuid import UUID
 
 import pytest
 from app.db.base import Base
 from app.db.session import make_engine, make_session_factory
 from app.db.types import utc_now
-from app.models import LoginAttempt, User, UserSession
+from app.models import (
+    FinancialProfile,
+    Goal,
+    IncomeSource,
+    LoginAttempt,
+    PlannedExpense,
+    User,
+    UserSession,
+)
 from sqlalchemy import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -29,6 +37,10 @@ def test_metadata_registers_auth_tables() -> None:
     assert "users" in Base.metadata.tables
     assert "sessions" in Base.metadata.tables
     assert "login_attempts" in Base.metadata.tables
+    assert "goals" in Base.metadata.tables
+    assert "financial_profiles" in Base.metadata.tables
+    assert "income_sources" in Base.metadata.tables
+    assert "planned_expenses" in Base.metadata.tables
 
 
 def test_user_and_session_round_trip(session: Session) -> None:
@@ -134,3 +146,108 @@ def test_login_attempt_round_trip(session: Session) -> None:
 
     assert login_attempt.id
     assert login_attempt.source_hash == "source-hash"
+
+
+def test_goal_and_financial_inputs_round_trip(session: Session) -> None:
+    user = User(
+        email_normalized="planner@example.com",
+        password_hash="argon2-hash-placeholder",
+        time_zone="America/Los_Angeles",
+    )
+    session.add(user)
+    session.flush()
+
+    goal = Goal(
+        user_id=user.id,
+        name="Emergency fund",
+        target_cents=300000,
+        initial_saved_cents=50000,
+        current_saved_cents=75000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
+        status="active",
+    )
+    profile = FinancialProfile(
+        user_id=user.id,
+        starting_cash_cents=120000,
+        balance_as_of_date=date(2026, 8, 1),
+        reserve_buffer_cents=5000,
+        reserve_buffer_confirmed=True,
+    )
+    income = IncomeSource(
+        user_id=user.id,
+        name="Campus job",
+        amount_cents=45000,
+        next_date=date(2026, 8, 7),
+        frequency="weekly",
+        confidence="confirmed",
+        active=True,
+    )
+    expense = PlannedExpense(
+        user_id=user.id,
+        name="Rent",
+        amount_cents=90000,
+        next_date=date(2026, 9, 1),
+        frequency="monthly",
+        classification="essential",
+        active=True,
+    )
+
+    session.add_all([goal, profile, income, expense])
+    session.commit()
+
+    session.refresh(goal)
+    session.refresh(profile)
+    session.refresh(income)
+    session.refresh(expense)
+
+    assert UUID(goal.id).version == 4
+    assert UUID(profile.id).version == 4
+    assert UUID(income.id).version == 4
+    assert UUID(expense.id).version == 4
+    assert goal.user_id == user.id
+    assert profile.user_id == user.id
+    assert income.user_id == user.id
+    assert expense.user_id == user.id
+    assert goal.created_at.tzinfo is UTC
+    assert profile.updated_at.tzinfo is UTC
+
+
+def test_user_has_at_most_one_active_goal(session: Session) -> None:
+    user = User(
+        email_normalized="active-goal@example.com",
+        password_hash="argon2-hash-placeholder",
+        time_zone="America/Los_Angeles",
+    )
+    session.add(user)
+    session.flush()
+
+    session.add(
+        Goal(
+            user_id=user.id,
+            name="First active goal",
+            target_cents=100000,
+            initial_saved_cents=0,
+            current_saved_cents=0,
+            start_date=date(2026, 8, 1),
+            target_date=date(2026, 12, 31),
+            status="active",
+        )
+    )
+    session.commit()
+
+    session.add(
+        Goal(
+            user_id=user.id,
+            name="Second active goal",
+            target_cents=200000,
+            initial_saved_cents=0,
+            current_saved_cents=0,
+            start_date=date(2026, 8, 1),
+            target_date=date(2027, 1, 31),
+            status="active",
+        )
+    )
+
+    with pytest.raises(IntegrityError):
+        session.commit()
