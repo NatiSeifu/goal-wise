@@ -398,26 +398,32 @@ button:focus-visible {
   max-width: 72rem;
 }
 
-.dashboard-header {
+.page-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--gw-space-4);
 }
 
-.dashboard-header h1 {
+.page-header h1 {
   margin: 0;
   font-size: clamp(2.25rem, 5vw, 4.25rem);
   line-height: 0.98;
   letter-spacing: -0.03em;
 }
 
-.dashboard-header p {
+.page-header p {
   max-width: 64ch;
   margin: var(--gw-space-3) 0 0;
   color: var(--gw-color-muted);
   font-size: 1.05rem;
   line-height: 1.55;
+}
+
+.page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gw-space-3);
 }
 
 .metric-hero {
@@ -472,31 +478,59 @@ button:focus-visible {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.dashboard-panel,
-.state-panel {
+.panel {
   padding: var(--gw-space-6);
   background: var(--gw-color-panel);
   border-radius: var(--gw-radius-lg);
-  box-shadow: 0 12px 34px rgba(32, 45, 67, 0.08);
+  box-shadow: var(--gw-shadow-raised);
 }
 
-.dashboard-panel h2,
-.state-panel h2 {
+.panel h2 {
   margin: 0;
   font-size: 1.2rem;
 }
 
-.state-panel {
+.alert,
+.empty-state {
   display: grid;
-  gap: var(--gw-space-4);
+  gap: var(--gw-space-3);
   max-width: 48rem;
+  padding: var(--gw-space-6);
+  border-radius: var(--gw-radius-lg);
+  box-shadow: var(--gw-shadow-raised);
 }
 
-.state-panel.error h2 {
+.alert h2,
+.empty-state h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.alert p,
+.empty-state p {
+  margin: 0;
+  color: var(--gw-color-muted);
+  line-height: 1.55;
+}
+
+.alert.error {
   color: var(--gw-color-danger);
+  background: var(--gw-color-danger-soft);
 }
 
-.state-panel p,
+.alert.success {
+  color: var(--gw-color-green);
+  background: var(--gw-color-green-soft);
+}
+
+.empty-state {
+  background: var(--gw-color-panel);
+}
+
+.empty-state-action {
+  margin-top: var(--gw-space-2);
+}
+
 .panel-copy {
   margin: var(--gw-space-3) 0 0;
   color: var(--gw-color-muted);
@@ -640,7 +674,7 @@ button:focus-visible {
   padding: var(--gw-space-6);
   background: var(--gw-color-panel);
   border-radius: var(--gw-radius-lg);
-  box-shadow: 0 12px 34px rgba(32, 45, 67, 0.08);
+  box-shadow: var(--gw-shadow-raised);
 }
 
 .form-grid {
@@ -778,7 +812,7 @@ button:focus-visible {
     margin-top: 0;
   }
 
-  .dashboard-header,
+  .page-header,
   .metric-hero {
     flex-direction: column;
   }

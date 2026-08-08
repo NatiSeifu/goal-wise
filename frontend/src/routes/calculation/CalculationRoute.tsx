@@ -1,8 +1,11 @@
-import { Link } from "react-router-dom";
-
 import type { JsonValue } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
+import { Alert } from "../../components/feedback/Alert.tsx";
+import { EmptyState } from "../../components/feedback/EmptyState.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
+import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { ButtonLink } from "../../components/ui/Button.tsx";
+import { Panel } from "../../components/ui/Panel.tsx";
 import { useLatestCalculationSnapshot } from "../../features/snapshots/useLatestCalculationSnapshot.ts";
 import { formatDateTime } from "../../utils/format.ts";
 
@@ -17,10 +20,9 @@ export function CalculationRoute() {
     return (
       <section className="dashboard-page" aria-labelledby="calculation-title">
         <CalculationHeader />
-        <div className="state-panel error">
-          <h2>Calculation unavailable</h2>
+        <Alert title="Calculation unavailable" variant="error">
           <p>{snapshot.error}</p>
-        </div>
+        </Alert>
       </section>
     );
   }
@@ -29,13 +31,15 @@ export function CalculationRoute() {
     return (
       <section className="dashboard-page" aria-labelledby="calculation-title">
         <CalculationHeader />
-        <div className="state-panel">
-          <h2>No snapshot yet</h2>
-          <p>Save a valid goal and financial assumptions before viewing calculation details.</p>
-          <Link className="button primary" to={routes.financialInputs}>
-            Open financial inputs
-          </Link>
-        </div>
+        <EmptyState
+          title="No snapshot yet"
+          description="Save a valid goal and financial assumptions before viewing calculation details."
+          action={
+            <ButtonLink variant="primary" to={routes.financialInputs}>
+              Open financial inputs
+            </ButtonLink>
+          }
+        />
       </section>
     );
   }
@@ -48,8 +52,7 @@ export function CalculationRoute() {
     <section className="dashboard-page" aria-labelledby="calculation-title">
       <CalculationHeader />
       <section className="dashboard-grid" aria-label="Calculation snapshot">
-        <article className="dashboard-panel">
-          <h2>Snapshot</h2>
+        <Panel title="Snapshot">
           <dl className="snapshot-list">
             <div>
               <dt>ID</dt>
@@ -68,10 +71,9 @@ export function CalculationRoute() {
               <dd>{formatDateTime(snapshot.data.calculated_at)}</dd>
             </div>
           </dl>
-        </article>
+        </Panel>
 
-        <article className="dashboard-panel">
-          <h2>Output fields</h2>
+        <Panel title="Output fields">
           <p className="panel-copy">
             These are the backend snapshot output keys currently available for audit and display.
           </p>
@@ -80,10 +82,9 @@ export function CalculationRoute() {
               <li key={key}>{key}</li>
             ))}
           </ul>
-        </article>
+        </Panel>
 
-        <article className="dashboard-panel">
-          <h2>Explanation payload</h2>
+        <Panel title="Explanation payload">
           <p className="panel-copy">
             The backend stores included and excluded assumption IDs without copying raw transaction descriptions.
           </p>
@@ -92,7 +93,7 @@ export function CalculationRoute() {
               <li key={key}>{key}</li>
             ))}
           </ul>
-        </article>
+        </Panel>
       </section>
     </section>
   );
@@ -100,15 +101,16 @@ export function CalculationRoute() {
 
 function CalculationHeader() {
   return (
-    <header className="dashboard-header">
-      <div>
-        <h1 id="calculation-title">Calculation details</h1>
-        <p>Latest immutable snapshot returned by the backend.</p>
-      </div>
-      <Link className="button secondary" to={routes.dashboard}>
-        Back to dashboard
-      </Link>
-    </header>
+    <PageHeader
+      actions={
+        <ButtonLink to={routes.dashboard}>
+          Back to dashboard
+        </ButtonLink>
+      }
+      description="Latest immutable snapshot returned by the backend."
+      title="Calculation details"
+      titleId="calculation-title"
+    />
   );
 }
 

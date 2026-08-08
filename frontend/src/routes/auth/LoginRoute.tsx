@@ -5,6 +5,7 @@ import { ApiError } from "../../api/errors.ts";
 import { routes } from "../../app/routes.ts";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
+import { Button } from "../../components/ui/Button.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { type AuthRedirectState } from "../../features/auth/RequireAuth.tsx";
 import { useAuth } from "../../features/auth/AuthProvider.tsx";
@@ -90,9 +91,9 @@ export function LoginRoute() {
             type="password"
             value={password}
           />
-          <button className="button primary auth-submit" disabled={isSubmitting} type="submit">
+          <Button className="auth-submit" disabled={isSubmitting} type="submit">
             {isSubmitting ? "Signing in" : "Sign in"}
-          </button>
+          </Button>
         </form>
         <p className="auth-switch">
           Need an account? <Link to={routes.register}>Create one</Link>

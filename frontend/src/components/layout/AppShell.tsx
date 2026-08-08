@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { routes } from "../../app/routes.ts";
+import { Button } from "../ui/Button.tsx";
 import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
 const navItems = [
@@ -58,14 +59,15 @@ export function AppShell() {
               {logoutError}
             </p>
           )}
-          <button
-            className="button secondary sidebar-logout"
+          <Button
+            className="sidebar-logout"
             disabled={isLoggingOut}
+            variant="secondary"
             type="button"
             onClick={() => void handleLogout()}
           >
             {isLoggingOut ? "Signing out" : "Sign out"}
-          </button>
+          </Button>
         </div>
       </aside>
       <main className="workspace">

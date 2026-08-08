@@ -5,6 +5,7 @@ import { ApiError } from "../../api/errors.ts";
 import { routes } from "../../app/routes.ts";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
+import { Button } from "../../components/ui/Button.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
@@ -99,9 +100,9 @@ export function RegisterRoute() {
             type="text"
             value={timeZone}
           />
-          <button className="button primary auth-submit" disabled={isSubmitting} type="submit">
+          <Button className="auth-submit" disabled={isSubmitting} type="submit">
             {isSubmitting ? "Creating account" : "Create account"}
-          </button>
+          </Button>
         </form>
         <p className="auth-switch">
           Already have an account? <Link to={routes.login}>Sign in</Link>

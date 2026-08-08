@@ -9,9 +9,12 @@
   --gw-color-panel: #ffffff;
   --gw-color-line: #dfe6ee;
   --gw-color-danger: #b42318;
+  --gw-color-danger-soft: #fff1f0;
   --gw-color-green: #207b65;
   --gw-color-green-soft: #e8f5ef;
   --gw-color-blue: #286bc4;
+  --gw-color-warning: #936316;
+  --gw-color-warning-soft: #fff7df;
 
   --gw-space-1: 0.25rem;
   --gw-space-2: 0.5rem;
@@ -25,6 +28,7 @@
   --gw-radius-md: 0.75rem;
   --gw-radius-lg: 1rem;
 
+  --gw-shadow-raised: 0 12px 34px rgba(32, 45, 67, 0.08);
   --gw-shadow-panel: 0 22px 54px rgba(32, 45, 67, 0.11);
   --gw-focus-ring: 0 0 0 3px rgba(40, 107, 196, 0.28);
 }

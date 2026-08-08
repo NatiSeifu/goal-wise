@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-
 import { ApiError, type FieldErrors } from "../../api/errors.ts";
 import { createGoal, updateGoal } from "../../api/resources.ts";
 import type { GoalRequest, GoalResponse } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
+import { Alert } from "../../components/feedback/Alert.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
+import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
 import { centsToDollarInput, dollarInputToCents, formatCents, formatDate } from "../../utils/format.ts";
@@ -51,14 +52,13 @@ export function GoalRoute() {
   if (activeGoal.status === "error") {
     return (
       <section className="form-page" aria-labelledby="goal-title">
-        <RouteHeader
+        <GoalHeader
           title="Goal setup"
           description="Define the one active savings goal supported by the MVP."
         />
-        <div className="state-panel error">
-          <h2>Goal unavailable</h2>
+        <Alert title="Goal unavailable" variant="error">
           <p>{activeGoal.error}</p>
-        </div>
+        </Alert>
       </section>
     );
   }
@@ -95,7 +95,7 @@ export function GoalRoute() {
 
   return (
     <section className="form-page" aria-labelledby="goal-title">
-      <RouteHeader
+      <GoalHeader
         title="Goal setup"
         description="Create or update the single active savings goal used by the deterministic pace engine."
       />
@@ -183,26 +183,21 @@ export function GoalRoute() {
           />
         </div>
         <div className="form-actions">
-          <button className="button primary" disabled={isSubmitting} type="submit">
+          <Button disabled={isSubmitting} type="submit">
             {isSubmitting ? "Saving goal" : existingGoal === null ? "Create goal" : "Save goal"}
-          </button>
-          <Link className="button secondary" to={routes.dashboard}>
+          </Button>
+          <ButtonLink to={routes.dashboard}>
             View dashboard
-          </Link>
+          </ButtonLink>
         </div>
       </form>
     </section>
   );
 }
 
-function RouteHeader({ description, title }: { description: string; title: string }) {
+function GoalHeader({ description, title }: { description: string; title: string }) {
   return (
-    <header className="dashboard-header">
-      <div>
-        <h1 id="goal-title">{title}</h1>
-        <p>{description}</p>
-      </div>
-    </header>
+    <PageHeader description={description} title={title} titleId="goal-title" />
   );
 }
 

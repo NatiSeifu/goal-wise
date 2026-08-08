@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
-
 import { routes } from "../../app/routes.ts";
 import { PageShell } from "../../components/layout/PageShell.tsx";
+import { ButtonLink } from "../../components/ui/Button.tsx";
 
 export function LandingRoute() {
   return (
@@ -14,12 +13,12 @@ export function LandingRoute() {
           backend calculations, and immutable snapshots.
         </p>
         <div className="action-row" aria-label="Frontend status">
-          <Link className="button primary" to={routes.register}>
+          <ButtonLink variant="primary" to={routes.register}>
             Create account
-          </Link>
-          <Link className="button secondary" to={routes.dashboard}>
+          </ButtonLink>
+          <ButtonLink to={routes.dashboard}>
             View app shell
-          </Link>
+          </ButtonLink>
         </div>
       </section>
       <nav className="landing-links" aria-label="Landing page details">

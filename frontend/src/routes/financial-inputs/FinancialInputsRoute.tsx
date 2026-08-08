@@ -1,6 +1,4 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-
 import { ApiError, type FieldErrors } from "../../api/errors.ts";
 import {
   createIncomeSource,
@@ -20,8 +18,11 @@ import type {
   PlannedExpenseResponse,
 } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
+import { Alert } from "../../components/feedback/Alert.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
+import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { SelectField } from "../../components/ui/SelectField.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
@@ -121,10 +122,9 @@ export function FinancialInputsRoute() {
     return (
       <section className="form-page" aria-labelledby="financial-inputs-title">
         <RouteHeader />
-        <div className="state-panel error">
-          <h2>Financial inputs unavailable</h2>
+        <Alert title="Financial inputs unavailable" variant="error">
           <p>{inputs.error}</p>
-        </div>
+        </Alert>
       </section>
     );
   }
@@ -288,9 +288,9 @@ export function FinancialInputsRoute() {
           </label>
         </div>
         <div className="form-actions">
-          <button className="button primary" disabled={busyAction === "profile"} type="submit">
+          <Button disabled={busyAction === "profile"} type="submit">
             {busyAction === "profile" ? "Saving profile" : "Save profile"}
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -319,12 +319,12 @@ export function FinancialInputsRoute() {
             value={incomeForm.confidence}
           />
           <div className="form-actions">
-            <button className="button primary" disabled={busyAction === "income"} type="submit">
+            <Button disabled={busyAction === "income"} type="submit">
               {busyAction === "income" ? "Saving income" : editingIncomeId === null ? "Add income" : "Save income"}
-            </button>
+            </Button>
             {editingIncomeId === null ? null : (
-              <button
-                className="button secondary"
+              <Button
+                variant="secondary"
                 type="button"
                 onClick={() => {
                   setEditingIncomeId(null);
@@ -332,7 +332,7 @@ export function FinancialInputsRoute() {
                 }}
               >
                 Cancel edit
-              </button>
+              </Button>
             )}
           </div>
         </form>
@@ -363,16 +363,16 @@ export function FinancialInputsRoute() {
             value={expenseForm.classification}
           />
           <div className="form-actions">
-            <button className="button primary" disabled={busyAction === "expense"} type="submit">
+            <Button disabled={busyAction === "expense"} type="submit">
               {busyAction === "expense"
                 ? "Saving expense"
                 : editingExpenseId === null
                   ? "Add expense"
                   : "Save expense"}
-            </button>
+            </Button>
             {editingExpenseId === null ? null : (
-              <button
-                className="button secondary"
+              <Button
+                variant="secondary"
                 type="button"
                 onClick={() => {
                   setEditingExpenseId(null);
@@ -380,7 +380,7 @@ export function FinancialInputsRoute() {
                 }}
               >
                 Cancel edit
-              </button>
+              </Button>
             )}
           </div>
         </form>
@@ -414,9 +414,9 @@ export function FinancialInputsRoute() {
       </section>
 
       <div className="form-actions">
-        <Link className="button secondary" to={routes.dashboard}>
+        <ButtonLink to={routes.dashboard}>
           View dashboard
-        </Link>
+        </ButtonLink>
       </div>
     </section>
   );
@@ -424,12 +424,11 @@ export function FinancialInputsRoute() {
 
 function RouteHeader() {
   return (
-    <header className="dashboard-header">
-      <div>
-        <h1 id="financial-inputs-title">Financial inputs</h1>
-        <p>Manual assumptions used by the backend pace engine for this MVP.</p>
-      </div>
-    </header>
+    <PageHeader
+      description="Manual assumptions used by the backend pace engine for this MVP."
+      title="Financial inputs"
+      titleId="financial-inputs-title"
+    />
   );
 }
 
@@ -532,17 +531,17 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
                 </p>
               </div>
               <div className="resource-actions">
-                <button className="button secondary" type="button" onClick={() => onEdit(item)}>
+                <Button variant="secondary" type="button" onClick={() => onEdit(item)}>
                   Edit
-                </button>
-                <button
-                  className="button secondary"
+                </Button>
+                <Button
+                  variant="secondary"
                   disabled={busyAction === `${kind}-${item.id}`}
                   type="button"
                   onClick={() => onDeactivate(item)}
                 >
                   {busyAction === `${kind}-${item.id}` ? "Removing" : "Deactivate"}
-                </button>
+                </Button>
               </div>
             </article>
           ))}

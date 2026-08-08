@@ -2,7 +2,11 @@ import { Link } from "react-router-dom";
 
 import type { DashboardItem, DashboardPaceSummary, JsonValue } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
+import { Alert } from "../../components/feedback/Alert.tsx";
+import { EmptyState } from "../../components/feedback/EmptyState.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
+import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { Panel } from "../../components/ui/Panel.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
 import { formatCents, formatDate, formatDateTime, formatPercent } from "../../utils/format.ts";
@@ -41,10 +45,9 @@ export function DashboardRoute() {
     return (
       <section className="dashboard-page" aria-labelledby="dashboard-title">
         <DashboardHeader />
-        <div className="state-panel error">
-          <h2>Dashboard unavailable</h2>
+        <Alert title="Dashboard unavailable" variant="error">
           <p>{dashboard.error}</p>
-        </div>
+        </Alert>
       </section>
     );
   }
@@ -58,12 +61,11 @@ export function DashboardRoute() {
 
 function DashboardHeader() {
   return (
-    <header className="dashboard-header">
-      <div>
-        <h1 id="dashboard-title">Dashboard</h1>
-        <p>Backend-owned pace result for your active savings goal.</p>
-      </div>
-    </header>
+    <PageHeader
+      description="Backend-owned pace result for your active savings goal."
+      title="Dashboard"
+      titleId="dashboard-title"
+    />
   );
 }
 
@@ -92,8 +94,7 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
       </section>
 
       <section className="dashboard-grid" aria-label="Plan summary">
-        <article className="dashboard-panel goal-panel">
-          <h2>{item.goal.name}</h2>
+        <Panel className="goal-panel" title={item.goal.name}>
           <ProgressBar label="Goal progress" value={pace.progress_percentage} />
           <dl className="metric-list">
             <div>
@@ -109,10 +110,9 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               <dd>{formatDate(item.goal.target_date)}</dd>
             </div>
           </dl>
-        </article>
+        </Panel>
 
-        <article className="dashboard-panel">
-          <h2>Current week</h2>
+        <Panel title="Current week">
           <dl className="metric-list compact">
             <div>
               <dt>Opening allowance</dt>
@@ -127,10 +127,9 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               <dd>{pace.remaining_weeks}</dd>
             </div>
           </dl>
-        </article>
+        </Panel>
 
-        <article className="dashboard-panel">
-          <h2>Risk view</h2>
+        <Panel title="Risk view">
           <dl className="metric-list compact">
             <div>
               <dt>Projected shortfall</dt>
@@ -145,12 +144,11 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               <dd>{formatDateTime(item.calculated_at)}</dd>
             </div>
           </dl>
-        </article>
+        </Panel>
       </section>
 
       <section className="dashboard-grid secondary" aria-label="Snapshot explanation">
-        <article className="dashboard-panel">
-          <h2>Snapshot trail</h2>
+        <Panel title="Snapshot trail">
           <dl className="snapshot-list">
             <div>
               <dt>Snapshot ID</dt>
@@ -164,10 +162,9 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           <Link className="text-link" to={routes.calculation}>
             View calculation details
           </Link>
-        </article>
+        </Panel>
 
-        <article className="dashboard-panel">
-          <h2>Included assumptions</h2>
+        <Panel title="Included assumptions">
           <dl className="metric-list compact">
             <div>
               <dt>Confirmed income sources</dt>
@@ -182,10 +179,9 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               <dd>{getNumberValue(explanationSummary, "unconfirmed_income_count") ?? "0"}</dd>
             </div>
           </dl>
-        </article>
+        </Panel>
 
-        <article className="dashboard-panel">
-          <h2>Changed from previous</h2>
+        <Panel title="Changed from previous">
           <p className="panel-copy">
             {changedInputCategories.length === 0
               ? "No previous snapshot changes are reported by the backend."
@@ -194,7 +190,7 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           <p className="panel-copy">
             Weekly safe-to-spend delta: {weeklyDelta === null ? "Not available" : formatCents(weeklyDelta)}
           </p>
-        </article>
+        </Panel>
       </section>
     </section>
   );
@@ -204,12 +200,10 @@ function SetupRequiredDashboard({ item }: { item: DashboardItem }) {
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-      <div className="state-panel">
-        <h2>Finish setup to calculate your pace</h2>
-        <p>
-          The backend has not returned a complete dashboard result yet. Complete the missing MVP inputs below.
-        </p>
-      </div>
+      <EmptyState
+        title="Finish setup to calculate your pace"
+        description="The backend has not returned a complete dashboard result yet. Complete the missing MVP inputs below."
+      />
       <div className="setup-list" aria-label="Missing inputs">
         {item.missing_inputs.map((missingInput) => {
           const detail = missingInputLabels[missingInput] ?? {
