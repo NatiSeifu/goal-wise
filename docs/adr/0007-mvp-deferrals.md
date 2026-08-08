@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-08-01
 - **Deciders:** Nati Seifu
-- **Related requirements:** FR-TXN-001 to FR-TXN-008, FR-AI-001 to FR-AI-007, FR-DATA-001, FR-DATA-002, FR-PACE-007 to FR-PACE-009, FR-PACE-011, NFR-REL-001, NFR-REL-003, NFR-AIQ-001 to NFR-AIQ-003
+- **Related requirements:** FR-TXN-001 to FR-TXN-008, FR-AI-001 to FR-AI-007, FR-DATA-001, FR-DATA-002, FR-PACE-011, NFR-REL-001, NFR-REL-003, NFR-AIQ-001 to NFR-AIQ-003
 
 ## Context
 
@@ -21,6 +21,8 @@ We will defer these SRS capabilities from the current MVP increment:
 - Account export and deletion workflows.
 - Background weekly snapshot scheduler.
 - Multi-goal support, native mobile apps, transfers, payments, credit, tax, investment, or advisory features.
+
+The MVP may still lazily create the current `WeeklyPlan` on authenticated dashboard access, as defined in `SPEC-0005` and `SPEC-0007`. The deferred item is the production background scheduler that would create weekly plans automatically at Monday 00:00 in each user's local time zone.
 
 Keep extension points in the architecture by isolating the deterministic core behind services and normalized inputs.
 

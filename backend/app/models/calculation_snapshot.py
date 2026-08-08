@@ -14,6 +14,7 @@ from app.db.types import UUID_STRING_LENGTH, UTCDateTime, new_uuid_str, utc_now
 if TYPE_CHECKING:
     from app.models.goal import Goal
     from app.models.user import User
+    from app.models.weekly_plan import WeeklyPlan
 
 
 class CalculationSnapshot(Base):
@@ -54,3 +55,7 @@ class CalculationSnapshot(Base):
 
     user: Mapped[User] = relationship(back_populates="calculation_snapshots")
     goal: Mapped[Goal] = relationship(back_populates="calculation_snapshots")
+    weekly_plans: Mapped[list[WeeklyPlan]] = relationship(
+        back_populates="snapshot",
+        cascade="all, delete-orphan",
+    )

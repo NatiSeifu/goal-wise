@@ -14,6 +14,7 @@ from app.models import (
     PlannedExpense,
     User,
     UserSession,
+    WeeklyPlan,
 )
 from sqlalchemy import Engine
 from sqlalchemy.exc import IntegrityError
@@ -43,6 +44,7 @@ def test_metadata_registers_auth_tables() -> None:
     assert "income_sources" in Base.metadata.tables
     assert "planned_expenses" in Base.metadata.tables
     assert "calculation_snapshots" in Base.metadata.tables
+    assert "weekly_plans" in Base.metadata.tables
 
 
 def test_user_and_session_round_trip(session: Session) -> None:
@@ -305,6 +307,71 @@ def test_calculation_snapshot_round_trip(session: Session) -> None:
     assert snapshot.result_json["schema_version"] == "snapshot-result-v1"
     assert snapshot.calculated_at.tzinfo is UTC
     assert snapshot.created_at.tzinfo is UTC
+
+
+def test_weekly_plan_round_trip_and_uniqueness(session: Session) -> None:
+    user = User(
+        email_normalized="weekly-plan@example.com",
+        password_hash="argon2-hash-placeholder",
+        time_zone="America/Los_Angeles",
+    )
+    session.add(user)
+    session.flush()
+    goal = Goal(
+        user_id=user.id,
+        name="Emergency fund",
+        target_cents=300000,
+        initial_saved_cents=50000,
+        current_saved_cents=75000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
+        status="active",
+    )
+    session.add(goal)
+    session.flush()
+    snapshot = CalculationSnapshot(
+        user_id=user.id,
+        goal_id=goal.id,
+        formula_version="pace-v1",
+        trigger="financial_profile_updated",
+        normalized_input_json={"schema_version": "snapshot-input-v1"},
+        result_json={
+            "schema_version": "snapshot-result-v1",
+            "outputs": {"weekly_safe_to_spend_cents": 15400},
+        },
+        calculated_at=utc_now(),
+    )
+    session.add(snapshot)
+    session.flush()
+    weekly_plan = WeeklyPlan(
+        user_id=user.id,
+        goal_id=goal.id,
+        week_start=date(2026, 8, 3),
+        opening_allowance_cents=15400,
+        created_from_snapshot_id=snapshot.id,
+    )
+    session.add(weekly_plan)
+    session.commit()
+    session.refresh(weekly_plan)
+
+    assert UUID(weekly_plan.id).version == 4
+    assert weekly_plan.user_id == user.id
+    assert weekly_plan.goal_id == goal.id
+    assert weekly_plan.snapshot == snapshot
+    assert weekly_plan.created_at.tzinfo is UTC
+
+    session.add(
+        WeeklyPlan(
+            user_id=user.id,
+            goal_id=goal.id,
+            week_start=date(2026, 8, 3),
+            opening_allowance_cents=99999,
+            created_from_snapshot_id=snapshot.id,
+        )
+    )
+
+    with pytest.raises(IntegrityError):
+        session.commit()
 
 
 def test_calculation_snapshot_model_is_insert_only_shape() -> None:

@@ -93,12 +93,9 @@ def _normalized_input_json(
             "reserve_buffer_cents": financial_profile.reserve_buffer_cents,
             "reserve_buffer_confirmed": financial_profile.reserve_buffer_confirmed,
         },
-        "income_sources": [
-            _income_source_json(income_source) for income_source in income_sources
-        ],
+        "income_sources": [_income_source_json(income_source) for income_source in income_sources],
         "planned_expenses": [
-            _planned_expense_json(planned_expense)
-            for planned_expense in planned_expenses
+            _planned_expense_json(planned_expense) for planned_expense in planned_expenses
         ],
         "transactions": [],
     }
@@ -189,9 +186,7 @@ def _explanation_json(
         planned_expense.id for planned_expense in planned_expenses if planned_expense.active
     ]
     excluded_expense_ids = [
-        planned_expense.id
-        for planned_expense in planned_expenses
-        if not planned_expense.active
+        planned_expense.id for planned_expense in planned_expenses if not planned_expense.active
     ]
     return {
         "included_income_source_ids": included_income_ids,

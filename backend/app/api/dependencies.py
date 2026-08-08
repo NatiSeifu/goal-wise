@@ -15,6 +15,7 @@ from app.services.auth import (
     InvalidCsrfTokenError,
     InvalidSessionError,
     get_current_session,
+    record_session_activity,
     validate_csrf_token,
 )
 
@@ -44,12 +45,20 @@ def require_current_session(
         )
 
     try:
-        return get_current_session(
+        now = datetime.now(UTC)
+        current_session = get_current_session(
             db_session,
             session_token=session_token,
             session_secret=settings.session_secret,
-            now=datetime.now(UTC),
+            now=now,
         )
+        record_session_activity(
+            db_session,
+            user_session=current_session.user_session,
+            last_seen_at=now,
+        )
+        db_session.commit()
+        return current_session
     except InvalidSessionError as exc:
         db_session.rollback()
         raise ApiError(

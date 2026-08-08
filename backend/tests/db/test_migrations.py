@@ -28,6 +28,7 @@ def test_initial_migration_runs_against_sqlite(tmp_path: Path) -> None:
         "planned_expenses",
         "sessions",
         "users",
+        "weekly_plans",
     }
     assert _column_names(inspector.get_columns("users")) >= {
         "id",
@@ -114,6 +115,15 @@ def test_initial_migration_runs_against_sqlite(tmp_path: Path) -> None:
         "created_at",
     }
     assert "updated_at" not in calculation_snapshot_columns
+    assert _column_names(inspector.get_columns("weekly_plans")) >= {
+        "id",
+        "user_id",
+        "goal_id",
+        "week_start",
+        "opening_allowance_cents",
+        "created_from_snapshot_id",
+        "created_at",
+    }
 
 
 def test_initial_migration_can_downgrade_sqlite(tmp_path: Path) -> None:
@@ -138,6 +148,7 @@ def test_initial_migration_can_downgrade_sqlite(tmp_path: Path) -> None:
     assert "income_sources" not in inspector.get_table_names()
     assert "planned_expenses" not in inspector.get_table_names()
     assert "calculation_snapshots" not in inspector.get_table_names()
+    assert "weekly_plans" not in inspector.get_table_names()
 
 
 def _column_names(columns: list[dict[str, object]]) -> set[str]:

@@ -9,10 +9,12 @@ from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db_session, make_engine, make_session_factory
 from app.main import api_error_handler
+from app.models import UserSession
 from app.services.auth import login_user, register_user
+from app.services.tokens import hash_session_token
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
+from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
 TEST_SESSION_SECRET = "test-session-secret"
@@ -81,11 +83,26 @@ def test_current_session_dependency_exposes_authenticated_user(
     assert response.json()["user_id"]
 
 
+def test_current_session_dependency_persists_last_seen_for_authenticated_get(
+    protected_client: TestClient,
+    session_factory: sessionmaker[Session],
+) -> None:
+    session_token, _csrf_token = _create_login(session_factory)
+    last_seen_before = _last_seen_at(session_factory, session_token)
+    protected_client.cookies.set(SESSION_COOKIE_NAME, session_token)
+
+    response = protected_client.get("/protected")
+
+    assert response.status_code == 200
+    assert _last_seen_at(session_factory, session_token) > last_seen_before
+
+
 def test_csrf_dependency_rejects_missing_header(
     protected_client: TestClient,
     session_factory: sessionmaker[Session],
 ) -> None:
     session_token, _csrf_token = _create_login(session_factory)
+    last_seen_before = _last_seen_at(session_factory, session_token)
     protected_client.cookies.set(SESSION_COOKIE_NAME, session_token)
 
     response = protected_client.post("/protected")
@@ -97,6 +114,7 @@ def test_csrf_dependency_rejects_missing_header(
             "message": "Invalid request token.",
         },
     }
+    assert _last_seen_at(session_factory, session_token) > last_seen_before
 
 
 def test_csrf_dependency_accepts_matching_header(
@@ -112,8 +130,11 @@ def test_csrf_dependency_accepts_matching_header(
     assert response.json()["user_id"]
 
 
-def _create_login(session_factory: sessionmaker[Session]) -> tuple[str, str]:
+def _create_login(
+    session_factory: sessionmaker[Session],
+) -> tuple[str, str]:
     with session_factory() as db_session:
+        now = datetime.now(UTC)
         register_user(
             db_session,
             email="nati@example.com",
@@ -126,7 +147,22 @@ def _create_login(session_factory: sessionmaker[Session]) -> tuple[str, str]:
             password="correct horse battery staple",
             source_identifier="203.0.113.10",
             session_secret=TEST_SESSION_SECRET,
-            now=datetime.now(UTC),
+            now=now,
         )
         db_session.commit()
         return login_result.session_token, login_result.csrf_token
+
+
+def _last_seen_at(
+    session_factory: sessionmaker[Session],
+    session_token: str,
+) -> datetime:
+    with session_factory() as db_session:
+        user_session = db_session.scalar(
+            select(UserSession).where(
+                UserSession.session_token_hash
+                == hash_session_token(session_token, TEST_SESSION_SECRET),
+            ),
+        )
+        assert user_session is not None
+        return user_session.last_seen_at

@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from app.models.income_source import IncomeSource
     from app.models.planned_expense import PlannedExpense
     from app.models.session import UserSession
+    from app.models.weekly_plan import WeeklyPlan
 
 
 class User(Base):
@@ -69,6 +70,10 @@ class User(Base):
         cascade="all, delete-orphan",
     )
     calculation_snapshots: Mapped[list[CalculationSnapshot]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    weekly_plans: Mapped[list[WeeklyPlan]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

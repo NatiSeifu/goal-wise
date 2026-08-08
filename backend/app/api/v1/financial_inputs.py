@@ -207,10 +207,7 @@ def list_planned_expenses(
         user_id=current_session.user.id,
     )
     return PlannedExpenseListResponse(
-        items=[
-            _planned_expense_response(planned_expense)
-            for planned_expense in planned_expenses
-        ],
+        items=[_planned_expense_response(planned_expense) for planned_expense in planned_expenses],
     )
 
 

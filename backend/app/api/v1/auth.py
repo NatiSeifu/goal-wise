@@ -23,6 +23,7 @@ from app.services.auth import (
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+
 @router.post("/register", response_model=AuthResponse, status_code=201)
 def register(
     payload: RegisterRequest,
