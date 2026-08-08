@@ -21,6 +21,7 @@ from app.services.auth import (
     get_current_session,
     login_user,
     logout_session,
+    record_session_activity,
     register_user,
 )
 from app.services.email import normalize_email
@@ -239,7 +240,9 @@ def test_login_user_clears_failed_attempts_on_success(db_session: Session) -> No
     )
 
 
-def test_get_current_session_returns_user_and_updates_last_seen(db_session: Session) -> None:
+def test_get_current_session_returns_user_without_touching_last_seen(
+    db_session: Session,
+) -> None:
     now = utc_now()
     login_result = _create_logged_in_user(db_session, now=now)
     later = now + timedelta(minutes=5)
@@ -252,7 +255,21 @@ def test_get_current_session_returns_user_and_updates_last_seen(db_session: Sess
     )
 
     assert current_session.user.id == login_result.user.id
-    assert current_session.user_session.last_seen_at == later
+    assert current_session.user_session.last_seen_at == now
+
+
+def test_record_session_activity_updates_last_seen(db_session: Session) -> None:
+    now = utc_now()
+    login_result = _create_logged_in_user(db_session, now=now)
+    later = now + timedelta(minutes=5)
+
+    record_session_activity(
+        db_session,
+        user_session=login_result.user_session,
+        last_seen_at=later,
+    )
+
+    assert login_result.user_session.last_seen_at == later
 
 
 def test_get_current_session_rejects_idle_session(db_session: Session) -> None:

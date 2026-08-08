@@ -181,8 +181,20 @@ def get_current_session(
         revoke_session(db_session, user_session=user_session, revoked_at=now)
         raise InvalidSessionError
 
-    touch_session(db_session, user_session=user_session, last_seen_at=now)
     return CurrentSession(user=user_session.user, user_session=user_session)
+
+
+def record_session_activity(
+    db_session: Session,
+    *,
+    user_session: UserSession,
+    last_seen_at: datetime,
+) -> UserSession:
+    return touch_session(
+        db_session,
+        user_session=user_session,
+        last_seen_at=last_seen_at,
+    )
 
 
 def logout_session(
