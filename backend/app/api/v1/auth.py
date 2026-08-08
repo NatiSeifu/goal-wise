@@ -1,41 +1,27 @@
 """Authentication API routes."""
 
 from datetime import UTC, datetime
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Request, Response
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Request, Response
 
+from app.api.constants import SESSION_COOKIE_MAX_AGE_SECONDS, SESSION_COOKIE_NAME
+from app.api.dependencies import CsrfSessionDep, CurrentSessionDep, DbSessionDep, SettingsDep
 from app.api.errors import error_response
-from app.core.config import Settings, get_settings
-from app.db.session import get_db_session
+from app.core.config import Settings
 from app.models import User
 from app.schemas.auth import AuthPayload, AuthResponse, LoginRequest, RegisterRequest, UserResponse
 from app.services.auth import (
-    CurrentSession,
     DuplicateEmailError,
     InvalidCredentialsError,
-    InvalidCsrfTokenError,
     InvalidPasswordError,
-    InvalidSessionError,
     LoginRateLimitedError,
-    get_current_session,
     login_user,
     logout_session,
     refresh_csrf_token,
     register_user,
-    validate_csrf_token,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-SESSION_COOKIE_NAME = "goalwise_session"
-SESSION_COOKIE_MAX_AGE_SECONDS = 24 * 60 * 60
-DbSessionDep = Annotated[Session, Depends(get_db_session)]
-SettingsDep = Annotated[Settings, Depends(get_settings)]
-CsrfHeaderDep = Annotated[str | None, Header(alias="X-CSRF-Token")]
-
 
 @router.post("/register", response_model=AuthResponse, status_code=201)
 def register(
@@ -119,37 +105,11 @@ def login(
 
 @router.post("/logout", status_code=204)
 def logout(
-    request: Request,
     response: Response,
+    current_session: CsrfSessionDep,
     db_session: DbSessionDep,
-    settings: SettingsDep,
-    x_csrf_token: CsrfHeaderDep = None,
 ) -> Response:
-    current_session = _current_session_from_request(
-        request=request,
-        db_session=db_session,
-        settings=settings,
-    )
-    if isinstance(current_session, Response):
-        return current_session
-
-    try:
-        if x_csrf_token is None:
-            raise InvalidCsrfTokenError
-        validate_csrf_token(
-            user_session=current_session.user_session,
-            csrf_token=x_csrf_token,
-            session_secret=settings.session_secret,
-        )
-        logout_session(db_session, user_session=current_session.user_session, now=_utc_now())
-    except InvalidCsrfTokenError:
-        db_session.rollback()
-        return error_response(
-            status_code=403,
-            code="csrf_failed",
-            message="Invalid request token.",
-        )
-
+    logout_session(db_session, user_session=current_session.user_session, now=_utc_now())
     db_session.commit()
     response.delete_cookie(SESSION_COOKIE_NAME, path="/")
     response.status_code = 204
@@ -158,18 +118,10 @@ def logout(
 
 @router.get("/me", response_model=AuthResponse)
 def me(
-    request: Request,
+    current_session: CurrentSessionDep,
     db_session: DbSessionDep,
     settings: SettingsDep,
 ) -> AuthResponse | Response:
-    current_session = _current_session_from_request(
-        request=request,
-        db_session=db_session,
-        settings=settings,
-    )
-    if isinstance(current_session, Response):
-        return current_session
-
     csrf_token = refresh_csrf_token(
         db_session,
         user_session=current_session.user_session,
@@ -177,36 +129,6 @@ def me(
     )
     db_session.commit()
     return _auth_response(user=current_session.user, csrf_token=csrf_token)
-
-
-def _current_session_from_request(
-    *,
-    request: Request,
-    db_session: Session,
-    settings: Settings,
-) -> CurrentSession | JSONResponse:
-    session_token = request.cookies.get(SESSION_COOKIE_NAME)
-    if session_token is None:
-        return error_response(
-            status_code=401,
-            code="unauthorized",
-            message="Authentication required.",
-        )
-
-    try:
-        return get_current_session(
-            db_session,
-            session_token=session_token,
-            session_secret=settings.session_secret,
-            now=_utc_now(),
-        )
-    except InvalidSessionError:
-        db_session.rollback()
-        return error_response(
-            status_code=401,
-            code="unauthorized",
-            message="Authentication required.",
-        )
 
 
 def _auth_response(*, user: User, csrf_token: str) -> AuthResponse:

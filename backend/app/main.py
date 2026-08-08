@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from app.api.errors import ApiError, error_response, validation_error_response
 from app.api.v1.router import api_router
 
 app = FastAPI(title="GoalWise API")
@@ -23,13 +24,16 @@ async def validation_exception_handler(
             field = "body"
         fields.setdefault(field, []).append(str(error.get("msg", "Invalid value.")))
 
-    return JSONResponse(
-        status_code=422,
-        content={
-            "error": {
-                "code": "validation_error",
-                "message": "Request validation failed.",
-                "fields": fields,
-            },
-        },
+    return validation_error_response(fields=fields)
+
+
+@app.exception_handler(ApiError)
+async def api_error_handler(
+    _request: Request,
+    exc: ApiError,
+) -> JSONResponse:
+    return error_response(
+        status_code=exc.status_code,
+        code=exc.code,
+        message=exc.message,
     )
