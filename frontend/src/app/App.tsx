@@ -1,5 +1,7 @@
-import { LandingRoute } from "../routes/landing/LandingRoute.tsx";
+import { RouterProvider } from "react-router-dom";
+
+import { router } from "./router.tsx";
 
 export function App() {
-  return <LandingRoute />;
+  return <RouterProvider router={router} />;
 }

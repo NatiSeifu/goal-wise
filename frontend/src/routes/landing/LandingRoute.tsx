@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+
+import { routes } from "../../app/routes.ts";
 import { PageShell } from "../../components/layout/PageShell.tsx";
 
 export function LandingRoute() {
@@ -11,20 +14,32 @@ export function LandingRoute() {
           backend calculations, and immutable snapshots.
         </p>
         <div className="action-row" aria-label="Frontend status">
-          <a className="button primary" href="#mvp-boundary">
-            MVP boundary
-          </a>
-          <a className="button secondary" href="#scaffold-details">
-            Scaffold details
-          </a>
+          <Link className="button primary" to={routes.register}>
+            Create account
+          </Link>
+          <Link className="button secondary" to={routes.dashboard}>
+            View app shell
+          </Link>
         </div>
       </section>
+      <nav className="landing-links" aria-label="Landing page details">
+        <a href="#mvp-boundary">MVP boundary</a>
+        <a href="#security">Security</a>
+        <a href="#scaffold-details">Scaffold details</a>
+      </nav>
       <section className="detail-grid" aria-label="Frontend scaffold details">
         <article className="detail-panel" id="mvp-boundary">
           <h2>Backend-owned money logic</h2>
           <p>
             React may format values returned by the API, but the official safe-to-spend,
             shortfall, pace status, and snapshot values stay owned by the backend.
+          </p>
+        </article>
+        <article className="detail-panel" id="security">
+          <h2>Session and CSRF boundary</h2>
+          <p>
+            Authenticated requests will include HTTP-only session cookies, and unsafe methods
+            will send the CSRF header provided by the backend.
           </p>
         </article>
         <article className="detail-panel" id="scaffold-details">
