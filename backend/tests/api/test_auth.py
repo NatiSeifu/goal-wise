@@ -1,12 +1,15 @@
 from collections.abc import Generator
 
 import pytest
+from app.api.constants import SESSION_COOKIE_NAME
 from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db_session, make_engine, make_session_factory
 from app.main import app
+from app.models import UserSession
+from app.services.tokens import hash_session_token
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
+from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 TEST_SESSION_SECRET = "test-session-secret"
@@ -60,6 +63,26 @@ def test_register_creates_user_sets_cookie_and_returns_csrf(client: TestClient) 
     assert body["item"]["csrf_token"]
     assert "goalwise_session=" in response.headers["set-cookie"]
     assert "HttpOnly" in response.headers["set-cookie"]
+
+
+def test_register_session_cookie_uses_expected_local_flags(client: TestClient) -> None:
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "nati@example.com",
+            "password": "correct horse battery staple",
+            "time_zone": "America/Los_Angeles",
+        },
+    )
+
+    cookie = response.headers["set-cookie"]
+
+    assert response.status_code == 201
+    assert "goalwise_session=" in cookie
+    assert "HttpOnly" in cookie
+    assert "SameSite=lax" in cookie
+    assert "Path=/" in cookie
+    assert "Secure" not in cookie
 
 
 def test_register_rejects_duplicate_email(client: TestClient) -> None:
@@ -131,6 +154,72 @@ def test_login_succeeds_and_invalid_credentials_are_generic(client: TestClient) 
     assert "HttpOnly" in response.headers["set-cookie"]
 
 
+def test_login_rate_limiting_returns_generic_429_for_missing_user(client: TestClient) -> None:
+    payload = {"email": "missing@example.com", "password": "wrong password"}
+    for _ in range(5):
+        response = client.post("/api/v1/auth/login", json=payload)
+        assert response.status_code == 401
+
+    response = client.post("/api/v1/auth/login", json=payload)
+
+    assert response.status_code == 429
+    assert response.json() == {
+        "error": {
+            "code": "rate_limited",
+            "message": "Too many login attempts. Try again later.",
+        },
+    }
+
+
+def test_login_rate_limiting_returns_same_429_for_existing_user(client: TestClient) -> None:
+    register_response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "nati@example.com",
+            "password": "correct horse battery staple",
+            "time_zone": "America/Los_Angeles",
+        },
+    )
+    assert register_response.status_code == 201
+
+    payload = {"email": "nati@example.com", "password": "wrong password"}
+    for _ in range(5):
+        response = client.post("/api/v1/auth/login", json=payload)
+        assert response.status_code == 401
+
+    response = client.post("/api/v1/auth/login", json=payload)
+
+    assert response.status_code == 429
+    assert response.json() == {
+        "error": {
+            "code": "rate_limited",
+            "message": "Too many login attempts. Try again later.",
+        },
+    }
+
+
+def test_api_login_stores_only_session_and_csrf_hashes(
+    client: TestClient,
+    engine: Engine,
+) -> None:
+    response = _register_and_login(client)
+    session_token = client.cookies.get(SESSION_COOKIE_NAME)
+    csrf_token = response.json()["item"]["csrf_token"]
+
+    assert session_token is not None
+    with Session(engine) as db_session:
+        user_sessions = list(db_session.scalars(select(UserSession)))
+
+    assert user_sessions
+    assert all(
+        session_token not in user_session.session_token_hash for user_session in user_sessions
+    )
+    assert all(csrf_token not in user_session.csrf_token_hash for user_session in user_sessions)
+    assert hash_session_token(session_token, TEST_SESSION_SECRET) in {
+        user_session.session_token_hash for user_session in user_sessions
+    }
+
+
 def test_me_returns_user_and_fresh_csrf_token(client: TestClient) -> None:
     login_response = _register_and_login(client)
     login_csrf = login_response.json()["item"]["csrf_token"]
@@ -144,6 +233,20 @@ def test_me_returns_user_and_fresh_csrf_token(client: TestClient) -> None:
 
 
 def test_me_rejects_missing_session(client: TestClient) -> None:
+    response = client.get("/api/v1/auth/me")
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "error": {
+            "code": "unauthorized",
+            "message": "Authentication required.",
+        },
+    }
+
+
+def test_me_rejects_invalid_session_cookie(client: TestClient) -> None:
+    client.cookies.set(SESSION_COOKIE_NAME, "not-a-valid-session-token")
+
     response = client.get("/api/v1/auth/me")
 
     assert response.status_code == 401
@@ -175,6 +278,20 @@ def test_logout_requires_csrf_and_clears_session_cookie(client: TestClient) -> N
 
     me_response = client.get("/api/v1/auth/me")
     assert me_response.status_code == 401
+
+
+def test_logout_rejects_invalid_csrf(client: TestClient) -> None:
+    _register_and_login(client)
+
+    response = client.post("/api/v1/auth/logout", headers={"X-CSRF-Token": "invalid-csrf"})
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "error": {
+            "code": "csrf_failed",
+            "message": "Invalid request token.",
+        },
+    }
 
 
 def _register_and_login(client: TestClient) -> object:

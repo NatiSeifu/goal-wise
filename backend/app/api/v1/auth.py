@@ -91,7 +91,7 @@ def login(
             message="Too many login attempts. Try again later.",
         )
     except InvalidCredentialsError:
-        db_session.rollback()
+        db_session.commit()
         return error_response(
             status_code=401,
             code="invalid_credentials",
