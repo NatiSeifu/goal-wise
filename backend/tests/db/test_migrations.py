@@ -18,7 +18,12 @@ def test_initial_migration_runs_against_sqlite(tmp_path: Path) -> None:
     engine = create_engine(database_url)
     inspector = inspect(engine)
 
-    assert set(inspector.get_table_names()) >= {"alembic_version", "users", "sessions"}
+    assert set(inspector.get_table_names()) >= {
+        "alembic_version",
+        "login_attempts",
+        "users",
+        "sessions",
+    }
     assert _column_names(inspector.get_columns("users")) >= {
         "id",
         "email_normalized",
@@ -36,6 +41,12 @@ def test_initial_migration_runs_against_sqlite(tmp_path: Path) -> None:
         "last_seen_at",
         "expires_at",
         "revoked_at",
+    }
+    assert _column_names(inspector.get_columns("login_attempts")) >= {
+        "id",
+        "email_normalized",
+        "source_hash",
+        "failed_at",
     }
 
 
@@ -55,6 +66,7 @@ def test_initial_migration_can_downgrade_sqlite(tmp_path: Path) -> None:
 
     assert "users" not in inspector.get_table_names()
     assert "sessions" not in inspector.get_table_names()
+    assert "login_attempts" not in inspector.get_table_names()
 
 
 def _column_names(columns: list[dict[str, object]]) -> set[str]:
