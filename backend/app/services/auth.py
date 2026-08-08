@@ -17,6 +17,7 @@ from app.repositories.auth import (
     record_failed_login_attempt,
     revoke_session,
     touch_session,
+    update_session_csrf_token_hash,
 )
 from app.services.email import normalize_email
 from app.services.passwords import hash_password, is_valid_password_length, verify_password
@@ -26,6 +27,7 @@ from app.services.tokens import (
     hash_csrf_token,
     hash_session_token,
     hash_source_identifier,
+    verify_csrf_token_hash,
 )
 
 MIN_PASSWORD_LENGTH = 12
@@ -57,6 +59,10 @@ class LoginRateLimitedError(AuthError):
 
 class InvalidSessionError(AuthError):
     """Raised when a session token is missing, expired, revoked, or unknown."""
+
+
+class InvalidCsrfTokenError(AuthError):
+    """Raised when an unsafe authenticated request has an invalid CSRF token."""
 
 
 @dataclass(frozen=True)
@@ -186,3 +192,28 @@ def logout_session(
     now: datetime,
 ) -> None:
     revoke_session(db_session, user_session=user_session, revoked_at=now)
+
+
+def validate_csrf_token(
+    *,
+    user_session: UserSession,
+    csrf_token: str,
+    session_secret: SecretStr | str,
+) -> None:
+    if not verify_csrf_token_hash(csrf_token, user_session.csrf_token_hash, session_secret):
+        raise InvalidCsrfTokenError
+
+
+def refresh_csrf_token(
+    db_session: Session,
+    *,
+    user_session: UserSession,
+    session_secret: SecretStr | str,
+) -> str:
+    csrf_token = generate_csrf_token()
+    update_session_csrf_token_hash(
+        db_session,
+        user_session=user_session,
+        csrf_token_hash=hash_csrf_token(csrf_token, session_secret),
+    )
+    return csrf_token

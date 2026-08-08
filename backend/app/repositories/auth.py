@@ -107,6 +107,17 @@ def touch_session(
     return user_session
 
 
+def update_session_csrf_token_hash(
+    db_session: Session,
+    *,
+    user_session: UserSession,
+    csrf_token_hash: str,
+) -> UserSession:
+    user_session.csrf_token_hash = csrf_token_hash
+    db_session.flush()
+    return user_session
+
+
 def record_failed_login_attempt(
     db_session: Session,
     *,
