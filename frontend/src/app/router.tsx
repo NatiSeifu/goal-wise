@@ -1,7 +1,10 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import { AppShell } from "../components/layout/AppShell.tsx";
+import { RequireAuth } from "../features/auth/RequireAuth.tsx";
 import { PlaceholderRoute } from "../routes/app/PlaceholderRoute.tsx";
+import { LoginRoute } from "../routes/auth/LoginRoute.tsx";
+import { RegisterRoute } from "../routes/auth/RegisterRoute.tsx";
 import { LandingRoute } from "../routes/landing/LandingRoute.tsx";
 import { routes } from "./routes.ts";
 
@@ -12,24 +15,18 @@ export const router = createBrowserRouter([
   },
   {
     path: routes.login,
-    element: (
-      <PlaceholderRoute
-        title="Sign in"
-        description="The auth screen will connect to the backend session and CSRF flow in the auth slice."
-      />
-    ),
+    element: <LoginRoute />,
   },
   {
     path: routes.register,
-    element: (
-      <PlaceholderRoute
-        title="Create account"
-        description="Registration will create the account, receive the CSRF token, and enter the protected app."
-      />
-    ),
+    element: <RegisterRoute />,
   },
   {
-    element: <AppShell />,
+    element: (
+      <RequireAuth>
+        <AppShell />
+      </RequireAuth>
+    ),
     children: [
       {
         path: routes.dashboard,

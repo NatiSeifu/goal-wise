@@ -1,6 +1,8 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { routes } from "../../app/routes.ts";
+import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
 const navItems = [
   { href: routes.dashboard, label: "Dashboard" },
@@ -10,6 +12,25 @@ const navItems = [
 ];
 
 export function AppShell() {
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLogoutError(null);
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+      navigate(routes.login, { replace: true });
+    } catch {
+      setLogoutError("We could not sign you out. Try again.");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="GoalWise app navigation">
@@ -30,9 +51,22 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
-        <p className="sidebar-note">
-          MVP scope: one active goal, manual inputs, deterministic backend calculations.
-        </p>
+        <div className="sidebar-account">
+          <p className="sidebar-user">{user?.email}</p>
+          {logoutError === null ? null : (
+            <p className="sidebar-error" role="alert">
+              {logoutError}
+            </p>
+          )}
+          <button
+            className="button secondary sidebar-logout"
+            disabled={isLoggingOut}
+            type="button"
+            onClick={() => void handleLogout()}
+          >
+            {isLoggingOut ? "Signing out" : "Sign out"}
+          </button>
+        </div>
       </aside>
       <main className="workspace">
         <Outlet />

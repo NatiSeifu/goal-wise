@@ -9,7 +9,7 @@ export function PlaceholderRoute({ title, description }: PlaceholderRouteProps) 
       <h1 id="route-title">{title}</h1>
       <p>{description}</p>
       <p className="route-boundary">
-        Placeholder only. The next slices wire API contracts, auth state, and backend-owned data.
+        Placeholder only. The next slices render backend-owned data for this workflow.
       </p>
     </section>
   );

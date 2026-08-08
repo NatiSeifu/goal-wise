@@ -1,5 +1,5 @@
 import { getCsrfToken } from "./csrf.ts";
-import { toApiError } from "./errors.ts";
+import { ApiError, toApiError } from "./errors.ts";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -10,7 +10,8 @@ type ApiRequestOptions = {
   signal?: AbortSignal;
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const DEFAULT_API_BASE_URL = import.meta.env.DEV ? "http://localhost:8000" : "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL;
 const UNSAFE_METHODS = new Set<HttpMethod>(["POST", "PUT", "PATCH", "DELETE"]);
 
 export async function apiRequest<TResponse>(
@@ -37,7 +38,16 @@ export async function apiRequest<TResponse>(
     requestHeaders.set("X-CSRF-Token", csrfToken);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, requestInit);
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, requestInit);
+  } catch {
+    throw new ApiError({
+      status: 0,
+      code: "network_error",
+      message: "Could not reach the GoalWise API. Check that the backend is running.",
+    });
+  }
 
   if (response.status === 204) {
     if (!response.ok) {
