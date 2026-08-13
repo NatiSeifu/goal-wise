@@ -48,6 +48,21 @@ make backend-migration-current
 The local PostgreSQL Compose workflow is documented in [backend/README.md](backend/README.md).
 Backend CI runs on pull requests to `development` for backend-related changes.
 
+## Frontend Runtime
+
+Frontend tooling lives under `frontend/` and uses React + Vite.
+
+Common frontend commands:
+
+```text
+make frontend-sync
+make frontend-dev
+make frontend-check
+```
+
+The production frontend must render backend-provided financial values. It must
+not duplicate `pace-v1` formulas in React.
+
 ## Documentation
 
 Key project documents:
