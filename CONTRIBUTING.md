@@ -93,4 +93,11 @@ PRs should not rely on CI alone. The author is responsible for running the relev
 
 Backend Python tooling is configured in `backend/pyproject.toml`.
 
-Frontend build and smoke checks will be added when frontend implementation starts.
+Frontend CI runs on pull requests to `development` when frontend, Makefile, or
+frontend workflow files change.
+
+Current frontend CI gates:
+
+- Reproducible frontend dependency install with `npm ci`.
+- Frontend linting.
+- TypeScript and Vite production build.

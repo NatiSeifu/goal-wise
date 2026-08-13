@@ -1,0 +1,36 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    branches:
+      - development
+    paths:
+      - ".github/workflows/frontend.yml"
+      - "Makefile"
+      - "frontend/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Sync frontend dependencies
+        run: make frontend-sync
+
+      - name: Run frontend checks
+        run: make frontend-check
