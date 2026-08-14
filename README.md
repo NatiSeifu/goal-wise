@@ -28,6 +28,36 @@ The MVP architecture uses:
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the high-level system view and [DESIGN.md](DESIGN.md) for backend design details.
 
+## Local Development
+
+Use the full-stack wrappers for normal local work:
+
+```text
+make dev-sync
+make dev-up
+make dev-down
+```
+
+`make dev-sync` installs backend and frontend dependencies. `make dev-up` starts
+PostgreSQL and the backend with Docker Compose, applies migrations to the Compose
+PostgreSQL database, then starts the Vite frontend dev server in the foreground.
+Use Ctrl+C to stop the frontend server, then run `make dev-down` to stop the
+backend stack.
+
+`make dev-down` preserves the local PostgreSQL volume. To intentionally remove
+the local database volume too, run:
+
+```text
+CONFIRM=destroy make dev-destroy
+```
+
+Useful helpers:
+
+```text
+make dev-status
+make dev-logs
+```
+
 ## Backend Runtime
 
 Backend tooling uses `uv` with the project environment at `.venv`.
