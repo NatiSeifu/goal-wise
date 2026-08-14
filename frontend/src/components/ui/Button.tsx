@@ -1,7 +1,7 @@
 import { Link, type LinkProps } from "react-router-dom";
 import type { ButtonHTMLAttributes } from "react";
 
-type ButtonVariant = "primary" | "secondary";
+type ButtonVariant = "danger" | "primary" | "secondary";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;

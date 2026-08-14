@@ -41,6 +41,12 @@ export function updateGoal(goalId: string, payload: GoalRequest) {
   });
 }
 
+export function archiveGoal(goalId: string) {
+  return apiRequest<GoalItemResponse>(endpoints.goals.archive(goalId), {
+    method: "POST",
+  });
+}
+
 export function getFinancialProfile() {
   return apiRequest<FinancialProfileItemResponse>(endpoints.financialProfile);
 }
