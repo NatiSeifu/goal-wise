@@ -1,4 +1,4 @@
-.PHONY: dev-sync dev-up dev-down dev-destroy dev-logs dev-status backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-compose-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs backend-stack-up backend-stack-down backend-stack-logs backend-image-build backend-image-run frontend-sync frontend-dev frontend-build frontend-lint frontend-test frontend-check check
+.PHONY: dev-sync dev-up dev-down dev-destroy dev-logs dev-status seed-user-stories backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-compose-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs backend-stack-up backend-stack-down backend-stack-logs backend-image-build backend-image-run frontend-sync frontend-dev frontend-build frontend-lint frontend-test frontend-check check
 
 UV ?= uv
 BACKEND_PROJECT ?= backend
@@ -25,6 +25,9 @@ dev-logs: backend-stack-logs
 
 dev-status:
 	docker compose ps
+
+seed-user-stories:
+	node scripts/seed-user-stories.mjs
 
 backend-sync:
 	cd $(BACKEND_PROJECT) && UV_PROJECT_ENVIRONMENT=$(BACKEND_UV_ENV) $(UV) sync --extra dev
