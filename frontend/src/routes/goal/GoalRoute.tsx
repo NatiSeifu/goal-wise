@@ -79,7 +79,7 @@ export function GoalRoute() {
       if (response.item !== null) {
         setForm(goalToForm(response.item));
       }
-      setSuccessMessage("Goal saved. The backend recalculated the latest snapshot when inputs were ready.");
+      setSuccessMessage("Goal saved. Complete the financial inputs to update dashboard results.");
       await activeGoal.reload();
     } catch (error) {
       if (error instanceof ApiError && error.fields !== null) {
@@ -186,6 +186,9 @@ export function GoalRoute() {
           <Button disabled={isSubmitting} type="submit">
             {isSubmitting ? "Saving goal" : existingGoal === null ? "Create goal" : "Save goal"}
           </Button>
+          <ButtonLink to={routes.financialInputs}>
+            Continue to inputs
+          </ButtonLink>
           <ButtonLink to={routes.dashboard}>
             View dashboard
           </ButtonLink>

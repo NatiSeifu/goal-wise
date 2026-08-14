@@ -107,6 +107,7 @@ export function FinancialInputsRoute() {
   const [expenseError, setExpenseError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<string | null>(null);
+  const isBusy = busyAction !== null;
 
   useEffect(() => {
     if (inputs.status === "ready" && inputs.data.profile !== null) {
@@ -145,7 +146,7 @@ export function FinancialInputsRoute() {
       if (response.item !== null) {
         setProfileForm(profileToForm(response.item));
       }
-      await reloadAfterSuccess("Financial profile saved. The backend recalculated when inputs were ready.");
+      await reloadAfterSuccess("Financial profile saved. Open the dashboard to view current results.");
     } catch (error) {
       handleFormError(error, setProfileFields, setProfileError, "Financial profile could not be saved.");
     } finally {
@@ -166,8 +167,7 @@ export function FinancialInputsRoute() {
       } else {
         await updateIncomeSource(editingIncomeId, payload);
       }
-      setIncomeForm(emptyIncomeForm);
-      setEditingIncomeId(null);
+      resetIncomeForm();
       await reloadAfterSuccess("Income source saved.");
     } catch (error) {
       handleFormError(error, setIncomeFields, setIncomeError, "Income source could not be saved.");
@@ -189,8 +189,7 @@ export function FinancialInputsRoute() {
       } else {
         await updatePlannedExpense(editingExpenseId, payload);
       }
-      setExpenseForm(emptyExpenseForm);
-      setEditingExpenseId(null);
+      resetExpenseForm();
       await reloadAfterSuccess("Planned expense saved.");
     } catch (error) {
       handleFormError(error, setExpenseFields, setExpenseError, "Planned expense could not be saved.");
@@ -204,6 +203,9 @@ export function FinancialInputsRoute() {
     setSuccessMessage(null);
     try {
       await deleteIncomeSource(incomeSourceId);
+      if (editingIncomeId === incomeSourceId) {
+        resetIncomeForm();
+      }
       await reloadAfterSuccess("Income source deactivated.");
     } catch (error) {
       setIncomeError(error instanceof Error ? error.message : "Income source could not be deactivated.");
@@ -217,12 +219,45 @@ export function FinancialInputsRoute() {
     setSuccessMessage(null);
     try {
       await deletePlannedExpense(expenseId);
+      if (editingExpenseId === expenseId) {
+        resetExpenseForm();
+      }
       await reloadAfterSuccess("Planned expense deactivated.");
     } catch (error) {
       setExpenseError(error instanceof Error ? error.message : "Planned expense could not be deactivated.");
     } finally {
       setBusyAction(null);
     }
+  }
+
+  function resetIncomeForm() {
+    setEditingIncomeId(null);
+    setIncomeForm(emptyIncomeForm);
+    setIncomeFields({});
+    setIncomeError(null);
+  }
+
+  function resetExpenseForm() {
+    setEditingExpenseId(null);
+    setExpenseForm(emptyExpenseForm);
+    setExpenseFields({});
+    setExpenseError(null);
+  }
+
+  function startIncomeEdit(item: IncomeSourceResponse) {
+    setSuccessMessage(null);
+    setIncomeFields({});
+    setIncomeError(null);
+    setEditingIncomeId(item.id);
+    setIncomeForm(incomeToForm(item));
+  }
+
+  function startExpenseEdit(item: PlannedExpenseResponse) {
+    setSuccessMessage(null);
+    setExpenseFields({});
+    setExpenseError(null);
+    setEditingExpenseId(item.id);
+    setExpenseForm(expenseToForm(item));
   }
 
   return (
@@ -288,7 +323,7 @@ export function FinancialInputsRoute() {
           </label>
         </div>
         <div className="form-actions">
-          <Button disabled={busyAction === "profile"} type="submit">
+          <Button disabled={isBusy} type="submit">
             {busyAction === "profile" ? "Saving profile" : "Save profile"}
           </Button>
         </div>
@@ -319,17 +354,15 @@ export function FinancialInputsRoute() {
             value={incomeForm.confidence}
           />
           <div className="form-actions">
-            <Button disabled={busyAction === "income"} type="submit">
+            <Button disabled={isBusy} type="submit">
               {busyAction === "income" ? "Saving income" : editingIncomeId === null ? "Add income" : "Save income"}
             </Button>
             {editingIncomeId === null ? null : (
               <Button
+                disabled={isBusy}
                 variant="secondary"
                 type="button"
-                onClick={() => {
-                  setEditingIncomeId(null);
-                  setIncomeForm(emptyIncomeForm);
-                }}
+                onClick={resetIncomeForm}
               >
                 Cancel edit
               </Button>
@@ -363,7 +396,7 @@ export function FinancialInputsRoute() {
             value={expenseForm.classification}
           />
           <div className="form-actions">
-            <Button disabled={busyAction === "expense"} type="submit">
+            <Button disabled={isBusy} type="submit">
               {busyAction === "expense"
                 ? "Saving expense"
                 : editingExpenseId === null
@@ -372,12 +405,10 @@ export function FinancialInputsRoute() {
             </Button>
             {editingExpenseId === null ? null : (
               <Button
+                disabled={isBusy}
                 variant="secondary"
                 type="button"
-                onClick={() => {
-                  setEditingExpenseId(null);
-                  setExpenseForm(emptyExpenseForm);
-                }}
+                onClick={resetExpenseForm}
               >
                 Cancel edit
               </Button>
@@ -392,10 +423,7 @@ export function FinancialInputsRoute() {
           items={inputs.data.incomeSources}
           title="Active income"
           onDeactivate={(item) => void handleDeactivateIncome(item.id)}
-          onEdit={(item) => {
-            setEditingIncomeId(item.id);
-            setIncomeForm(incomeToForm(item));
-          }}
+          onEdit={startIncomeEdit}
           busyAction={busyAction}
           kind="income"
         />
@@ -404,10 +432,7 @@ export function FinancialInputsRoute() {
           items={inputs.data.expenses}
           title="Planned expenses"
           onDeactivate={(item) => void handleDeactivateExpense(item.id)}
-          onEdit={(item) => {
-            setEditingExpenseId(item.id);
-            setExpenseForm(expenseToForm(item));
-          }}
+          onEdit={startExpenseEdit}
           busyAction={busyAction}
           kind="expense"
         />
@@ -479,6 +504,7 @@ function SourceFields({
         value={amountDollars}
       />
       <TextField
+        error={fieldError(fields, "next_date")}
         id={`${prefix}-next-date`}
         label="Next date"
         onChange={(event) => onNextDateChange(event.target.value)}
@@ -531,12 +557,12 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
                 </p>
               </div>
               <div className="resource-actions">
-                <Button variant="secondary" type="button" onClick={() => onEdit(item)}>
+                <Button disabled={busyAction !== null} variant="secondary" type="button" onClick={() => onEdit(item)}>
                   Edit
                 </Button>
                 <Button
                   variant="secondary"
-                  disabled={busyAction === `${kind}-${item.id}`}
+                  disabled={busyAction !== null}
                   type="button"
                   onClick={() => onDeactivate(item)}
                 >

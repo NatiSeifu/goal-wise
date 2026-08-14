@@ -39,7 +39,7 @@ export function RegisterRoute() {
 
     try {
       await auth.register({ email, password, time_zone: timeZone });
-      navigate(routes.dashboard, { replace: true });
+      navigate(routes.goal, { replace: true });
     } catch (registerError) {
       setError(
         registerError instanceof ApiError
