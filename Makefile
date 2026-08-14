@@ -1,4 +1,4 @@
-.PHONY: dev-sync dev-up dev-down dev-destroy dev-logs dev-status backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-compose-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs backend-stack-up backend-stack-down backend-stack-logs backend-image-build backend-image-run frontend-sync frontend-dev frontend-build frontend-lint frontend-check check
+.PHONY: dev-sync dev-up dev-down dev-destroy dev-logs dev-status backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-compose-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs backend-stack-up backend-stack-down backend-stack-logs backend-image-build backend-image-run frontend-sync frontend-dev frontend-build frontend-lint frontend-test frontend-check check
 
 UV ?= uv
 BACKEND_PROJECT ?= backend
@@ -91,6 +91,9 @@ frontend-build:
 frontend-lint:
 	cd $(FRONTEND_PROJECT) && npm run lint
 
-frontend-check: frontend-lint frontend-build
+frontend-test:
+	cd $(FRONTEND_PROJECT) && npm run test
+
+frontend-check: frontend-lint frontend-test frontend-build
 
 check: backend-check frontend-check
