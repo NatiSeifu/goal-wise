@@ -34,6 +34,9 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#workspace-main">
+        Skip to main content
+      </a>
       <aside className="sidebar" aria-label="GoalWise app navigation">
         <NavLink className="brand-lockup brand-link" to={routes.landing}>
           <span className="brand-mark" aria-hidden="true">
@@ -70,7 +73,7 @@ export function AppShell() {
           </Button>
         </div>
       </aside>
-      <main className="workspace">
+      <main className="workspace" id="workspace-main" tabIndex={-1}>
         <Outlet />
       </main>
     </div>

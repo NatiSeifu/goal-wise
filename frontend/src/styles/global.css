@@ -24,6 +24,27 @@ button:focus-visible {
   box-shadow: var(--gw-focus-ring);
 }
 
+.skip-link {
+  position: fixed;
+  z-index: 20;
+  top: var(--gw-space-3);
+  left: var(--gw-space-3);
+  padding: var(--gw-space-3) var(--gw-space-4);
+  color: #ffffff;
+  background: var(--gw-color-blue);
+  border-radius: var(--gw-radius-md);
+  box-shadow: var(--gw-shadow-raised);
+  font-weight: 850;
+  text-decoration: none;
+  transform: translateY(calc(-100% - var(--gw-space-6)));
+}
+
+.skip-link:focus-visible {
+  outline: none;
+  box-shadow: var(--gw-focus-ring), var(--gw-shadow-raised);
+  transform: translateY(0);
+}
+
 .page-shell {
   display: grid;
   min-height: 100vh;
@@ -723,6 +744,15 @@ button:focus-visible {
   width: 1.1rem;
   height: 1.1rem;
   accent-color: var(--gw-color-green);
+}
+
+.checkbox-field:focus-within {
+  border-color: var(--gw-color-blue);
+  box-shadow: var(--gw-focus-ring);
+}
+
+.checkbox-field input:focus-visible {
+  outline: none;
 }
 
 .input-section-grid {
