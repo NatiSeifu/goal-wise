@@ -108,7 +108,8 @@ Build:
 - repository helper to archive a goal;
 - service function `archive_goal_for_user`;
 - route `POST /api/v1/goals/{goal_id}/archive`;
-- archive trigger for snapshot recalculation where appropriate.
+- no new pace snapshot on archive; the archived goal remains persisted and prior
+  immutable snapshots remain the calculation history.
 
 Success criteria:
 

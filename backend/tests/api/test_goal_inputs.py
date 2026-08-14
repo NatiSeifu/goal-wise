@@ -155,6 +155,90 @@ def test_patch_goal_marks_completed(client: TestClient) -> None:
     assert client.get("/api/v1/goals/active").json() == {"item": None}
 
 
+def test_archive_goal_requires_csrf(client: TestClient) -> None:
+    csrf_token = _register(client)
+    create_response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    goal_id = create_response.json()["item"]["id"]
+
+    response = client.post(f"/api/v1/goals/{goal_id}/archive")
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "csrf_failed"
+
+
+def test_archive_goal_marks_goal_archived_and_clears_active_goal(
+    client: TestClient,
+) -> None:
+    csrf_token = _register(client)
+    create_response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    goal_id = create_response.json()["item"]["id"]
+
+    archive_response = client.post(
+        f"/api/v1/goals/{goal_id}/archive",
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert archive_response.status_code == 200
+    assert archive_response.json()["item"]["id"] == goal_id
+    assert archive_response.json()["item"]["status"] == "archived"
+    assert archive_response.json()["item"]["archived_at"] is not None
+    assert client.get("/api/v1/goals/active").json() == {"item": None}
+
+
+def test_archive_goal_allows_new_active_goal(client: TestClient) -> None:
+    csrf_token = _register(client)
+    create_response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    goal_id = create_response.json()["item"]["id"]
+    archive_response = client.post(
+        f"/api/v1/goals/{goal_id}/archive",
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    new_goal_response = client.post(
+        "/api/v1/goals",
+        json={**_goal_payload(), "name": "Move fund"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert archive_response.status_code == 200
+    assert new_goal_response.status_code == 201
+    assert new_goal_response.json()["item"]["name"] == "Move fund"
+    assert new_goal_response.json()["item"]["status"] == "active"
+
+
+def test_archive_goal_returns_404_for_cross_user_access(client: TestClient) -> None:
+    owner_csrf = _register(client, email="archive-owner@example.com")
+    create_response = client.post(
+        "/api/v1/goals",
+        json=_goal_payload(),
+        headers={"X-CSRF-Token": owner_csrf},
+    )
+    goal_id = create_response.json()["item"]["id"]
+
+    client.cookies.clear()
+    other_csrf = _register(client, email="archive-other@example.com")
+
+    response = client.post(
+        f"/api/v1/goals/{goal_id}/archive",
+        headers={"X-CSRF-Token": other_csrf},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "not_found"
+
+
 def _register(client: TestClient, *, email: str = "nati@example.com") -> str:
     response = client.post(
         "/api/v1/auth/register",
