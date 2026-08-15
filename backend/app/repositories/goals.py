@@ -81,3 +81,10 @@ def update_goal(
     goal.archived_at = archived_at
     db_session.flush()
     return goal
+
+
+def archive_goal(db_session: Session, *, goal: Goal, archived_at: datetime) -> Goal:
+    goal.status = "archived"
+    goal.archived_at = archived_at
+    db_session.flush()
+    return goal

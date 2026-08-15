@@ -5,7 +5,13 @@ from datetime import date, datetime
 from sqlalchemy.orm import Session
 
 from app.models import Goal
-from app.repositories.goals import create_goal, get_active_goal, get_goal_for_user, update_goal
+from app.repositories.goals import (
+    archive_goal,
+    create_goal,
+    get_active_goal,
+    get_goal_for_user,
+    update_goal,
+)
 from app.services.local_dates import user_local_date
 
 
@@ -116,6 +122,20 @@ def update_goal_for_user(
             current_saved_cents=current_saved_cents,
         ),
     )
+
+
+def archive_goal_for_user(
+    db_session: Session,
+    *,
+    user_id: str,
+    goal_id: str,
+    now: datetime,
+) -> Goal:
+    goal = get_goal_for_user(db_session, user_id=user_id, goal_id=goal_id)
+    if goal is None:
+        raise GoalNotFoundError
+
+    return archive_goal(db_session, goal=goal, archived_at=now)
 
 
 def _validate_goal_fields(

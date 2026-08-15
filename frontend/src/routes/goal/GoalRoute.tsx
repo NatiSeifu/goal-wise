@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ApiError, type FieldErrors } from "../../api/errors.ts";
-import { createGoal, updateGoal } from "../../api/resources.ts";
+import { archiveGoal, createGoal, updateGoal } from "../../api/resources.ts";
 import type { GoalRequest, GoalResponse } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
 import { Alert } from "../../components/feedback/Alert.tsx";
@@ -37,6 +37,7 @@ export function GoalRoute() {
   const [fields, setFields] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -90,6 +91,28 @@ export function GoalRoute() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleArchiveGoal() {
+    if (existingGoal === null) {
+      return;
+    }
+
+    setFields({});
+    setFormError(null);
+    setSuccessMessage(null);
+    setIsArchiving(true);
+
+    try {
+      await archiveGoal(existingGoal.id);
+      setForm(emptyGoalForm);
+      setSuccessMessage("Goal archived. Its prior calculations remain saved, and you can create a new active goal.");
+      await activeGoal.reload();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Goal could not be archived.");
+    } finally {
+      setIsArchiving(false);
     }
   }
 
@@ -183,9 +206,19 @@ export function GoalRoute() {
           />
         </div>
         <div className="form-actions">
-          <Button disabled={isSubmitting} type="submit">
+          <Button disabled={isSubmitting || isArchiving} type="submit">
             {isSubmitting ? "Saving goal" : existingGoal === null ? "Create goal" : "Save goal"}
           </Button>
+          {existingGoal === null ? null : (
+            <Button
+              disabled={isSubmitting || isArchiving}
+              onClick={() => void handleArchiveGoal()}
+              type="button"
+              variant="danger"
+            >
+              {isArchiving ? "Archiving goal" : "Archive active goal"}
+            </Button>
+          )}
           <ButtonLink to={routes.financialInputs}>
             Continue to inputs
           </ButtonLink>
@@ -193,6 +226,11 @@ export function GoalRoute() {
             View dashboard
           </ButtonLink>
         </div>
+        {existingGoal === null ? null : (
+          <p className="form-help">
+            Archiving removes this goal from active planning without deleting its saved calculation history.
+          </p>
+        )}
       </form>
     </section>
   );

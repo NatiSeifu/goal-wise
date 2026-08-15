@@ -11,6 +11,7 @@ from app.schemas.goal_inputs import GoalItemResponse, GoalRequest, GoalResponse
 from app.services.goal_inputs import (
     GoalInputValidationError,
     GoalNotFoundError,
+    archive_goal_for_user,
     create_goal_for_user,
     get_active_goal_for_user,
     update_goal_for_user,
@@ -106,6 +107,32 @@ def update_goal(
     except GoalInputValidationError as exc:
         db_session.rollback()
         return validation_error_response(fields=exc.fields)
+
+    db_session.commit()
+    return GoalItemResponse(item=_goal_response(goal))
+
+
+@router.post("/{goal_id}/archive", response_model=GoalItemResponse)
+def archive_goal(
+    goal_id: str,
+    current_session: CsrfSessionDep,
+    db_session: DbSessionDep,
+    now: NowDep,
+) -> GoalItemResponse | Response:
+    try:
+        goal = archive_goal_for_user(
+            db_session,
+            user_id=current_session.user.id,
+            goal_id=goal_id,
+            now=now,
+        )
+    except GoalNotFoundError:
+        db_session.rollback()
+        return error_response(
+            status_code=404,
+            code="not_found",
+            message="Goal not found.",
+        )
 
     db_session.commit()
     return GoalItemResponse(item=_goal_response(goal))

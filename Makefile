@@ -1,4 +1,4 @@
-.PHONY: dev-sync dev-up dev-down dev-destroy dev-logs dev-status seed-user-stories backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-compose-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs backend-stack-up backend-stack-down backend-stack-logs backend-image-build backend-image-run frontend-sync frontend-dev frontend-build frontend-lint frontend-test frontend-check check
+.PHONY: dev-sync dev-up dev-down dev-destroy dev-logs dev-status seed-user-stories backend-sync backend-format backend-lint backend-typecheck backend-test backend-check backend-migrate backend-compose-migrate backend-migration-current backend-migration-downgrade backend-db-up backend-db-down backend-db-logs backend-stack-up backend-stack-rebuild backend-stack-down backend-stack-logs backend-image-build backend-image-run frontend-sync frontend-dev frontend-build frontend-lint frontend-test frontend-check check
 
 UV ?= uv
 BACKEND_PROJECT ?= backend
@@ -69,6 +69,9 @@ backend-db-logs:
 
 backend-stack-up:
 	docker compose up -d postgres backend
+
+backend-stack-rebuild:
+	docker compose up -d --build postgres backend
 
 backend-stack-down:
 	docker compose down

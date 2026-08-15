@@ -9,6 +9,7 @@ export const endpoints = {
   },
   goals: {
     active: `${API_PREFIX}/goals/active`,
+    archive: (goalId: string) => `${API_PREFIX}/goals/${goalId}/archive`,
     collection: `${API_PREFIX}/goals`,
     item: (goalId: string) => `${API_PREFIX}/goals/${goalId}`,
   },
