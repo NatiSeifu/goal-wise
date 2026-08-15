@@ -24,10 +24,10 @@ Backend service variables:
 ```text
 DATABASE_URL
 SESSION_SECRET
-COOKIE_SECURE=true
+SECURE_COOKIES=true
 COOKIE_SAMESITE=Lax or None
 ALLOWED_FRONTEND_ORIGIN
-ENVIRONMENT=production
+ENVIRONMENT=staging or production
 ```
 
 Frontend service variables:
@@ -91,17 +91,50 @@ These commands run Alembic through the backend `uv` environment and use the conf
 
 ## Build and Runtime
 
+Railway should deploy GoalWise as an isolated monorepo with one Railway service
+per application root:
+
+```text
+api root directory: /backend
+frontend root directory: /frontend
+```
+
 Frontend:
 
-- Build command: `npm run build`.
-- Static output directory: Vite `dist`.
-- API base URL comes from `VITE_API_BASE_URL`.
+- Use `frontend/Dockerfile`.
+- The Dockerfile builds Vite output and serves `dist` with Caddy.
+- API base URL comes from `VITE_API_BASE_URL` and is required at build time.
 
 Backend:
 
+- Use `backend/Dockerfile`.
 - Start FastAPI with the Railway-provided `PORT`.
 - Read all runtime configuration from environment variables.
 - Expose a lightweight health endpoint for demo monitoring.
+
+## Staging Environment
+
+Recommended staging variables:
+
+Backend `api` service:
+
+```text
+ENVIRONMENT=staging
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+SESSION_SECRET=<long random value>
+SECURE_COOKIES=true
+COOKIE_SAMESITE=none
+ALLOWED_FRONTEND_ORIGIN=https://<frontend-staging-domain>
+```
+
+Frontend service:
+
+```text
+VITE_API_BASE_URL=https://<api-staging-domain>
+```
+
+Use exact generated Railway domains without trailing slashes. If custom same-site
+domains are introduced later, `COOKIE_SAMESITE` may be revisited.
 
 ## Security Requirements
 
