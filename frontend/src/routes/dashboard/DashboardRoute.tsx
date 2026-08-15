@@ -10,6 +10,7 @@ import { Panel } from "../../components/ui/Panel.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
 import { formatCents, formatDate, formatDateTime, formatPercent } from "../../utils/format.ts";
+import { formatInputCategoryList } from "../../utils/labels.ts";
 
 const missingInputLabels: Record<string, { action: string; label: string; to: string }> = {
   active_goal: {
@@ -18,8 +19,8 @@ const missingInputLabels: Record<string, { action: string; label: string; to: st
     to: routes.goal,
   },
   calculation_snapshot: {
-    action: "Save valid goal and financial assumptions so the backend can create a snapshot.",
-    label: "Calculation snapshot",
+    action: "Save valid goal and financial assumptions so the backend can calculate your pace.",
+    label: "Calculation record",
     to: routes.financialInputs,
   },
   financial_profile: {
@@ -147,12 +148,12 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
         </Panel>
       </section>
 
-      <section className="dashboard-grid secondary" aria-label="Snapshot explanation">
-        <Panel title="Snapshot trail">
+      <section className="dashboard-grid secondary" aria-label="Calculation explanation">
+        <Panel title="Latest calculation">
           <dl className="snapshot-list">
             <div>
-              <dt>Snapshot ID</dt>
-              <dd>{item.snapshot_id}</dd>
+              <dt>Calculated</dt>
+              <dd>{formatDateTime(item.calculated_at)}</dd>
             </div>
             <div>
               <dt>Formula version</dt>
@@ -160,7 +161,7 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
             </div>
           </dl>
           <Link className="text-link" to={routes.calculation}>
-            View calculation details
+            View calculation record
           </Link>
         </Panel>
 
@@ -184,8 +185,8 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
         <Panel title="Changed from previous">
           <p className="panel-copy">
             {changedInputCategories.length === 0
-              ? "No previous snapshot changes are reported by the backend."
-              : changedInputCategories.join(", ")}
+              ? "No previous calculation changes are available yet."
+              : formatInputCategoryList(changedInputCategories)}
           </p>
           <p className="panel-copy">
             Weekly safe-to-spend delta: {weeklyDelta === null ? "Not available" : formatCents(weeklyDelta)}

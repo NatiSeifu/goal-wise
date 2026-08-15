@@ -8,6 +8,7 @@ import { ButtonLink } from "../../components/ui/Button.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { useLatestCalculationSnapshot } from "../../features/snapshots/useLatestCalculationSnapshot.ts";
 import { formatCents, formatDateTime, formatPercent } from "../../utils/format.ts";
+import { humanizeTechnicalKey } from "../../utils/labels.ts";
 
 export function CalculationRoute() {
   const snapshot = useLatestCalculationSnapshot();
@@ -32,7 +33,7 @@ export function CalculationRoute() {
       <section className="dashboard-page" aria-labelledby="calculation-title">
         <CalculationHeader />
         <EmptyState
-          title="No snapshot yet"
+          title="No calculation yet"
           description="Save a valid goal and financial assumptions before viewing calculation details."
           action={
             <ButtonLink variant="primary" to={routes.financialInputs}>
@@ -54,11 +55,11 @@ export function CalculationRoute() {
   return (
     <section className="dashboard-page" aria-labelledby="calculation-title">
       <CalculationHeader />
-      <section className="dashboard-grid" aria-label="Calculation snapshot">
-        <Panel title="Snapshot">
+      <section className="dashboard-grid" aria-label="Calculation record">
+        <Panel title="Calculation record">
           <dl className="snapshot-list">
             <div>
-              <dt>ID</dt>
+              <dt>Audit ID</dt>
               <dd>{snapshot.data.id}</dd>
             </div>
             <div>
@@ -67,7 +68,7 @@ export function CalculationRoute() {
             </div>
             <div>
               <dt>Trigger</dt>
-              <dd>{getStringValue(calculation, "trigger") ?? snapshot.data.trigger}</dd>
+              <dd>{humanizeTechnicalKey(getStringValue(calculation, "trigger") ?? snapshot.data.trigger)}</dd>
             </div>
             <div>
               <dt>Calculated</dt>
@@ -88,7 +89,7 @@ export function CalculationRoute() {
 
         <Panel title="Normalized inputs">
           <p className="panel-copy">
-            This snapshot stores the validated inputs used by the deterministic engine. It is read-only.
+            This record stores the validated inputs used by the deterministic engine. It is read-only.
           </p>
           <dl className="metric-list compact">
             <div>
@@ -122,7 +123,7 @@ function CalculationHeader() {
           Back to dashboard
         </ButtonLink>
       }
-      description="Latest immutable snapshot returned by the backend."
+      description="Latest immutable calculation record returned by the backend."
       title="Calculation details"
       titleId="calculation-title"
     />
