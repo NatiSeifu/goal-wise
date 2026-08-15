@@ -17,6 +17,10 @@
 		format json
 	}
 
+	handle /api/* {
+		reverse_proxy {$API_PROXY_TARGET:http://backend:8000}
+	}
+
 	root * dist
 	encode gzip
 	file_server

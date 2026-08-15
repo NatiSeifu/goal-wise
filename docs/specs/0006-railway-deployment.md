@@ -33,7 +33,8 @@ ENVIRONMENT=staging or production
 Frontend service variables:
 
 ```text
-VITE_API_BASE_URL
+API_PROXY_TARGET
+VITE_API_BASE_URL optional; leave unset/empty for same-origin API calls
 ```
 
 Local development may use `.env` files. Hosted secrets must be configured as Railway service variables.
@@ -55,7 +56,20 @@ Frontend: https://<frontend>.up.railway.app
 API:      https://<api>.up.railway.app
 ```
 
-If browser behavior treats the frontend and API as cross-site, use:
+The browser should still call the API through the frontend origin:
+
+```text
+Browser -> https://<frontend>.up.railway.app/api/v1/*
+Frontend Caddy -> API_PROXY_TARGET -> api service
+```
+
+This keeps session cookies first-party for the browser and avoids mobile Safari
+cross-site cookie behavior. The public API domain may remain available for
+health checks and diagnostics, but the React app should not call it directly in
+hosted environments.
+
+If browser behavior treats the frontend and API as cross-site because the React
+app calls the API public domain directly, use:
 
 ```text
 SameSite=None
@@ -103,7 +117,9 @@ Frontend:
 
 - Use `frontend/Dockerfile`.
 - The Dockerfile builds Vite output and serves `dist` with Caddy.
-- API base URL comes from `VITE_API_BASE_URL` and is required at build time.
+- Hosted builds should leave `VITE_API_BASE_URL` unset or empty so browser API
+  calls use same-origin `/api/*` paths.
+- Caddy proxies `/api/*` to `API_PROXY_TARGET`.
 
 Backend:
 
@@ -130,11 +146,14 @@ ALLOWED_FRONTEND_ORIGIN=https://<frontend-staging-domain>
 Frontend service:
 
 ```text
-VITE_API_BASE_URL=https://<api-staging-domain>
+API_PROXY_TARGET=https://<api-staging-domain>
+VITE_API_BASE_URL=
 ```
 
-Use exact generated Railway domains without trailing slashes. If custom same-site
-domains are introduced later, `COOKIE_SAMESITE` may be revisited.
+Use exact generated Railway domains without trailing slashes. Prefer Railway
+private networking for `API_PROXY_TARGET` when available. With the frontend
+same-origin proxy in place, `COOKIE_SAMESITE=lax` is acceptable; `none` remains
+valid only when paired with `SECURE_COOKIES=true`.
 
 ## Security Requirements
 
@@ -150,7 +169,7 @@ domains are introduced later, `COOKIE_SAMESITE` may be revisited.
 Required checks:
 
 - Frontend loads over HTTPS.
-- Frontend can call `/api/v1/me` with credentials.
+- Frontend can call same-origin `/api/v1/auth/me` with credentials.
 - Backend connects to Railway PostgreSQL through `DATABASE_URL`.
 - Alembic migration state is current.
 - Register, login, logout, and CSRF-protected unsafe request flow works in the hosted environment.
