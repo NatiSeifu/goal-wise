@@ -7,6 +7,7 @@ from app.repositories.auth import create_user
 from app.services.goal_inputs import (
     GoalInputValidationError,
     GoalNotFoundError,
+    archive_goal_for_user,
     create_goal_for_user,
     get_active_goal_for_user,
     update_goal_for_user,
@@ -186,6 +187,61 @@ def test_update_goal_for_user_returns_not_found_for_cross_user_access(
             target_date=date(2026, 12, 31),
             user_time_zone=other_user.time_zone,
             now=datetime(2026, 8, 7, 12, 0, tzinfo=UTC),
+        )
+
+
+def test_archive_goal_for_user_marks_active_goal_archived(db_session: Session) -> None:
+    user = _create_user(db_session)
+    goal = create_goal_for_user(
+        db_session,
+        user_id=user.id,
+        name="Emergency fund",
+        target_cents=300000,
+        initial_saved_cents=50000,
+        current_saved_cents=75000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
+        user_time_zone=user.time_zone,
+        now=datetime(2026, 8, 7, 12, 0, tzinfo=UTC),
+    )
+    archived_at = datetime(2026, 8, 14, 18, 30, tzinfo=UTC)
+
+    archived_goal = archive_goal_for_user(
+        db_session,
+        user_id=user.id,
+        goal_id=goal.id,
+        now=archived_at,
+    )
+
+    assert archived_goal.status == "archived"
+    assert archived_goal.archived_at == archived_at
+    assert get_active_goal_for_user(db_session, user_id=user.id) is None
+
+
+def test_archive_goal_for_user_returns_not_found_for_cross_user_access(
+    db_session: Session,
+) -> None:
+    owner = _create_user(db_session, email_normalized="archive-owner@example.com")
+    other_user = _create_user(db_session, email_normalized="archive-other@example.com")
+    goal = create_goal_for_user(
+        db_session,
+        user_id=owner.id,
+        name="Owner goal",
+        target_cents=300000,
+        initial_saved_cents=50000,
+        current_saved_cents=75000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
+        user_time_zone=owner.time_zone,
+        now=datetime(2026, 8, 7, 12, 0, tzinfo=UTC),
+    )
+
+    with pytest.raises(GoalNotFoundError):
+        archive_goal_for_user(
+            db_session,
+            user_id=other_user.id,
+            goal_id=goal.id,
+            now=datetime(2026, 8, 14, 18, 30, tzinfo=UTC),
         )
 
 

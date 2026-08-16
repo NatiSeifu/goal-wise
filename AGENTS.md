@@ -10,6 +10,7 @@ Before making changes, read:
 - [README.md](README.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [DESIGN.md](DESIGN.md)
+- [Product context](docs/PRODUCT_CONTEXT.md)
 
 For architecture or behavior changes, also consult:
 
@@ -82,6 +83,80 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md):
 - Do not merge your own PR.
 - Use consistent commit descriptors such as `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, and `chore:`.
 
+## UI Mockup Workflow
+
+Follow [SPEC-0009](docs/specs/0009-ui-mockup-and-screenshot-workflow.md) before creating UI mockups, frontend screenshots, or SRS visual assets.
+
+Treat `docs/PRODUCT_CONTEXT.md`, the SRS scope mapping, ADRs, specs, and backend contracts as product truth. Visual references may guide layout, tone, and hierarchy, but they do not define supported capabilities.
+
+Agents must warn the user before:
+
+- inventing metrics, entities, filters, actions, or navigation not represented in the specs or backend contracts;
+- showing deferred features as current MVP behavior;
+- presenting AI as calculating or overriding financial results;
+- using standalone generated UI images when the purpose is an SRS or slide screenshot of the app.
+
+Prefer implemented UI rendered in a browser, then exported to deterministic PNGs with fixed viewport sizes. Use image generation only for illustrations or visual concepts, not for authoritative app screenshots.
+
+## Release Operations
+
+Follow [docs/release-process.md](docs/release-process.md) for release policy. Use this section for agent execution details.
+
+Use a separate worktree for release, tag, and GitHub Release operations so active implementation work in the base worktree is not disturbed.
+
+Recommended setup:
+
+```bash
+git fetch origin --tags
+git worktree add --detach /private/tmp/goal-wise-release-worktree origin/development
+```
+
+Before opening a release PR:
+
+- Verify the worktree points at latest `origin/development`.
+- Run `make backend-sync` if the worktree has a fresh virtual environment.
+- Run `make backend-check`.
+- Check for an existing `development -> main` PR.
+- Open the release PR from `development` to `main`.
+- Format the PR body using the release-candidate structure in `docs/release-process.md`.
+
+Before tagging:
+
+- Confirm the release PR is merged.
+- Fetch latest `main` and tags.
+- Confirm the intended tag does not already exist.
+- Tag the merged `main` commit, not `development` and not a feature branch.
+- Prefer annotated tags.
+
+Tag command pattern:
+
+```bash
+git fetch origin --tags
+git tag -a vX.Y.Z origin/main -m "vX.Y.Z - <milestone name>"
+git push origin vX.Y.Z
+```
+
+Before creating a GitHub Release:
+
+- Confirm the tag exists on the remote.
+- Confirm a GitHub Release does not already exist for that tag.
+- Use cleaned release notes from the merged release PR.
+- Do not include the "Release Candidate" instruction block in the final GitHub Release notes.
+
+GitHub Release command pattern:
+
+```bash
+gh release create vX.Y.Z \
+  --title "vX.Y.Z - <milestone name>" \
+  --notes "<release notes>"
+```
+
+After creating the release, verify:
+
+```bash
+gh release view vX.Y.Z --json tagName,name,url,isDraft,isPrerelease,targetCommitish
+```
+
 ## Verification
 
 Run relevant checks before finishing a change. If tests or checks are not available yet, state what was reviewed manually.
@@ -98,4 +173,3 @@ For implementation changes:
 - Prioritize pace-engine golden tests for calculation behavior.
 - Include cross-user access tests for protected resources.
 - Include auth/session/CSRF tests for authentication changes.
-

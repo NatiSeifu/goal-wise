@@ -1,10 +1,16 @@
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 from app.db.base import Base
 from app.db.session import make_engine, make_session_factory
 from app.repositories.auth import create_user
-from app.repositories.goals import create_goal, get_active_goal, get_goal_for_user, update_goal
+from app.repositories.goals import (
+    archive_goal,
+    create_goal,
+    get_active_goal,
+    get_goal_for_user,
+    update_goal,
+)
 from sqlalchemy import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -150,6 +156,34 @@ def test_update_goal_changes_owned_record(db_session: Session) -> None:
 
     assert updated_goal.name == "New name"
     assert updated_goal.current_saved_cents == 25000
+
+
+def test_archive_goal_marks_record_archived(db_session: Session) -> None:
+    user = create_user(
+        db_session,
+        email_normalized="archive-goal@example.com",
+        password_hash="argon2-hash",
+        time_zone="America/Los_Angeles",
+    )
+    goal = create_goal(
+        db_session,
+        user_id=user.id,
+        name="Emergency fund",
+        target_cents=300000,
+        initial_saved_cents=50000,
+        current_saved_cents=75000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
+        status="active",
+    )
+    archived_at = datetime(2026, 8, 14, 18, 30, tzinfo=UTC)
+
+    archived_goal = archive_goal(db_session, goal=goal, archived_at=archived_at)
+    db_session.commit()
+
+    assert archived_goal.status == "archived"
+    assert archived_goal.archived_at == archived_at
+    assert get_active_goal(db_session, user_id=user.id) is None
 
 
 def test_second_active_goal_for_user_hits_database_guard(db_session: Session) -> None:

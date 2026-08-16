@@ -28,6 +28,71 @@ The MVP architecture uses:
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the high-level system view and [DESIGN.md](DESIGN.md) for backend design details.
 
+## Local Development
+
+Use the full-stack wrappers for normal local work:
+
+```text
+make dev-sync
+make dev-up
+make dev-down
+```
+
+`make dev-sync` installs backend and frontend dependencies. `make dev-up` starts
+PostgreSQL and the backend with Docker Compose, applies migrations to the Compose
+PostgreSQL database, then starts the Vite frontend dev server in the foreground.
+Use Ctrl+C to stop the frontend server, then run `make dev-down` to stop the
+backend stack.
+
+`make dev-down` preserves the local PostgreSQL volume. To intentionally remove
+the local database volume too, run:
+
+```text
+CONFIRM=destroy make dev-destroy
+```
+
+Useful helpers:
+
+```text
+make dev-status
+make dev-logs
+```
+
+## Backend Runtime
+
+Backend tooling uses `uv` with the project environment at `.venv`.
+
+Common backend commands:
+
+```text
+make backend-sync
+make backend-check
+make backend-db-up
+make backend-stack-up
+make backend-migrate
+make backend-migration-current
+```
+
+`make backend-migrate` applies Alembic migrations to the configured `DATABASE_URL`. Local development may use SQLite; deploy-readiness work should also verify migrations against PostgreSQL before hosted demo use.
+
+The local PostgreSQL Compose workflow is documented in [backend/README.md](backend/README.md).
+Backend CI runs on pull requests to `development` for backend-related changes.
+
+## Frontend Runtime
+
+Frontend tooling lives under `frontend/` and uses React + Vite.
+
+Common frontend commands:
+
+```text
+make frontend-sync
+make frontend-dev
+make frontend-check
+```
+
+The production frontend must render backend-provided financial values. It must
+not duplicate `pace-v1` formulas in React.
+
 ## Documentation
 
 Key project documents:
@@ -35,6 +100,7 @@ Key project documents:
 - [SRS](docs/srs/goal-wise-srs-v1.md)
 - [Architecture overview](ARCHITECTURE.md)
 - [Backend design](DESIGN.md)
+- [Product context](docs/PRODUCT_CONTEXT.md)
 - [Contributing guidelines](CONTRIBUTING.md)
 - [Architecture decision process](docs/architecture-decision-process.md)
 - [ADRs](docs/adr/README.md)

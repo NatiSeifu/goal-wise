@@ -77,16 +77,27 @@ Before opening a PR:
 
 ## CI and Testing
 
-Automated CI will be added in a later implementation increment. Until then, each PR should clearly state what was manually checked.
+Backend CI runs on pull requests to `development` when backend, Compose, Makefile,
+or workflow files change.
 
-Expected CI gates once implementation begins:
+Current backend CI gates:
 
 - Backend unit and integration tests.
 - Pace-engine golden tests.
-- Frontend build and smoke tests.
 - Formatting and linting checks.
-- Basic security checks for secrets and dependency risk.
+- Type checking.
+- PostgreSQL migration smoke check.
+- Backend Docker image build.
 
 PRs should not rely on CI alone. The author is responsible for running the relevant local checks before review.
 
 Backend Python tooling is configured in `backend/pyproject.toml`.
+
+Frontend CI runs on pull requests to `development` when frontend, Makefile, or
+frontend workflow files change.
+
+Current frontend CI gates:
+
+- Reproducible frontend dependency install with `npm ci`.
+- Frontend linting.
+- TypeScript and Vite production build.

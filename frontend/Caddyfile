@@ -1,0 +1,30 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+
+	log {
+		format json
+	}
+
+	servers {
+		trusted_proxies static private_ranges 100.0.0.0/8
+	}
+}
+
+:{$PORT:3000} {
+	log {
+		format json
+	}
+
+	handle /api/* {
+		reverse_proxy {$API_PROXY_TARGET:http://backend:8000}
+	}
+
+	handle {
+		root * dist
+		encode gzip
+		try_files {path} /index.html
+		file_server
+	}
+}
