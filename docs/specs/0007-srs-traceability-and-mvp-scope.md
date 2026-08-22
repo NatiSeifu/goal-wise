@@ -1,16 +1,18 @@
 # SPEC-0007: SRS Traceability and MVP Scope
 
 Status: Accepted
-Last Updated: 2026-08-01
+Last Updated: 2026-08-21
 Related ADRs: ADR-0001, ADR-0002, ADR-0003, ADR-0005, ADR-0007, ADR-0008, ADR-0009
 Related Specs: SPEC-0001, SPEC-0002, SPEC-0003, SPEC-0004, SPEC-0005, SPEC-0006
-Source: docs/srs/goal-wise-srs-v1.md
+Source: docs/srs/goal-wise-srs-v2.md
 
 ## Purpose
 
 Define how the current architecture package maps to the broader GoalWise SRS.
 
-This architecture represents a progressive course MVP/PDR subset, not the complete SRS v1.0 implementation. Deferred SRS requirements are preserved as roadmap items rather than removed.
+This architecture represents a progressive course MVP/CDR subset, not the complete SRS v2.0 implementation. SRS v2.0 is the normative product baseline. This mapping describes the currently implemented increment and must be updated as remaining SRS v2.0 Must requirements are implemented or explicitly accepted as exceptions.
+
+SRS v2.0 supersedes v1.0 and narrows the MVP away from CSV import and runtime AI while adding or sharpening requirements for current-week spending, export/delete, audit events, AI Future guardrails, error contracts, observability, coverage, security evidence, and release evidence.
 
 ## Scope Status Values
 
