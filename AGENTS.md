@@ -16,7 +16,8 @@ For architecture or behavior changes, also consult:
 
 - [ADRs](docs/adr/README.md)
 - [Implementation specs](docs/specs/README.md)
-- [SRS](docs/srs/goal-wise-srs-v1.md)
+- [SRS v2.0](docs/srs/goal-wise-srs-v2.md)
+- [SRS v1.0 historical baseline](docs/srs/goal-wise-srs-v1.md)
 - [MVP scope mapping](docs/specs/0007-srs-traceability-and-mvp-scope.md)
 
 ## Architectural Discipline
