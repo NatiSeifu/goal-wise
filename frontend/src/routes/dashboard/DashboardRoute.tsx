@@ -6,6 +6,7 @@ import { Alert } from "../../components/feedback/Alert.tsx";
 import { EmptyState } from "../../components/feedback/EmptyState.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
@@ -82,6 +83,7 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
+      <SetupGuide activeStep="dashboard" completedSteps={["goal", "profile", "income", "expenses"]} compact />
 
       <section className="metric-hero" aria-labelledby="safe-to-spend-title">
         <div>
@@ -201,6 +203,10 @@ function SetupRequiredDashboard({ item }: { item: DashboardItem }) {
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
+      <SetupGuide
+        activeStep={item.goal === null ? "goal" : "profile"}
+        completedSteps={item.goal === null ? [] : ["goal"]}
+      />
       <EmptyState
         title="Finish setup to calculate your pace"
         description="The backend has not returned a complete dashboard result yet. Complete the missing MVP inputs below."

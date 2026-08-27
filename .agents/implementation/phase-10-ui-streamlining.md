@@ -229,6 +229,8 @@ Make the first-run path feel intentional instead of empty.
 
 Build or refine:
 
+- guided setup callouts that point users to the current goal, profile, income,
+  expense, and dashboard steps;
 - post-register/post-login routing for incomplete setup;
 - dashboard missing-input sequence;
 - setup progress affordance using only current MVP inputs;
@@ -238,6 +240,7 @@ Build or refine:
 Success criteria:
 
 - a first-time user always has one obvious next action;
+- tutorial guidance is dismissible, mobile-safe, and not hover-only;
 - no setup card points to deferred CSV, AI, export/delete, or multi-goal
   behavior;
 - success messages do not promise a recalculation unless backend data supports

@@ -22,10 +22,12 @@ import { Alert } from "../../components/feedback/Alert.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { CoachTip, SetupGuide, type SetupStepId } from "../../components/onboarding/SetupGuide.tsx";
 import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { SelectField } from "../../components/ui/SelectField.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
+import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
 import { centsToDollarInput, dollarInputToCents, formatCents, formatDate } from "../../utils/format.ts";
 import { fieldError, firstFormError } from "../../utils/forms.ts";
 
@@ -94,6 +96,7 @@ const emptyExpenseForm: ExpenseFormState = {
 
 export function FinancialInputsRoute() {
   const inputs = useFinancialInputs();
+  const activeGoal = useActiveGoal();
   const [profileForm, setProfileForm] = useState<ProfileFormState>(emptyProfileForm);
   const [incomeForm, setIncomeForm] = useState<IncomeFormState>(emptyIncomeForm);
   const [expenseForm, setExpenseForm] = useState<ExpenseFormState>(emptyExpenseForm);
@@ -115,16 +118,18 @@ export function FinancialInputsRoute() {
     }
   }, [inputs.data, inputs.status]);
 
-  if (inputs.status === "loading") {
+  if (inputs.status === "loading" || activeGoal.status === "loading") {
     return <RouteLoading fullPage={false} label="Loading financial inputs" />;
   }
 
-  if (inputs.status === "error") {
+  if (inputs.status === "error" || activeGoal.status === "error") {
+    const error = inputs.status === "error" ? inputs.error : activeGoal.error;
+
     return (
       <section className="form-page" aria-labelledby="financial-inputs-title">
         <RouteHeader />
         <Alert title="Financial inputs unavailable" variant="error">
-          <p>{inputs.error}</p>
+          <p>{error}</p>
         </Alert>
       </section>
     );
@@ -260,9 +265,27 @@ export function FinancialInputsRoute() {
     setExpenseForm(expenseToForm(item));
   }
 
+  const hasGoal = activeGoal.data !== null;
+  const completedGuideSteps = [
+    hasGoal ? "goal" : null,
+    inputs.data.profile === null ? null : "profile",
+    inputs.data.incomeSources.length === 0 ? null : "income",
+    inputs.data.expenses.length === 0 ? null : "expenses",
+  ].filter((step): step is SetupStepId => step !== null);
+  const activeGuideStep: SetupStepId = !hasGoal
+    ? "goal"
+    : inputs.data.profile === null
+      ? "profile"
+      : inputs.data.incomeSources.length === 0
+        ? "income"
+        : inputs.data.expenses.length === 0
+          ? "expenses"
+          : "dashboard";
+
   return (
     <section className="form-page wide" aria-labelledby="financial-inputs-title">
       <RouteHeader />
+      <SetupGuide activeStep={activeGuideStep} completedSteps={completedGuideSteps} />
       {successMessage === null ? null : (
         <p className="form-success" role="status">
           {successMessage}
@@ -270,7 +293,12 @@ export function FinancialInputsRoute() {
       )}
 
       <form className="form-panel" onSubmit={(event) => void handleProfileSubmit(event)}>
-        <h2>Financial profile</h2>
+        <div className="section-heading-row">
+          <div>
+            <h2>Financial profile</h2>
+            <p>Start with the cash you can plan from and the reserve you do not want to spend.</p>
+          </div>
+        </div>
         <FormError message={profileError} />
         <div className="form-grid">
           <TextField
@@ -328,10 +356,18 @@ export function FinancialInputsRoute() {
           </Button>
         </div>
       </form>
+      <CoachTip title="Reserve buffer">
+        Keep this as money you want excluded from spending guidance. GoalWise will not silently change it after you confirm it.
+      </CoachTip>
 
       <section className="input-section-grid">
         <form className="form-panel" onSubmit={(event) => void handleIncomeSubmit(event)}>
-          <h2>{editingIncomeId === null ? "Add income source" : "Edit income source"}</h2>
+          <div className="section-heading-row">
+            <div>
+              <h2>{editingIncomeId === null ? "Add income source" : "Edit income source"}</h2>
+              <p>Confirmed income is included in the forecast. Unconfirmed income is tracked but left out.</p>
+            </div>
+          </div>
           <FormError message={incomeError} />
           <SourceFields
             amountDollars={incomeForm.amountDollars}
@@ -371,7 +407,12 @@ export function FinancialInputsRoute() {
         </form>
 
         <form className="form-panel" onSubmit={(event) => void handleExpenseSubmit(event)}>
-          <h2>{editingExpenseId === null ? "Add planned expense" : "Edit planned expense"}</h2>
+          <div className="section-heading-row">
+            <div>
+              <h2>{editingExpenseId === null ? "Add planned expense" : "Edit planned expense"}</h2>
+              <p>Add known bills or costs due before the goal deadline.</p>
+            </div>
+          </div>
           <FormError message={expenseError} />
           <SourceFields
             amountDollars={expenseForm.amountDollars}

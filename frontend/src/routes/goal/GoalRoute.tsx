@@ -7,6 +7,7 @@ import { Alert } from "../../components/feedback/Alert.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { CoachTip, SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
@@ -122,6 +123,7 @@ export function GoalRoute() {
         title="Goal setup"
         description="Create or update the single active savings goal used by the deterministic pace engine."
       />
+      <SetupGuide activeStep="goal" completedSteps={existingGoal === null ? [] : ["goal"]} compact={existingGoal !== null} />
 
       {existingGoal === null ? null : (
         <div className="summary-strip" aria-label="Current active goal summary">
@@ -232,6 +234,9 @@ export function GoalRoute() {
           </p>
         )}
       </form>
+      <CoachTip title="What this controls">
+        The goal sets the deadline and gap the backend uses to calculate pace. After this, add cash, income, and planned expenses.
+      </CoachTip>
     </section>
   );
 }
