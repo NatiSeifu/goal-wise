@@ -68,6 +68,7 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 
 - Auth login and logout coverage.
 - Complete first-run setup through goal, cash, income, and expenses.
+- Replace free-form time-zone entry with a selectable time-zone control.
 - Dashboard status scenarios using isolated seeded data.
 - Archive flow and cross-user isolation.
 - CI execution with an isolated test database.
