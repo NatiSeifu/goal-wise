@@ -47,6 +47,23 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 - The test uses browser-visible behavior rather than implementation selectors.
 - Existing `make frontend-check` remains green.
 
+## Slice 2 - Authentication Journey
+
+### Test journey
+
+1. Register a unique local test user.
+2. Sign out from the authenticated app shell.
+3. Confirm a protected route redirects to Sign in.
+4. Sign in with the registered credentials.
+5. Confirm the authenticated Dashboard is available again.
+
+### Success criteria
+
+- Login and logout are verified through the browser UI.
+- Logout removes access to protected routes.
+- The test remains isolated from other test users.
+- Slice 1 and the existing frontend checks remain green.
+
 ## Follow-up Slices
 
 - Auth login and logout coverage.
@@ -54,4 +71,3 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 - Dashboard status scenarios using isolated seeded data.
 - Archive flow and cross-user isolation.
 - CI execution with an isolated test database.
-
