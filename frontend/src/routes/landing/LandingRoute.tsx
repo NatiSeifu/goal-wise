@@ -1,8 +1,22 @@
+import { Navigate } from "react-router-dom";
+
 import { routes } from "../../app/routes.ts";
+import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageShell } from "../../components/layout/PageShell.tsx";
 import { ButtonLink } from "../../components/ui/Button.tsx";
+import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
 export function LandingRoute() {
+  const auth = useAuth();
+
+  if (auth.status === "checking") {
+    return <RouteLoading label="Checking session" />;
+  }
+
+  if (auth.status === "authenticated") {
+    return <Navigate replace to={routes.dashboard} />;
+  }
+
   return (
     <PageShell>
       <section className="intro-panel" aria-labelledby="intro-title">
@@ -15,8 +29,8 @@ export function LandingRoute() {
           <ButtonLink variant="primary" to={routes.register}>
             Create account
           </ButtonLink>
-          <ButtonLink to={routes.dashboard}>
-            Open dashboard
+          <ButtonLink to={routes.login}>
+            Sign in
           </ButtonLink>
         </div>
       </section>
