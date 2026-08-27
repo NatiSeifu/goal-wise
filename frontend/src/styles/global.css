@@ -610,8 +610,7 @@ select:focus-visible {
   list-style: none;
 }
 
-.setup-step a,
-.setup-step-static {
+.setup-step-card {
   display: grid;
   min-height: 7.35rem;
   align-content: start;
@@ -623,7 +622,7 @@ select:focus-visible {
   text-decoration: none;
 }
 
-.setup-step a:hover {
+.setup-step-card:hover {
   color: var(--gw-color-ink);
   background: #ffffff;
 }
@@ -657,7 +656,17 @@ select:focus-visible {
   line-height: 1.35;
 }
 
-.setup-step.active a {
+.setup-step.complete .setup-step-card {
+  color: var(--gw-color-green);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.setup-step.complete .setup-step-marker {
+  color: #ffffff;
+  background: var(--gw-color-green);
+}
+
+.setup-step.active .setup-step-card {
   color: #ffffff;
   background: var(--gw-color-green);
   box-shadow: 0 16px 32px rgba(32, 123, 101, 0.2);
@@ -670,20 +679,7 @@ select:focus-visible {
 
 .setup-step.active .setup-step-marker {
   color: var(--gw-color-green);
-}
-
-.setup-step.complete a {
-  color: var(--gw-color-green);
-}
-
-.setup-step.complete .setup-step-static {
-  color: var(--gw-color-green);
-  background: rgba(255, 255, 255, 0.58);
-}
-
-.setup-step.complete .setup-step-marker {
-  color: #ffffff;
-  background: var(--gw-color-green);
+  background: #ffffff;
 }
 
 .setup-guide-dismiss {
@@ -1147,7 +1143,7 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .setup-step a {
+  .setup-step-card {
     min-height: auto;
   }
 }

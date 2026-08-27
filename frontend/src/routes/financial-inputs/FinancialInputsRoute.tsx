@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useLocation } from "react-router-dom";
 import { ApiError, type FieldErrors } from "../../api/errors.ts";
 import {
   createIncomeSource,
@@ -22,12 +23,13 @@ import { Alert } from "../../components/feedback/Alert.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
-import { CoachTip, SetupGuide, type SetupStepId } from "../../components/onboarding/SetupGuide.tsx";
+import { CoachTip, SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { SelectField } from "../../components/ui/SelectField.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
 import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
+import { setupGuideStateFromInputs } from "../../features/setup/setupGuideState.ts";
 import { centsToDollarInput, dollarInputToCents, formatCents, formatDate } from "../../utils/format.ts";
 import { fieldError, firstFormError } from "../../utils/forms.ts";
 
@@ -97,6 +99,7 @@ const emptyExpenseForm: ExpenseFormState = {
 export function FinancialInputsRoute() {
   const inputs = useFinancialInputs();
   const activeGoal = useActiveGoal();
+  const location = useLocation();
   const [profileForm, setProfileForm] = useState<ProfileFormState>(emptyProfileForm);
   const [incomeForm, setIncomeForm] = useState<IncomeFormState>(emptyIncomeForm);
   const [expenseForm, setExpenseForm] = useState<ExpenseFormState>(emptyExpenseForm);
@@ -117,6 +120,19 @@ export function FinancialInputsRoute() {
       setProfileForm(profileToForm(inputs.data.profile));
     }
   }, [inputs.data, inputs.status]);
+
+  useEffect(() => {
+    if (inputs.status !== "ready" || location.hash === "") {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      document.getElementById(location.hash.slice(1))?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [inputs.status, location.hash]);
 
   if (inputs.status === "loading" || activeGoal.status === "loading") {
     return <RouteLoading fullPage={false} label="Loading financial inputs" />;
@@ -266,26 +282,18 @@ export function FinancialInputsRoute() {
   }
 
   const hasGoal = activeGoal.data !== null;
-  const completedGuideSteps = [
-    hasGoal ? "goal" : null,
-    inputs.data.profile === null ? null : "profile",
-    inputs.data.incomeSources.length === 0 ? null : "income",
-    inputs.data.expenses.length === 0 ? null : "expenses",
-  ].filter((step): step is SetupStepId => step !== null);
-  const activeGuideStep: SetupStepId = !hasGoal
-    ? "goal"
-    : inputs.data.profile === null
-      ? "profile"
-      : inputs.data.incomeSources.length === 0
-        ? "income"
-        : inputs.data.expenses.length === 0
-          ? "expenses"
-          : "dashboard";
+  const guideState = setupGuideStateFromInputs({
+    currentStep: "profile",
+    expenses: inputs.data.expenses,
+    hasGoal,
+    incomeSources: inputs.data.incomeSources,
+    profile: inputs.data.profile,
+  });
 
   return (
     <section className="form-page wide" aria-labelledby="financial-inputs-title">
       <RouteHeader />
-      <SetupGuide activeStep={activeGuideStep} completedSteps={completedGuideSteps} />
+      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} />
       <InputSetupSummary />
       {successMessage === null ? null : (
         <p className="form-success" role="status">
@@ -293,13 +301,13 @@ export function FinancialInputsRoute() {
         </p>
       )}
 
-      <form className="form-panel" onSubmit={(event) => void handleProfileSubmit(event)}>
-          <div className="section-heading-row">
-            <div>
-              <h2>Cash picture</h2>
-              <p>Start with the money available today and the reserve you want protected.</p>
-            </div>
+      <form className="form-panel" id="cash-picture" onSubmit={(event) => void handleProfileSubmit(event)}>
+        <div className="section-heading-row">
+          <div>
+            <h2>Cash picture</h2>
+            <p>Start with the money available today and the reserve you want protected.</p>
           </div>
+        </div>
         <FormError message={profileError} />
         <div className="form-grid">
           <TextField
@@ -362,7 +370,7 @@ export function FinancialInputsRoute() {
       </CoachTip>
 
       <section className="input-section-grid">
-        <form className="form-panel" onSubmit={(event) => void handleIncomeSubmit(event)}>
+        <form className="form-panel" id="income-sources" onSubmit={(event) => void handleIncomeSubmit(event)}>
           <div className="section-heading-row">
             <div>
               <h2>{editingIncomeId === null ? "Add income source" : "Edit income source"}</h2>
@@ -407,7 +415,7 @@ export function FinancialInputsRoute() {
           </div>
         </form>
 
-        <form className="form-panel" onSubmit={(event) => void handleExpenseSubmit(event)}>
+        <form className="form-panel" id="planned-expenses" onSubmit={(event) => void handleExpenseSubmit(event)}>
           <div className="section-heading-row">
             <div>
               <h2>{editingExpenseId === null ? "Add planned expense" : "Edit planned expense"}</h2>

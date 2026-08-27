@@ -10,7 +10,9 @@ import { PageHeader } from "../../components/layout/PageHeader.tsx";
 import { CoachTip, SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
+import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
 import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
+import { setupGuideStateFromInputs } from "../../features/setup/setupGuideState.ts";
 import { centsToDollarInput, dollarInputToCents, formatCents, formatDate } from "../../utils/format.ts";
 import { fieldError, firstFormError } from "../../utils/forms.ts";
 
@@ -34,6 +36,7 @@ const emptyGoalForm: GoalFormState = {
 
 export function GoalRoute() {
   const activeGoal = useActiveGoal();
+  const financialInputs = useFinancialInputs();
   const [form, setForm] = useState<GoalFormState>(emptyGoalForm);
   const [fields, setFields] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -66,6 +69,13 @@ export function GoalRoute() {
   }
 
   const existingGoal = activeGoal.data;
+  const guideState = setupGuideStateFromInputs({
+    currentStep: "goal",
+    expenses: financialInputs.status === "ready" ? financialInputs.data.expenses : [],
+    hasGoal: existingGoal !== null,
+    incomeSources: financialInputs.status === "ready" ? financialInputs.data.incomeSources : [],
+    profile: financialInputs.status === "ready" ? financialInputs.data.profile : null,
+  });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -123,7 +133,11 @@ export function GoalRoute() {
         title="Goal setup"
         description="Create or update the savings goal used for your weekly plan."
       />
-      <SetupGuide activeStep="goal" completedSteps={existingGoal === null ? [] : ["goal"]} compact={existingGoal !== null} />
+      <SetupGuide
+        activeStep={guideState.activeStep}
+        completedSteps={guideState.completedSteps}
+        compact={existingGoal !== null}
+      />
 
       {existingGoal === null ? null : (
         <div className="summary-strip" aria-label="Current active goal summary">

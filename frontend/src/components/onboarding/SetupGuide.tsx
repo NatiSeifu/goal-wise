@@ -36,19 +36,19 @@ const setupSteps: SetupStep[] = [
     body: "Add your current cash position and reserve buffer.",
     id: "profile",
     label: "Cash",
-    to: routes.financialInputs,
+    to: `${routes.financialInputs}#cash-picture`,
   },
   {
     body: "Enter expected money coming in before the deadline.",
     id: "income",
     label: "Income",
-    to: routes.financialInputs,
+    to: `${routes.financialInputs}#income-sources`,
   },
   {
     body: "Add known expenses that will happen before the goal date.",
     id: "expenses",
     label: "Expenses",
-    to: routes.financialInputs,
+    to: `${routes.financialInputs}#planned-expenses`,
   },
   {
     body: "Review the calculated safe-to-spend number.",
@@ -66,7 +66,6 @@ export function SetupGuide({ activeStep, completedSteps = [], compact = false }:
   }, []);
 
   const completed = new Set(completedSteps);
-  const activeIndex = setupSteps.findIndex((step) => step.id === activeStep);
 
   function dismissGuide() {
     window.localStorage.setItem(SETUP_GUIDE_DISMISSED_KEY, "true");
@@ -98,20 +97,18 @@ export function SetupGuide({ activeStep, completedSteps = [], compact = false }:
       </div>
       <ol className="setup-steps" aria-label="GoalWise setup steps">
         {setupSteps.map((step, index) => {
+          const isComplete = completed.has(step.id);
           const isActive = step.id === activeStep;
-          const isComplete = completed.has(step.id) || index < activeIndex;
-          const isNavigable = step.id === "goal" || !isComplete;
           return (
             <li className={setupStepClassName({ isActive, isComplete })} key={step.id}>
-              {isNavigable ? (
-                <Link aria-current={isActive ? "step" : undefined} to={step.to}>
-                  <SetupStepContent index={index} isActive={isActive} isComplete={isComplete} step={step} />
-                </Link>
-              ) : (
-                <div className="setup-step-static">
-                  <SetupStepContent index={index} isActive={isActive} isComplete={isComplete} step={step} />
-                </div>
-              )}
+              <Link
+                className="setup-step-card"
+                aria-current={step.id === activeStep ? "step" : undefined}
+                aria-label={`${step.label}: ${step.body}`}
+                to={step.to}
+              >
+                <SetupStepContent index={index} isActive={isActive} isComplete={isComplete} step={step} />
+              </Link>
             </li>
           );
         })}

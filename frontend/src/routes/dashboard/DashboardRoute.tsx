@@ -10,6 +10,7 @@ import { SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
+import { setupGuideStateFromDashboard } from "../../features/setup/setupGuideState.ts";
 import { formatCents, formatDate, formatDateTime, formatPercent } from "../../utils/format.ts";
 import { formatInputCategoryList } from "../../utils/labels.ts";
 
@@ -80,11 +81,12 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
   const changedInputCategories = getStringList(item.changed_from_previous, "changed_input_categories");
   const weeklyDelta = getNumberValue(item.changed_from_previous, "weekly_safe_to_spend_delta_cents");
   const weeklyChangeLabel = formatWeeklyChange(weeklyDelta);
+  const guideState = setupGuideStateFromDashboard(item);
 
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-      <SetupGuide activeStep="dashboard" completedSteps={["goal", "profile", "income", "expenses"]} compact />
+      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} compact />
 
       <section className="metric-hero" aria-labelledby="safe-to-spend-title">
         <div>
@@ -202,13 +204,12 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
 }
 
 function SetupRequiredDashboard({ item }: { item: DashboardItem }) {
+  const guideState = setupGuideStateFromDashboard(item);
+
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-      <SetupGuide
-        activeStep={item.goal === null ? "goal" : "profile"}
-        completedSteps={item.goal === null ? [] : ["goal"]}
-      />
+      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} />
       <EmptyState
         title="Finish setup to calculate your weekly plan"
         description="GoalWise needs a complete goal, cash picture, and confirmed reserve before it can show your weekly number."
