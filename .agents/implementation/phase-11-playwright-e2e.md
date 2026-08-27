@@ -131,6 +131,28 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 - Cross-user mutation is rejected with the existing `404` contract.
 - Existing E2E and frontend checks remain green.
 
-## Follow-up Slices
+## Slice 7 - CI Execution With an Isolated Test Database
 
-- CI execution with an isolated test database.
+### Implementation
+
+- Add a dedicated GitHub Actions frontend E2E job.
+- Provision a fresh PostgreSQL service for each workflow run.
+- Apply Alembic migrations before starting the API.
+- Run the real FastAPI service and Vite frontend under Playwright.
+- Upload Playwright reports, screenshots, traces, videos, and API logs as
+  workflow artifacts when the job completes.
+- Retain artifacts for a short diagnostic window without committing them.
+
+### Success criteria
+
+- Pull requests that change frontend, workflow, or Makefile files run the E2E job.
+- The E2E job uses only CI-local database credentials and test data.
+- Migrations, API startup, and all browser tests pass in GitHub Actions.
+- A failed browser test leaves enough report and trace data to diagnose it from
+  the workflow run's artifact section.
+- The job does not target staging or production.
+
+## Completion
+
+Phase 11 is complete when Slice 7 is implemented. No additional slices are
+currently planned for this phase.

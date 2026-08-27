@@ -34,3 +34,98 @@ jobs:
 
       - name: Run frontend checks
         run: make frontend-check
+
+  frontend-e2e:
+    name: Frontend E2E
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: goalwise
+          POSTGRES_PASSWORD: goalwise_ci_password
+          POSTGRES_DB: goalwise_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U goalwise -d goalwise_e2e"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Sync backend dependencies
+        run: cd backend && UV_PROJECT_ENVIRONMENT=../.venv uv sync --frozen --extra dev
+
+      - name: Apply E2E migrations
+        env:
+          DATABASE_URL: postgresql+psycopg://goalwise:goalwise_ci_password@127.0.0.1:5432/goalwise_e2e
+          ENVIRONMENT: test
+          SESSION_SECRET: e2e-session-secret
+          SECURE_COOKIES: "false"
+          COOKIE_SAMESITE: lax
+          ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
+        run: |
+          cd backend
+          UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen alembic upgrade head
+
+      - name: Start API
+        env:
+          DATABASE_URL: postgresql+psycopg://goalwise:goalwise_ci_password@127.0.0.1:5432/goalwise_e2e
+          ENVIRONMENT: test
+          SESSION_SECRET: e2e-session-secret
+          SECURE_COOKIES: "false"
+          COOKIE_SAMESITE: lax
+          ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
+        run: |
+          cd backend
+          nohup env DATABASE_URL="$DATABASE_URL" ENVIRONMENT="$ENVIRONMENT" SESSION_SECRET="$SESSION_SECRET" SECURE_COOKIES="$SECURE_COOKIES" COOKIE_SAMESITE="$COOKIE_SAMESITE" ALLOWED_FRONTEND_ORIGIN="$ALLOWED_FRONTEND_ORIGIN" \
+            UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
+          curl --fail --retry 30 --retry-delay 1 http://127.0.0.1:8000/health
+
+      - name: Sync frontend dependencies
+        run: make frontend-sync
+
+      - name: Install Playwright browser
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E
+        working-directory: frontend
+        env:
+          CI: "true"
+        run: npm run e2e
+
+      - name: Upload Playwright artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+            backend-e2e.log
+          if-no-files-found: ignore
+          retention-days: 7
