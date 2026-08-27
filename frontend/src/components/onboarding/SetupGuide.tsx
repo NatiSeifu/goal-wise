@@ -100,21 +100,18 @@ export function SetupGuide({ activeStep, completedSteps = [], compact = false }:
         {setupSteps.map((step, index) => {
           const isActive = step.id === activeStep;
           const isComplete = completed.has(step.id) || index < activeIndex;
+          const isNavigable = step.id === "goal" || !isComplete;
           return (
             <li className={setupStepClassName({ isActive, isComplete })} key={step.id}>
-              <Link aria-current={isActive ? "step" : undefined} to={step.to}>
-                <span className="setup-step-marker" aria-hidden="true">
-                  {isComplete ? "OK" : index + 1}
-                </span>
-                <span>
-                  <span className="setup-step-title">{step.label}</span>
-                  <span className="screen-reader-only">
-                    {isActive ? "Current step. " : null}
-                    {isComplete ? "Completed. " : null}
-                  </span>
-                  <span className="setup-step-body">{step.body}</span>
-                </span>
-              </Link>
+              {isNavigable ? (
+                <Link aria-current={isActive ? "step" : undefined} to={step.to}>
+                  <SetupStepContent index={index} isActive={isActive} isComplete={isComplete} step={step} />
+                </Link>
+              ) : (
+                <div className="setup-step-static">
+                  <SetupStepContent index={index} isActive={isActive} isComplete={isComplete} step={step} />
+                </div>
+              )}
             </li>
           );
         })}
@@ -123,6 +120,34 @@ export function SetupGuide({ activeStep, completedSteps = [], compact = false }:
         Hide guide
       </button>
     </section>
+  );
+}
+
+function SetupStepContent({
+  index,
+  isActive,
+  isComplete,
+  step,
+}: {
+  index: number;
+  isActive: boolean;
+  isComplete: boolean;
+  step: SetupStep;
+}) {
+  return (
+    <>
+      <span className="setup-step-marker" aria-hidden="true">
+        {isComplete ? "Done" : index + 1}
+      </span>
+      <span>
+        <span className="setup-step-title">{step.label}</span>
+        <span className="screen-reader-only">
+          {isActive ? "Current step. " : null}
+          {isComplete ? "Completed. " : null}
+        </span>
+        <span className="setup-step-body">{step.body}</span>
+      </span>
+    </>
   );
 }
 
