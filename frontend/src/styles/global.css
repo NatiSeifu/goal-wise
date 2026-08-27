@@ -19,7 +19,9 @@ a {
 }
 
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
   outline: none;
   box-shadow: var(--gw-focus-ring);
 }
@@ -601,7 +603,7 @@ button:focus-visible {
 
 .setup-steps {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
   gap: var(--gw-space-2);
   margin: 0;
   padding: 0;
@@ -1051,6 +1053,17 @@ button:focus-visible {
   gap: var(--gw-space-2);
 }
 
+.resource-actions .button {
+  white-space: nowrap;
+}
+
+@media (max-width: 1080px) {
+  .setup-guide,
+  .setup-guide.compact {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 560px) {
   .intro-panel h1 {
     max-width: 11ch;
@@ -1075,6 +1088,10 @@ button:focus-visible {
 
   .resource-item {
     grid-template-columns: 1fr;
+  }
+
+  .resource-actions .button {
+    white-space: normal;
   }
 }
 
@@ -1115,11 +1132,6 @@ button:focus-visible {
   }
 
   .input-section-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .setup-guide,
-  .setup-guide.compact {
     grid-template-columns: 1fr;
   }
 

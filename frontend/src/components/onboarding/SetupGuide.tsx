@@ -102,7 +102,7 @@ export function SetupGuide({ activeStep, completedSteps = [], compact = false }:
           const isComplete = completed.has(step.id) || index < activeIndex;
           return (
             <li className={setupStepClassName({ isActive, isComplete })} key={step.id}>
-              <Link to={step.to}>
+              <Link aria-current={isActive ? "step" : undefined} to={step.to}>
                 <span className="setup-step-marker" aria-hidden="true">
                   {isComplete ? "OK" : index + 1}
                 </span>
