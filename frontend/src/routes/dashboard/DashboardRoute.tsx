@@ -26,7 +26,7 @@ const missingInputLabels: Record<string, { action: string; label: string; to: st
   },
   financial_profile: {
     action: "Add starting cash, balance date, and reserve buffer.",
-    label: "Financial profile",
+    label: "Cash picture",
     to: routes.financialInputs,
   },
   reserve_buffer_confirmation: {

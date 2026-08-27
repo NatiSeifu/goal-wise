@@ -151,9 +151,9 @@ export function FinancialInputsRoute() {
       if (response.item !== null) {
         setProfileForm(profileToForm(response.item));
       }
-      await reloadAfterSuccess("Financial profile saved. Open the dashboard to view current results.");
+      await reloadAfterSuccess("Cash picture saved. Open the dashboard to view your weekly plan.");
     } catch (error) {
-      handleFormError(error, setProfileFields, setProfileError, "Financial profile could not be saved.");
+      handleFormError(error, setProfileFields, setProfileError, "Cash picture could not be saved.");
     } finally {
       setBusyAction(null);
     }
@@ -211,9 +211,9 @@ export function FinancialInputsRoute() {
       if (editingIncomeId === incomeSourceId) {
         resetIncomeForm();
       }
-      await reloadAfterSuccess("Income source deactivated.");
+      await reloadAfterSuccess("Income source removed from this plan.");
     } catch (error) {
-      setIncomeError(error instanceof Error ? error.message : "Income source could not be deactivated.");
+      setIncomeError(error instanceof Error ? error.message : "Income source could not be removed from this plan.");
     } finally {
       setBusyAction(null);
     }
@@ -227,9 +227,9 @@ export function FinancialInputsRoute() {
       if (editingExpenseId === expenseId) {
         resetExpenseForm();
       }
-      await reloadAfterSuccess("Planned expense deactivated.");
+      await reloadAfterSuccess("Planned expense removed from this plan.");
     } catch (error) {
-      setExpenseError(error instanceof Error ? error.message : "Planned expense could not be deactivated.");
+      setExpenseError(error instanceof Error ? error.message : "Planned expense could not be removed from this plan.");
     } finally {
       setBusyAction(null);
     }
@@ -286,6 +286,7 @@ export function FinancialInputsRoute() {
     <section className="form-page wide" aria-labelledby="financial-inputs-title">
       <RouteHeader />
       <SetupGuide activeStep={activeGuideStep} completedSteps={completedGuideSteps} />
+      <InputSetupSummary />
       {successMessage === null ? null : (
         <p className="form-success" role="status">
           {successMessage}
@@ -293,12 +294,12 @@ export function FinancialInputsRoute() {
       )}
 
       <form className="form-panel" onSubmit={(event) => void handleProfileSubmit(event)}>
-        <div className="section-heading-row">
-          <div>
-            <h2>Financial profile</h2>
-            <p>Start with the cash you can plan from and the reserve you do not want to spend.</p>
+          <div className="section-heading-row">
+            <div>
+              <h2>Cash picture</h2>
+              <p>Start with the money available today and the reserve you want protected.</p>
+            </div>
           </div>
-        </div>
         <FormError message={profileError} />
         <div className="form-grid">
           <TextField
@@ -347,12 +348,12 @@ export function FinancialInputsRoute() {
               }
               type="checkbox"
             />
-            <span>Reserve buffer confirmed</span>
+            <span>Protect this reserve</span>
           </label>
         </div>
         <div className="form-actions">
           <Button disabled={isBusy} type="submit">
-            {busyAction === "profile" ? "Saving profile" : "Save profile"}
+            {busyAction === "profile" ? "Saving cash picture" : "Save cash picture"}
           </Button>
         </div>
       </form>
@@ -365,7 +366,7 @@ export function FinancialInputsRoute() {
           <div className="section-heading-row">
             <div>
               <h2>{editingIncomeId === null ? "Add income source" : "Edit income source"}</h2>
-              <p>Confirmed income is included in the forecast. Unconfirmed income is tracked but left out.</p>
+              <p>Use confirmed for money you are comfortable counting on before the goal date.</p>
             </div>
           </div>
           <FormError message={incomeError} />
@@ -410,7 +411,7 @@ export function FinancialInputsRoute() {
           <div className="section-heading-row">
             <div>
               <h2>{editingExpenseId === null ? "Add planned expense" : "Edit planned expense"}</h2>
-              <p>Add known bills or costs due before the goal deadline.</p>
+              <p>Add bills and known costs that should be reserved before the goal deadline.</p>
             </div>
           </div>
           <FormError message={expenseError} />
@@ -460,16 +461,18 @@ export function FinancialInputsRoute() {
 
       <section className="input-section-grid">
         <ResourceList
-          emptyLabel="No active income sources yet."
+          emptyHelp="Add paychecks, stipends, gifts, or other money you expect before the goal date."
+          emptyLabel="No income sources in this plan yet."
           items={inputs.data.incomeSources}
-          title="Active income"
+          title="Income in plan"
           onDeactivate={(item) => void handleDeactivateIncome(item.id)}
           onEdit={startIncomeEdit}
           busyAction={busyAction}
           kind="income"
         />
         <ResourceList
-          emptyLabel="No active planned expenses yet."
+          emptyHelp="Add rent, bills, travel, or other known costs due before your target date."
+          emptyLabel="No planned expenses in this plan yet."
           items={inputs.data.expenses}
           title="Planned expenses"
           onDeactivate={(item) => void handleDeactivateExpense(item.id)}
@@ -495,6 +498,25 @@ function RouteHeader() {
       title="Financial inputs"
       titleId="financial-inputs-title"
     />
+  );
+}
+
+function InputSetupSummary() {
+  return (
+    <section className="input-guide-strip" aria-label="Financial input order">
+      <div>
+        <strong>Cash first</strong>
+        <span>What you have available now.</span>
+      </div>
+      <div>
+        <strong>Income next</strong>
+        <span>Money you expect before the goal.</span>
+      </div>
+      <div>
+        <strong>Expenses last</strong>
+        <span>Known costs to hold aside.</span>
+      </div>
+    </section>
   );
 }
 
@@ -567,6 +589,7 @@ function SourceFields({
 
 function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseResponse>({
   busyAction,
+  emptyHelp,
   emptyLabel,
   items,
   kind,
@@ -575,6 +598,7 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
   title,
 }: {
   busyAction: string | null;
+  emptyHelp: string;
   emptyLabel: string;
   items: TItem[];
   kind: "expense" | "income";
@@ -586,7 +610,10 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
     <section className="form-panel resource-panel" aria-labelledby={`${kind}-list-title`}>
       <h2 id={`${kind}-list-title`}>{title}</h2>
       {items.length === 0 ? (
-        <p className="panel-copy">{emptyLabel}</p>
+        <div className="resource-empty">
+          <strong>{emptyLabel}</strong>
+          <p>{emptyHelp}</p>
+        </div>
       ) : (
         <div className="resource-list">
           {items.map((item) => (
@@ -607,7 +634,7 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
                   type="button"
                   onClick={() => onDeactivate(item)}
                 >
-                  {busyAction === `${kind}-${item.id}` ? "Removing" : "Deactivate"}
+                  {busyAction === `${kind}-${item.id}` ? "Removing" : "Remove from plan"}
                 </Button>
               </div>
             </article>
