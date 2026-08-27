@@ -131,7 +131,7 @@ export function GoalRoute() {
   }
 
   return (
-    <section className="form-page" aria-labelledby="goal-title">
+    <section className="form-page wide" aria-labelledby="goal-title">
       <GoalHeader
         title="Goal setup"
         description="Create or update the savings goal used for your weekly plan."
@@ -139,7 +139,6 @@ export function GoalRoute() {
       <SetupGuide
         activeStep={guideState.activeStep}
         completedSteps={guideState.completedSteps}
-        compact={existingGoal !== null}
       />
 
       {existingGoal === null ? null : (
