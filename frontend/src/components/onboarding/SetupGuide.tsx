@@ -51,7 +51,7 @@ const setupSteps: SetupStep[] = [
     to: routes.financialInputs,
   },
   {
-    body: "Review the backend-calculated safe-to-spend number.",
+    body: "Review the calculated safe-to-spend number.",
     id: "dashboard",
     label: "Dashboard",
     to: routes.dashboard,

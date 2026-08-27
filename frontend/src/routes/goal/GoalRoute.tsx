@@ -235,7 +235,7 @@ export function GoalRoute() {
         )}
       </form>
       <CoachTip title="What this controls">
-        The goal sets the deadline and gap the backend uses to calculate pace. After this, add cash, income, and planned expenses.
+        The goal sets the deadline and savings gap. After this, add cash, income, and planned expenses.
       </CoachTip>
     </section>
   );

@@ -55,24 +55,20 @@ export function CalculationRoute() {
   return (
     <section className="dashboard-page" aria-labelledby="calculation-title">
       <CalculationHeader />
-      <section className="dashboard-grid" aria-label="Calculation record">
-        <Panel title="Calculation record">
+      <section className="dashboard-grid" aria-label="Calculation details">
+        <Panel title="Calculation details">
           <dl className="snapshot-list">
             <div>
-              <dt>Audit ID</dt>
-              <dd>{snapshot.data.id}</dd>
-            </div>
-            <div>
-              <dt>Formula version</dt>
-              <dd>{snapshot.data.formula_version}</dd>
-            </div>
-            <div>
-              <dt>Trigger</dt>
-              <dd>{humanizeTechnicalKey(getStringValue(calculation, "trigger") ?? snapshot.data.trigger)}</dd>
-            </div>
-            <div>
-              <dt>Calculated</dt>
+              <dt>Last updated</dt>
               <dd>{formatDateTime(snapshot.data.calculated_at)}</dd>
+            </div>
+            <div>
+              <dt>Method</dt>
+              <dd>Consistent rules</dd>
+            </div>
+            <div>
+              <dt>Updated because</dt>
+              <dd>{humanizeTechnicalKey(getStringValue(calculation, "trigger") ?? snapshot.data.trigger)}</dd>
             </div>
           </dl>
         </Panel>
@@ -87,9 +83,9 @@ export function CalculationRoute() {
           </dl>
         </Panel>
 
-        <Panel title="Normalized inputs">
+        <Panel title="Included inputs">
           <p className="panel-copy">
-            This record stores the validated inputs used by the deterministic engine. It is read-only.
+            These are the saved assumptions included in the latest plan calculation.
           </p>
           <dl className="metric-list compact">
             <div>
@@ -123,7 +119,7 @@ function CalculationHeader() {
           Back to dashboard
         </ButtonLink>
       }
-      description="Latest immutable calculation record returned by the backend."
+      description="A plain-language view of the inputs and outputs behind your latest plan."
       title="Calculation details"
       titleId="calculation-title"
     />

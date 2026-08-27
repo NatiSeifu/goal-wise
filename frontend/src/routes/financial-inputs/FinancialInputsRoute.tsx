@@ -491,7 +491,7 @@ export function FinancialInputsRoute() {
 function RouteHeader() {
   return (
     <PageHeader
-      description="Manual assumptions used by the backend pace engine for this MVP."
+      description="Manual assumptions used to plan your weekly safe-to-spend amount."
       title="Financial inputs"
       titleId="financial-inputs-title"
     />

@@ -65,7 +65,7 @@ export function RegisterRoute() {
           </Link>
           <h1 id="register-title">Create account</h1>
           <p className="auth-copy">
-            Start with one active goal and manual assumptions. The backend remains the source of truth.
+            Start with one active goal and a few planning assumptions.
           </p>
         </div>
         <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
