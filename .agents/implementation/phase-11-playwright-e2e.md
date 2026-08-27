@@ -81,13 +81,6 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 - The test uses dates relative to the current browser date.
 - Slice 2 and the existing frontend checks remain green.
 
-## Follow-up Slices
-
-- Replace free-form time-zone entry with a selectable time-zone control.
-- Dashboard status scenarios using isolated seeded data.
-- Archive flow and cross-user isolation.
-- CI execution with an isolated test database.
-
 ## Slice 4 - Selectable Time Zone
 
 ### Implementation
@@ -101,6 +94,23 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 
 - Registration submits a valid IANA time-zone value selected from the UI.
 - The control is keyboard and screen-reader accessible.
+- Existing E2E and frontend checks remain green.
+
+## Slice 5 - Dashboard Status Scenarios
+
+### Implementation
+
+- Add reusable browser flows for registration and first-run setup.
+- Add isolated scenarios for each supported pace status.
+- Verify the Dashboard status treatment and core decision-surface values.
+
+### Success criteria
+
+- `Off Pace`, `Ahead`, `At Risk`, and `On Track` are each covered in the active
+  Dashboard flow. `Completed` remains covered by pace-engine tests because the
+  backend marks a completed goal inactive for Dashboard purposes.
+- Every scenario uses a fresh user and supported MVP inputs.
+- Assertions focus on backend-owned status and rendered decision-surface content.
 - Existing E2E and frontend checks remain green.
 
 ## Follow-up Slices

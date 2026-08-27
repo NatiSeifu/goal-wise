@@ -1,24 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-function uniqueEmail() {
-  return `playwright-${Date.now()}@example.com`;
-}
-
-const password = "playwright-password";
-
-function dateFromToday(daysFromToday: number) {
-  const date = new Date();
-  date.setDate(date.getDate() + daysFromToday);
-  return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
-    .map((part) => String(part).padStart(2, "0"))
-    .join("-");
-}
+import { dateFromToday, testPassword, uniqueEmail } from "./support/flows.ts";
 
 test("registers a user and reaches the authenticated dashboard setup state", async ({ page }) => {
   await page.goto("/register");
 
   await page.getByLabel("Email").fill(uniqueEmail());
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password").fill(testPassword);
   await page.getByLabel("Time zone").selectOption("America/Los_Angeles");
   await page.getByRole("button", { name: "Create account" }).click();
 
@@ -38,7 +26,7 @@ test("logs out and signs back in to a protected account", async ({ page }) => {
 
   await page.goto("/register");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password").fill(testPassword);
   await page.getByLabel("Time zone").selectOption("America/Los_Angeles");
   await page.getByRole("button", { name: "Create account" }).click();
 
@@ -50,7 +38,7 @@ test("logs out and signs back in to a protected account", async ({ page }) => {
   await expect(page).toHaveURL(/\/login$/);
 
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password").fill(testPassword);
   await page.getByRole("button", { name: "Sign in" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -60,7 +48,7 @@ test("logs out and signs back in to a protected account", async ({ page }) => {
 test("completes the first-run setup and reaches a ready dashboard", async ({ page }) => {
   await page.goto("/register");
   await page.getByLabel("Email").fill(uniqueEmail());
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password").fill(testPassword);
   await page.getByLabel("Time zone").selectOption("America/Los_Angeles");
   await page.getByRole("button", { name: "Create account" }).click();
 
