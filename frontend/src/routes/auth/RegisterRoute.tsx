@@ -23,12 +23,13 @@ export function RegisterRoute() {
   const [timeZone, setTimeZone] = useState(getBrowserTimeZone);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationCompleted, setRegistrationCompleted] = useState(false);
 
   if (auth.status === "checking") {
     return <RouteLoading label="Checking your session" />;
   }
 
-  if (auth.status === "authenticated") {
+  if (auth.status === "authenticated" && !registrationCompleted) {
     return <Navigate replace to={routes.dashboard} />;
   }
 
@@ -39,6 +40,7 @@ export function RegisterRoute() {
 
     try {
       await auth.register({ email, password, time_zone: timeZone });
+      setRegistrationCompleted(true);
       navigate(routes.goal, { replace: true });
     } catch (registerError) {
       setError(
