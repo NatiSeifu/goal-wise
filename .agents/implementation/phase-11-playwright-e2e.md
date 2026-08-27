@@ -66,8 +66,25 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 
 ## Follow-up Slices
 
-- Auth login and logout coverage.
-- Complete first-run setup through goal, cash, income, and expenses.
+## Slice 3 - Complete First-Run Setup
+
+### Test journey
+
+1. Register a unique local test user.
+2. Create a savings goal with a future target date.
+3. Save starting cash, balance date, and a confirmed reserve buffer.
+4. Add one confirmed income source and one essential planned expense.
+5. Open Dashboard and verify the backend returns a ready planning result.
+
+### Success criteria
+
+- The complete first-run setup is verified through the browser UI.
+- The Dashboard displays a backend-owned weekly safe-to-spend result.
+- The test uses dates relative to the current browser date.
+- Slice 2 and the existing frontend checks remain green.
+
+## Follow-up Slices
+
 - Replace free-form time-zone entry with a selectable time-zone control.
 - Dashboard status scenarios using isolated seeded data.
 - Archive flow and cross-user isolation.
