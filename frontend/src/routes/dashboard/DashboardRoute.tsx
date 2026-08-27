@@ -20,7 +20,7 @@ const missingInputLabels: Record<string, { action: string; label: string; to: st
     to: routes.goal,
   },
   calculation_snapshot: {
-    action: "Save your goal and planning assumptions so GoalWise can calculate your pace.",
+    action: "Save your goal and planning assumptions so GoalWise can calculate your weekly plan.",
     label: "Plan calculation",
     to: routes.financialInputs,
   },
@@ -64,7 +64,7 @@ export function DashboardRoute() {
 function DashboardHeader() {
   return (
     <PageHeader
-      description="Your current savings pace and weekly spending guidance."
+      description="Your current savings progress and weekly spending guidance."
       title="Dashboard"
       titleId="dashboard-title"
     />
@@ -210,7 +210,7 @@ function SetupRequiredDashboard({ item }: { item: DashboardItem }) {
         completedSteps={item.goal === null ? [] : ["goal"]}
       />
       <EmptyState
-        title="Finish setup to calculate your pace"
+        title="Finish setup to calculate your weekly plan"
         description="GoalWise needs a complete goal, cash picture, and confirmed reserve before it can show your weekly number."
       />
       <div className="setup-list" aria-label="Missing inputs">

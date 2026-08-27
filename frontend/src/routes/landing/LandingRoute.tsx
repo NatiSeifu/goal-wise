@@ -43,7 +43,7 @@ export function LandingRoute() {
         <article className="detail-panel" id="mvp-boundary">
           <h2>Consistent money logic</h2>
           <p>
-            GoalWise uses deterministic rules for safe-to-spend, shortfall, pace status,
+            GoalWise uses deterministic rules for safe-to-spend, shortfall, plan status,
             and saved plan details.
           </p>
         </article>

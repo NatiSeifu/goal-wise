@@ -121,7 +121,7 @@ export function GoalRoute() {
     <section className="form-page" aria-labelledby="goal-title">
       <GoalHeader
         title="Goal setup"
-        description="Create or update the single active savings goal used by the deterministic pace engine."
+        description="Create or update the savings goal used for your weekly plan."
       />
       <SetupGuide activeStep="goal" completedSteps={existingGoal === null ? [] : ["goal"]} compact={existingGoal !== null} />
 

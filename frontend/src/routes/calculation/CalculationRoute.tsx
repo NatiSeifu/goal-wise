@@ -73,10 +73,10 @@ export function CalculationRoute() {
           </dl>
         </Panel>
 
-        <Panel title="Pace result">
+        <Panel title="Weekly plan">
           <dl className="metric-list compact">
             <SnapshotMoneyValue label="Weekly safe-to-spend" outputs={outputs} field="weekly_safe_to_spend_cents" />
-            <SnapshotTextValue label="Pace status" outputs={outputs} field="pace_status" />
+            <SnapshotTextValue label="Plan status" outputs={outputs} field="pace_status" />
             <SnapshotMoneyValue label="Projected shortfall" outputs={outputs} field="projected_shortfall_cents" />
             <SnapshotNumberValue label="Remaining weeks" outputs={outputs} field="remaining_weeks" />
             <SnapshotPercentValue label="Progress" outputs={outputs} field="progress_percentage" />

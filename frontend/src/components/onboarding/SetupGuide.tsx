@@ -93,7 +93,7 @@ export function SetupGuide({ activeStep, completedSteps = [], compact = false }:
       <div className="setup-guide-copy">
         <h2 id="setup-guide-title">Get to your first safe-to-spend number</h2>
         <p>
-          Follow these steps once. GoalWise will use the saved inputs to calculate your weekly spending pace.
+          Follow these steps once. GoalWise will use the saved inputs to calculate your weekly plan.
         </p>
       </div>
       <ol className="setup-steps" aria-label="GoalWise setup steps">
