@@ -19,6 +19,7 @@ export function ProgressBar({ label, value }: ProgressBarProps) {
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={boundedValue}
+        aria-valuetext={`${boundedValue.toFixed(0)} percent`}
       >
         <span className="progress-fill" style={{ width: `${boundedValue}%` }} />
       </div>

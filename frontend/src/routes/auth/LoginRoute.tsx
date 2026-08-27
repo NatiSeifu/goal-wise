@@ -65,7 +65,7 @@ export function LoginRoute() {
           </Link>
           <h1 id="login-title">Sign in</h1>
           <p className="auth-copy">
-            Continue to your goal plan with the backend session and CSRF flow.
+            Continue to your savings plan.
           </p>
         </div>
         <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>

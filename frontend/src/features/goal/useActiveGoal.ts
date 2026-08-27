@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+import { queryKeys } from "../../api/queryKeys.ts";
 import { getActiveGoal } from "../../api/resources.ts";
 import type { GoalResponse } from "../../api/types.ts";
 
@@ -9,29 +10,33 @@ type ActiveGoalLoadState =
   | { data: null; error: null; status: "loading" };
 
 export function useActiveGoal() {
-  const [state, setState] = useState<ActiveGoalLoadState>({
-    data: null,
-    error: null,
-    status: "loading",
+  const query = useQuery({
+    queryFn: getActiveGoal,
+    queryKey: queryKeys.activeGoal,
   });
 
-  async function reload() {
-    setState({ data: null, error: null, status: "loading" });
-    try {
-      const response = await getActiveGoal();
-      setState({ data: response.item, error: null, status: "ready" });
-    } catch (error) {
-      setState({
-        data: null,
-        error: error instanceof Error ? error.message : "Goal could not be loaded.",
-        status: "error",
-      });
-    }
+  if (query.isPending) {
+    return {
+      data: null,
+      error: null,
+      reload: query.refetch,
+      status: "loading",
+    } satisfies ActiveGoalLoadState & { reload: typeof query.refetch };
   }
 
-  useEffect(() => {
-    void reload();
-  }, []);
+  if (query.isError) {
+    return {
+      data: null,
+      error: query.error instanceof Error ? query.error.message : "Goal could not be loaded.",
+      reload: query.refetch,
+      status: "error",
+    } satisfies ActiveGoalLoadState & { reload: typeof query.refetch };
+  }
 
-  return { ...state, reload };
+  return {
+    data: query.data.item,
+    error: null,
+    reload: query.refetch,
+    status: "ready",
+  } satisfies ActiveGoalLoadState & { reload: typeof query.refetch };
 }

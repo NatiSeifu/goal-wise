@@ -6,9 +6,11 @@ import { Alert } from "../../components/feedback/Alert.tsx";
 import { EmptyState } from "../../components/feedback/EmptyState.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
+import { setupGuideStateFromDashboard } from "../../features/setup/setupGuideState.ts";
 import { formatCents, formatDate, formatDateTime, formatPercent } from "../../utils/format.ts";
 import { formatInputCategoryList } from "../../utils/labels.ts";
 
@@ -19,13 +21,13 @@ const missingInputLabels: Record<string, { action: string; label: string; to: st
     to: routes.goal,
   },
   calculation_snapshot: {
-    action: "Save valid goal and financial assumptions so the backend can calculate your pace.",
-    label: "Calculation record",
+    action: "Save your goal and planning assumptions so GoalWise can calculate your weekly plan.",
+    label: "Plan calculation",
     to: routes.financialInputs,
   },
   financial_profile: {
     action: "Add starting cash, balance date, and reserve buffer.",
-    label: "Financial profile",
+    label: "Cash picture",
     to: routes.financialInputs,
   },
   reserve_buffer_confirmation: {
@@ -63,7 +65,7 @@ export function DashboardRoute() {
 function DashboardHeader() {
   return (
     <PageHeader
-      description="Backend-owned pace result for your active savings goal."
+      description="Your current savings progress and weekly spending guidance."
       title="Dashboard"
       titleId="dashboard-title"
     />
@@ -78,19 +80,25 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
   const explanationSummary = getJsonObject(item.explanation, "summary");
   const changedInputCategories = getStringList(item.changed_from_previous, "changed_input_categories");
   const weeklyDelta = getNumberValue(item.changed_from_previous, "weekly_safe_to_spend_delta_cents");
+  const weeklyChangeLabel = formatWeeklyChange(weeklyDelta);
+  const guideState = setupGuideStateFromDashboard(item);
 
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
+      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} compact />
 
       <section className="metric-hero" aria-labelledby="safe-to-spend-title">
         <div>
           <h2 id="safe-to-spend-title">Weekly safe-to-spend</h2>
           <p className="metric-value">{formatCents(pace.weekly_safe_to_spend_cents)}</p>
+          <p className="metric-support">
+            This is the amount left for weekly spending while staying aligned with your goal.
+          </p>
         </div>
         <div className="status-stack">
           <span className="status-pill">{pace.pace_status}</span>
-          <span>Formula {item.formula_version}</span>
+          <span>Updated {formatDateTime(item.calculated_at)}</span>
         </div>
       </section>
 
@@ -148,20 +156,20 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
         </Panel>
       </section>
 
-      <section className="dashboard-grid secondary" aria-label="Calculation explanation">
-        <Panel title="Latest calculation">
+      <section className="dashboard-grid secondary" aria-label="Plan explanation">
+        <Panel title="Plan details">
           <dl className="snapshot-list">
             <div>
-              <dt>Calculated</dt>
+              <dt>Last updated</dt>
               <dd>{formatDateTime(item.calculated_at)}</dd>
             </div>
             <div>
-              <dt>Formula version</dt>
-              <dd>{item.formula_version}</dd>
+              <dt>Method</dt>
+              <dd>Consistent rules</dd>
             </div>
           </dl>
           <Link className="text-link" to={routes.calculation}>
-            View calculation record
+            View calculation details
           </Link>
         </Panel>
 
@@ -182,15 +190,13 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           </dl>
         </Panel>
 
-        <Panel title="Changed from previous">
+        <Panel title="What changed">
           <p className="panel-copy">
             {changedInputCategories.length === 0
-              ? "No previous calculation changes are available yet."
+              ? "No prior plan changes are available yet."
               : formatInputCategoryList(changedInputCategories)}
           </p>
-          <p className="panel-copy">
-            Weekly safe-to-spend delta: {weeklyDelta === null ? "Not available" : formatCents(weeklyDelta)}
-          </p>
+          <p className="panel-copy">{weeklyChangeLabel}</p>
         </Panel>
       </section>
     </section>
@@ -198,18 +204,21 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
 }
 
 function SetupRequiredDashboard({ item }: { item: DashboardItem }) {
+  const guideState = setupGuideStateFromDashboard(item);
+
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
+      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} />
       <EmptyState
-        title="Finish setup to calculate your pace"
-        description="The backend has not returned a complete dashboard result yet. Complete the missing MVP inputs below."
+        title="Finish setup to calculate your weekly plan"
+        description="GoalWise needs a complete goal, cash picture, and confirmed reserve before it can show your weekly number."
       />
       <div className="setup-list" aria-label="Missing inputs">
         {item.missing_inputs.map((missingInput) => {
           const detail = missingInputLabels[missingInput] ?? {
-            action: "Complete this backend-required setup item.",
-            label: missingInput,
+            action: "Complete this setup item.",
+            label: "Setup item",
             to: routes.financialInputs,
           };
           return (
@@ -237,4 +246,15 @@ function getNumberValue(source: Record<string, JsonValue> | null, key: string) {
 function getStringList(source: Record<string, JsonValue> | null, key: string) {
   const value = source?.[key];
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function formatWeeklyChange(deltaCents: number | null) {
+  if (deltaCents === null) {
+    return "Weekly safe-to-spend change is not available yet.";
+  }
+  if (deltaCents === 0) {
+    return "Weekly safe-to-spend stayed the same.";
+  }
+  const direction = deltaCents > 0 ? "increased" : "decreased";
+  return `Weekly safe-to-spend ${direction} by ${formatCents(Math.abs(deltaCents))}.`;
 }

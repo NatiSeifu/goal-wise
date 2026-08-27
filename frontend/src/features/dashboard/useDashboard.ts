@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+import { queryKeys } from "../../api/queryKeys.ts";
 import { getDashboard } from "../../api/resources.ts";
 import type { DashboardItem } from "../../api/types.ts";
 
@@ -9,38 +10,22 @@ type DashboardLoadState =
   | { data: null; error: null; status: "loading" };
 
 export function useDashboard() {
-  const [state, setState] = useState<DashboardLoadState>({
-    data: null,
-    error: null,
-    status: "loading",
+  const query = useQuery({
+    queryFn: getDashboard,
+    queryKey: queryKeys.dashboard,
   });
 
-  useEffect(() => {
-    let isCurrent = true;
+  if (query.isPending) {
+    return { data: null, error: null, status: "loading" } satisfies DashboardLoadState;
+  }
 
-    async function loadDashboard() {
-      try {
-        const response = await getDashboard();
-        if (isCurrent) {
-          setState({ data: response.item, error: null, status: "ready" });
-        }
-      } catch (error) {
-        if (isCurrent) {
-          setState({
-            data: null,
-            error: error instanceof Error ? error.message : "Dashboard data could not be loaded.",
-            status: "error",
-          });
-        }
-      }
-    }
+  if (query.isError) {
+    return {
+      data: null,
+      error: query.error instanceof Error ? query.error.message : "Dashboard data could not be loaded.",
+      status: "error",
+    } satisfies DashboardLoadState;
+  }
 
-    void loadDashboard();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
-
-  return state;
+  return { data: query.data.item, error: null, status: "ready" } satisfies DashboardLoadState;
 }

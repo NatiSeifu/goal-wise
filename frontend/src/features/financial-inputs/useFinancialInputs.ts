@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+import { queryKeys } from "../../api/queryKeys.ts";
 import { getFinancialProfile, listIncomeSources, listPlannedExpenses } from "../../api/resources.ts";
 import type {
   FinancialProfileResponse,
@@ -19,41 +20,44 @@ type FinancialInputsLoadState =
   | { data: null; error: null; status: "loading" };
 
 export function useFinancialInputs() {
-  const [state, setState] = useState<FinancialInputsLoadState>({
-    data: null,
-    error: null,
-    status: "loading",
-  });
-
-  async function reload() {
-    setState({ data: null, error: null, status: "loading" });
-    try {
+  const query = useQuery({
+    queryFn: async () => {
       const [profileResponse, incomeResponse, expenseResponse] = await Promise.all([
         getFinancialProfile(),
         listIncomeSources(),
         listPlannedExpenses(),
       ]);
-      setState({
-        data: {
-          expenses: expenseResponse.items,
-          incomeSources: incomeResponse.items,
-          profile: profileResponse.item,
-        },
-        error: null,
-        status: "ready",
-      });
-    } catch (error) {
-      setState({
-        data: null,
-        error: error instanceof Error ? error.message : "Financial inputs could not be loaded.",
-        status: "error",
-      });
-    }
+      return {
+        expenses: expenseResponse.items,
+        incomeSources: incomeResponse.items,
+        profile: profileResponse.item,
+      };
+    },
+    queryKey: queryKeys.financialInputs,
+  });
+
+  if (query.isPending) {
+    return {
+      data: null,
+      error: null,
+      reload: query.refetch,
+      status: "loading",
+    } satisfies FinancialInputsLoadState & { reload: typeof query.refetch };
   }
 
-  useEffect(() => {
-    void reload();
-  }, []);
+  if (query.isError) {
+    return {
+      data: null,
+      error: query.error instanceof Error ? query.error.message : "Financial inputs could not be loaded.",
+      reload: query.refetch,
+      status: "error",
+    } satisfies FinancialInputsLoadState & { reload: typeof query.refetch };
+  }
 
-  return { ...state, reload };
+  return {
+    data: query.data,
+    error: null,
+    reload: query.refetch,
+    status: "ready",
+  } satisfies FinancialInputsLoadState & { reload: typeof query.refetch };
 }
