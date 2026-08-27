@@ -19,7 +19,7 @@ test("registers a user and reaches the authenticated dashboard setup state", asy
 
   await page.getByLabel("Email").fill(uniqueEmail());
   await page.getByLabel("Password").fill(password);
-  await page.getByLabel("Time zone").fill("America/Los_Angeles");
+  await page.getByLabel("Time zone").selectOption("America/Los_Angeles");
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(/\/goal$/);
@@ -39,7 +39,7 @@ test("logs out and signs back in to a protected account", async ({ page }) => {
   await page.goto("/register");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await page.getByLabel("Time zone").fill("America/Los_Angeles");
+  await page.getByLabel("Time zone").selectOption("America/Los_Angeles");
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(/\/goal$/);
@@ -61,7 +61,7 @@ test("completes the first-run setup and reaches a ready dashboard", async ({ pag
   await page.goto("/register");
   await page.getByLabel("Email").fill(uniqueEmail());
   await page.getByLabel("Password").fill(password);
-  await page.getByLabel("Time zone").fill("America/Los_Angeles");
+  await page.getByLabel("Time zone").selectOption("America/Los_Angeles");
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(/\/goal$/);

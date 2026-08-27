@@ -64,8 +64,6 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 - The test remains isolated from other test users.
 - Slice 1 and the existing frontend checks remain green.
 
-## Follow-up Slices
-
 ## Slice 3 - Complete First-Run Setup
 
 ### Test journey
@@ -86,6 +84,27 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 ## Follow-up Slices
 
 - Replace free-form time-zone entry with a selectable time-zone control.
+- Dashboard status scenarios using isolated seeded data.
+- Archive flow and cross-user isolation.
+- CI execution with an isolated test database.
+
+## Slice 4 - Selectable Time Zone
+
+### Implementation
+
+- Replace free-form registration time-zone entry with a native accessible select.
+- Preserve browser detection when the detected zone is supported.
+- Use a safe default when browser detection is unavailable or unsupported.
+- Update browser registration journeys to select the time zone.
+
+### Success criteria
+
+- Registration submits a valid IANA time-zone value selected from the UI.
+- The control is keyboard and screen-reader accessible.
+- Existing E2E and frontend checks remain green.
+
+## Follow-up Slices
+
 - Dashboard status scenarios using isolated seeded data.
 - Archive flow and cross-user isolation.
 - CI execution with an isolated test database.
