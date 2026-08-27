@@ -34,7 +34,7 @@ export async function registerUser(page: Page) {
   return { email, password: testPassword };
 }
 
-export async function completeGoalAndCashSetup(page: Page, scenario: DashboardScenario) {
+export async function createGoal(page: Page, scenario: DashboardScenario) {
   await page.getByLabel("Goal name").fill(scenario.name);
   await page.getByLabel("Target amount").fill(String(scenario.target));
   await page.getByLabel("Initial saved").fill("0");
@@ -43,6 +43,10 @@ export async function completeGoalAndCashSetup(page: Page, scenario: DashboardSc
   await page.getByLabel("Target date").fill(dateFromToday(60));
   await page.getByRole("button", { name: "Create goal" }).click();
   await page.getByRole("status").waitFor();
+}
+
+export async function completeGoalAndCashSetup(page: Page, scenario: DashboardScenario) {
+  await createGoal(page, scenario);
 
   await page.getByRole("link", { name: /Cash:/ }).click();
   await page.waitForURL(/\/financial-inputs#cash-picture$/);

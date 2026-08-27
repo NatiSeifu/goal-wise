@@ -113,8 +113,24 @@ local backend at `http://127.0.0.1:8000` and the local frontend at
 - Assertions focus on backend-owned status and rendered decision-surface content.
 - Existing E2E and frontend checks remain green.
 
+## Slice 6 - Goal Lifecycle and User Isolation
+
+### Test journey
+
+1. Register a user and create an active goal.
+2. Archive the goal through the Goal setup UI.
+3. Confirm the active goal is cleared and a new goal can be created.
+4. Register a second user in a separate browser context.
+5. Attempt to archive User A's goal as User B and verify the API returns `404`.
+
+### Success criteria
+
+- Archive behavior is verified through the browser UI.
+- Archived goals are removed from active planning without being deleted.
+- A new active goal can be created after archival.
+- Cross-user mutation is rejected with the existing `404` contract.
+- Existing E2E and frontend checks remain green.
+
 ## Follow-up Slices
 
-- Dashboard status scenarios using isolated seeded data.
-- Archive flow and cross-user isolation.
 - CI execution with an isolated test database.
