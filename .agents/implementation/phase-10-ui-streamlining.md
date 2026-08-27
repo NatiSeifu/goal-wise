@@ -348,6 +348,28 @@ Success criteria:
 - checks remain fast;
 - screenshots do not present unsupported future features as current behavior.
 
+## Slice 9 - Cached Frontend Data Loading
+
+Reduce route-to-route loading flashes without moving financial logic into the
+frontend.
+
+Build or refine:
+
+- shared frontend query provider;
+- cached query hooks for active goal, financial inputs, dashboard, and latest
+  calculation snapshot;
+- cache invalidation after goal and financial-input writes;
+- session-boundary cache clearing on login, register, and logout;
+- route loading behavior that still shows first-load and error states clearly.
+
+Success criteria:
+
+- revisiting Goal, Financial Inputs, Dashboard, and Calculation Details can use
+  cached data instead of full-page loading flashes;
+- saved changes refresh the affected dashboard and calculation-detail data;
+- cached private data is cleared when the authenticated user changes;
+- backend remains the source of truth for all financial outputs.
+
 ## Suggested Commit Slices
 
 1. `docs: plan ui streamlining phase`
@@ -358,6 +380,7 @@ Success criteria:
 6. `feat: add ai future guardrail page`
 7. `fix: harden responsive accessibility states`
 8. `test: cover streamlined frontend behavior`
+9. `feat: cache frontend route data`
 
 ## Phase Completion Criteria
 

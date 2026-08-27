@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
 import { ApiError, type FieldErrors } from "../../api/errors.ts";
+import { queryKeys } from "../../api/queryKeys.ts";
 import {
   createIncomeSource,
   createPlannedExpense,
@@ -97,6 +99,7 @@ const emptyExpenseForm: ExpenseFormState = {
 };
 
 export function FinancialInputsRoute() {
+  const queryClient = useQueryClient();
   const inputs = useFinancialInputs();
   const activeGoal = useActiveGoal();
   const location = useLocation();
@@ -153,7 +156,7 @@ export function FinancialInputsRoute() {
 
   async function reloadAfterSuccess(message: string) {
     setSuccessMessage(message);
-    await inputs.reload();
+    await invalidateFinancialPlanningQueries(queryClient);
   }
 
   async function handleProfileSubmit(event: FormEvent<HTMLFormElement>) {
@@ -497,6 +500,14 @@ export function FinancialInputsRoute() {
       </div>
     </section>
   );
+}
+
+async function invalidateFinancialPlanningQueries(queryClient: QueryClient) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialInputs }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.latestCalculationSnapshot }),
+  ]);
 }
 
 function RouteHeader() {

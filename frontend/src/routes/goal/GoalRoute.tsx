@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { ApiError, type FieldErrors } from "../../api/errors.ts";
+import { queryKeys } from "../../api/queryKeys.ts";
 import { archiveGoal, createGoal, updateGoal } from "../../api/resources.ts";
 import type { GoalRequest, GoalResponse } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
@@ -35,6 +37,7 @@ const emptyGoalForm: GoalFormState = {
 };
 
 export function GoalRoute() {
+  const queryClient = useQueryClient();
   const activeGoal = useActiveGoal();
   const financialInputs = useFinancialInputs();
   const [form, setForm] = useState<GoalFormState>(emptyGoalForm);
@@ -92,7 +95,7 @@ export function GoalRoute() {
         setForm(goalToForm(response.item));
       }
       setSuccessMessage("Goal saved. Complete the financial inputs to update dashboard results.");
-      await activeGoal.reload();
+      await invalidateGoalwiseQueries(queryClient);
     } catch (error) {
       if (error instanceof ApiError && error.fields !== null) {
         setFields(error.fields);
@@ -119,7 +122,7 @@ export function GoalRoute() {
       await archiveGoal(existingGoal.id);
       setForm(emptyGoalForm);
       setSuccessMessage("Goal archived. Its prior calculations remain saved, and you can create a new active goal.");
-      await activeGoal.reload();
+      await invalidateGoalwiseQueries(queryClient);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Goal could not be archived.");
     } finally {
@@ -253,6 +256,15 @@ export function GoalRoute() {
       </CoachTip>
     </section>
   );
+}
+
+async function invalidateGoalwiseQueries(queryClient: QueryClient) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.activeGoal }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialInputs }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.latestCalculationSnapshot }),
+  ]);
 }
 
 function GoalHeader({ description, title }: { description: string; title: string }) {
