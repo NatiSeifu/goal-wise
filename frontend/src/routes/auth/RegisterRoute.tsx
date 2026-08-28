@@ -6,13 +6,33 @@ import { routes } from "../../app/routes.ts";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { Button } from "../../components/ui/Button.tsx";
+import { SelectField } from "../../components/ui/SelectField.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
 const DEFAULT_TIME_ZONE = "America/Los_Angeles";
+const timeZoneOptions = [
+  { label: "Pacific Time (Los Angeles)", value: "America/Los_Angeles" },
+  { label: "Mountain Time (Denver)", value: "America/Denver" },
+  { label: "Central Time (Chicago)", value: "America/Chicago" },
+  { label: "Eastern Time (New York)", value: "America/New_York" },
+  { label: "Atlantic Time (Halifax)", value: "America/Halifax" },
+  { label: "UTC", value: "UTC" },
+  { label: "Western European Time (London)", value: "Europe/London" },
+  { label: "Central European Time (Berlin)", value: "Europe/Berlin" },
+  { label: "Eastern European Time (Athens)", value: "Europe/Athens" },
+  { label: "India Standard Time (Kolkata)", value: "Asia/Kolkata" },
+  { label: "China Standard Time (Shanghai)", value: "Asia/Shanghai" },
+  { label: "Japan Standard Time (Tokyo)", value: "Asia/Tokyo" },
+  { label: "Australian Eastern Time (Sydney)", value: "Australia/Sydney" },
+  { label: "New Zealand Time (Auckland)", value: "Pacific/Auckland" },
+];
 
 function getBrowserTimeZone() {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || DEFAULT_TIME_ZONE;
+  const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return timeZoneOptions.some((option) => option.value === browserTimeZone)
+    ? browserTimeZone
+    : DEFAULT_TIME_ZONE;
 }
 
 export function RegisterRoute() {
@@ -23,12 +43,13 @@ export function RegisterRoute() {
   const [timeZone, setTimeZone] = useState(getBrowserTimeZone);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationCompleted, setRegistrationCompleted] = useState(false);
 
   if (auth.status === "checking") {
     return <RouteLoading label="Checking your session" />;
   }
 
-  if (auth.status === "authenticated") {
+  if (auth.status === "authenticated" && !registrationCompleted) {
     return <Navigate replace to={routes.dashboard} />;
   }
 
@@ -39,6 +60,7 @@ export function RegisterRoute() {
 
     try {
       await auth.register({ email, password, time_zone: timeZone });
+      setRegistrationCompleted(true);
       navigate(routes.goal, { replace: true });
     } catch (registerError) {
       setError(
@@ -91,13 +113,13 @@ export function RegisterRoute() {
             type="password"
             value={password}
           />
-          <TextField
+          <SelectField
             id="register-time-zone"
             label="Time zone"
             name="time-zone"
             onChange={(event) => setTimeZone(event.target.value)}
+            options={timeZoneOptions}
             required
-            type="text"
             value={timeZone}
           />
           <Button className="auth-submit" disabled={isSubmitting} type="submit">
