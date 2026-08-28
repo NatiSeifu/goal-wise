@@ -89,12 +89,81 @@ def test_preview_returns_normalized_plan_without_writes(
     assert body["income_sources"][0]["amount_cents"] == 250000
     assert body["planned_expenses"][0]["classification"] == "essential"
     assert body["errors"] == []
+    assert body["preview_token"]
 
     with Session(engine) as db_session:
         assert db_session.scalar(select(Goal)) is None
         assert db_session.scalar(select(FinancialProfile)) is None
         assert db_session.scalar(select(IncomeSource)) is None
         assert db_session.scalar(select(PlannedExpense)) is None
+        assert db_session.scalar(select(CalculationSnapshot)) is None
+
+
+def test_confirm_persists_complete_plan_and_snapshot(
+    client_and_engine: tuple[TestClient, Engine],
+) -> None:
+    client, engine = client_and_engine
+    csrf_token = _register(client)
+    preview = client.post(
+        "/api/v1/planning-import/preview",
+        files={"file": ("plan.csv", CSV_PLAN, "text/csv")},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    assert preview.status_code == 200
+
+    response = client.post(
+        "/api/v1/planning-import/confirm",
+        json={"preview_token": preview.json()["preview_token"]},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["goal_id"]
+    assert body["snapshot_id"]
+    with Session(engine) as db_session:
+        goal = db_session.scalar(select(Goal))
+        profile = db_session.scalar(select(FinancialProfile))
+        income = db_session.scalar(select(IncomeSource))
+        expense = db_session.scalar(select(PlannedExpense))
+        snapshot = db_session.scalar(select(CalculationSnapshot))
+        assert goal is not None
+        assert goal.id == body["goal_id"]
+        assert goal.name == "Moving fund"
+        assert profile is not None
+        assert profile.starting_cash_cents == 200_000
+        assert income is not None
+        assert income.amount_cents == 250_000
+        assert expense is not None
+        assert expense.amount_cents == 140_000
+        assert snapshot is not None
+        assert snapshot.id == body["snapshot_id"]
+        assert snapshot.trigger == "planning_import_confirmed"
+
+
+def test_confirm_rejects_tampered_preview_token_without_writes(
+    client_and_engine: tuple[TestClient, Engine],
+) -> None:
+    client, engine = client_and_engine
+    csrf_token = _register(client)
+    preview = client.post(
+        "/api/v1/planning-import/preview",
+        files={"file": ("plan.csv", CSV_PLAN, "text/csv")},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+    token = preview.json()["preview_token"]
+    tampered_token = f"{token[:-1]}{'0' if token[-1] != '0' else '1'}"
+
+    response = client.post(
+        "/api/v1/planning-import/confirm",
+        json={"preview_token": tampered_token},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["issues"][0]["code"] == "invalid_preview"
+    with Session(engine) as db_session:
+        assert db_session.scalar(select(Goal)) is None
         assert db_session.scalar(select(CalculationSnapshot)) is None
 
 

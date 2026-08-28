@@ -37,6 +37,7 @@ class PlanningImportSourcePreview(BaseModel):
 
 
 class PlanningImportPreviewResponse(BaseModel):
+    preview_token: str
     valid: bool
     row_count: int
     counts: dict[str, int]
@@ -45,3 +46,12 @@ class PlanningImportPreviewResponse(BaseModel):
     income_sources: list[PlanningImportSourcePreview]
     planned_expenses: list[PlanningImportSourcePreview]
     errors: list[PlanningImportIssueResponse]
+
+
+class PlanningImportConfirmRequest(BaseModel):
+    preview_token: str
+
+
+class PlanningImportConfirmResponse(BaseModel):
+    goal_id: str
+    snapshot_id: str
