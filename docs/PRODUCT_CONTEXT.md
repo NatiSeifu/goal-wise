@@ -50,9 +50,10 @@ Do not present these as working MVP behavior unless the user explicitly asks and
 
 Deferred features may appear only as clearly marked future-state concepts, not as implemented or promised current behavior.
 
-The planned canonical planning CSV increment is specified in
-[SPEC-0010](specs/0010-planning-csv-import.md) and remains future-state until
-its implementation is accepted and the MVP scope mapping is updated.
+The approved next increment, canonical planning CSV import, is specified in
+[SPEC-0010](specs/0010-planning-csv-import.md). It remains future-state until
+its implementation is complete and the MVP scope mapping is updated to record
+the implemented behavior.
 
 ## Real Product Entities
 

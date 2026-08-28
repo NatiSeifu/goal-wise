@@ -1,6 +1,6 @@
 # ADR-0010: Use a Canonical Planning CSV for Structured Imports
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-08-27
 - **Deciders:** Nati Seifu
 - **Related requirements:** FR-INP-008, FR-GOAL-001 to FR-GOAL-004, FR-FIN-001 to FR-FIN-007, FR-ERR-001, NFR-SEC-006, NFR-SEC-008, NFR-PRI-001, NFR-REL-001

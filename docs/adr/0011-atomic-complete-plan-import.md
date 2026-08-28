@@ -1,6 +1,6 @@
 # ADR-0011: Preview and Atomically Replace the Complete Planning Setup
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-08-27
 - **Deciders:** Nati Seifu
 - **Related requirements:** FR-ERR-001, FR-ERR-002, FR-SNAP-001 to FR-SNAP-004, NFR-REL-001, NFR-SEC-005, NFR-SEC-006, NFR-REL-001

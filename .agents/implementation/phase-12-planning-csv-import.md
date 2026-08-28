@@ -196,15 +196,15 @@ Success criteria:
 - Existing backend, frontend, and Playwright suites remain green.
 - CI uses an isolated database and never staging or production data.
 
-## Architectural decision to confirm before implementation
+## Accepted Architectural Baseline
 
-The recommended design is a **complete-plan replacement import**: one file
+The accepted design is a **complete-plan replacement import**: one file
 describes one GoalWise setup, preview is required, and confirmation atomically
 replaces the current setup. This is simpler and safer than merging arbitrary
 rows into existing inputs, while preserving the existing deterministic
-calculation boundary.
+calculation boundary. The decision is recorded in ADR-0010 and ADR-0011.
 
-Alternatives to discuss:
+Alternatives retained for future discussion:
 
 - **Import only income and expenses**: simpler CSV, but it cannot recreate a
   complete setup and still requires manual goal and cash entry.

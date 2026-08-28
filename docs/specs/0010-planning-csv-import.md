@@ -1,6 +1,6 @@
 # SPEC-0010: Canonical Planning CSV Import
 
-Status: Draft
+Status: Accepted
 Last Updated: 2026-08-27
 Related ADRs: ADR-0002, ADR-0003, ADR-0004, ADR-0007, ADR-0010, ADR-0011
 Related Specs: SPEC-0003, SPEC-0004, SPEC-0005, SPEC-0007, SPEC-0008
