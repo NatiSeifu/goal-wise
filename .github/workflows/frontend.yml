@@ -109,8 +109,24 @@ jobs:
           COOKIE_SAMESITE: lax
           ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
         run: |
-          ../.venv/bin/uvicorn app.main:app --app-dir ../backend --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
-          if ! curl --fail --retry 30 --retry-delay 1 http://127.0.0.1:8000/health; then
+          cd ../backend
+          ../.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid" 2>/dev/null || true' EXIT
+          cd ../frontend
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/health; then
+              break
+            fi
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              cat ../backend-e2e.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          if ! curl --fail --silent http://127.0.0.1:8000/health; then
             cat ../backend-e2e.log
             exit 1
           fi
