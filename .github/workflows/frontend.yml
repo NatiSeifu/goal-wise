@@ -101,9 +101,11 @@ jobs:
           ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
         run: |
           cd backend
-          nohup env DATABASE_URL="$DATABASE_URL" ENVIRONMENT="$ENVIRONMENT" SESSION_SECRET="$SESSION_SECRET" SECURE_COOKIES="$SECURE_COOKIES" COOKIE_SAMESITE="$COOKIE_SAMESITE" ALLOWED_FRONTEND_ORIGIN="$ALLOWED_FRONTEND_ORIGIN" \
-            UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
-          curl --fail --retry 30 --retry-delay 1 http://127.0.0.1:8000/health
+          UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
+          if ! curl --fail --retry 30 --retry-delay 1 http://127.0.0.1:8000/health; then
+            cat ../backend-e2e.log
+            exit 1
+          fi
 
       - name: Sync frontend dependencies
         run: make frontend-sync
