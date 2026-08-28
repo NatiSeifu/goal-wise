@@ -59,6 +59,17 @@ class PlanningCsvValidationError(ValueError):
         super().__init__("Planning CSV validation failed.")
 
 
+def validation_issue_dict(issue: PlanningCsvValidationIssue) -> dict[str, object]:
+    """Return the stable public representation of a validation issue."""
+
+    return {
+        "row": issue.row,
+        "field": issue.field,
+        "code": issue.code,
+        "message": issue.message,
+    }
+
+
 def validate_planning_csv(
     parsed: ParsedPlanningCsv,
     *,
@@ -73,6 +84,8 @@ def validate_planning_csv(
 
     goal: PlanningImportGoal | None = None
     cash: PlanningImportCash | None = None
+    goal_seen = False
+    cash_seen = False
     income_sources: list[IncomeSourceInput] = []
     planned_expenses: list[PlannedExpenseInput] = []
 
@@ -104,9 +117,11 @@ def validate_planning_csv(
 
         _validate_applicable_fields(values, record_type, row.row_number, issues)
         if record_type == "goal":
+            duplicate_goal = goal_seen
+            goal_seen = True
             parsed_goal = _goal_from_row(values, row.row_number, user_local_date, issues)
             if parsed_goal is not None:
-                if goal is not None:
+                if duplicate_goal:
                     _add_issue(
                         issues,
                         row=row.row_number,
@@ -117,9 +132,11 @@ def validate_planning_csv(
                 else:
                     goal = parsed_goal
         elif record_type == "cash":
+            duplicate_cash = cash_seen
+            cash_seen = True
             parsed_cash = _cash_from_row(values, row.row_number, user_local_date, issues)
             if parsed_cash is not None:
-                if cash is not None:
+                if duplicate_cash:
                     _add_issue(
                         issues,
                         row=row.row_number,
@@ -141,7 +158,7 @@ def validate_planning_csv(
         if len(issues) >= MAX_PLANNING_IMPORT_ERRORS:
             break
 
-    if goal is None:
+    if not goal_seen:
         _add_issue(
             issues,
             row=1,
@@ -149,7 +166,7 @@ def validate_planning_csv(
             code="missing_goal",
             message="The document must contain exactly one goal row.",
         )
-    if cash is None:
+    if not cash_seen:
         _add_issue(
             issues,
             row=1,
