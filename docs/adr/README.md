@@ -19,6 +19,8 @@ Use [template.md](template.md) when creating a new ADR.
 | [0007](0007-mvp-deferrals.md) | Defer Bank Sync, CSV Import, and AI Summaries from MVP | Accepted |
 | [0008](0008-react-vite-frontend.md) | Use React and Vite for the MVP Frontend | Accepted |
 | [0009](0009-railway-deployment.md) | Deploy the Course MVP on Railway | Accepted |
+| [0010](0010-canonical-planning-csv-import.md) | Use a Canonical Planning CSV for Structured Imports | Accepted |
+| [0011](0011-atomic-complete-plan-import.md) | Preview and Atomically Replace the Complete Planning Setup | Accepted |
 
 ## Template
 

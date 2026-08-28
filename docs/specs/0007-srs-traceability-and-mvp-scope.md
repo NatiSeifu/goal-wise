@@ -2,15 +2,15 @@
 
 Status: Accepted
 Last Updated: 2026-08-21
-Related ADRs: ADR-0001, ADR-0002, ADR-0003, ADR-0005, ADR-0007, ADR-0008, ADR-0009
-Related Specs: SPEC-0001, SPEC-0002, SPEC-0003, SPEC-0004, SPEC-0005, SPEC-0006
+Related ADRs: ADR-0001, ADR-0002, ADR-0003, ADR-0005, ADR-0007, ADR-0008, ADR-0009, ADR-0010, ADR-0011
+Related Specs: SPEC-0001, SPEC-0002, SPEC-0003, SPEC-0004, SPEC-0005, SPEC-0006, SPEC-0010
 Source: docs/srs/goal-wise-srs-v2.md
 
 ## Purpose
 
 Define how the current architecture package maps to the broader GoalWise SRS.
 
-This architecture represents a progressive course MVP/CDR subset, not the complete SRS v2.0 implementation. SRS v2.0 is the normative product baseline. This mapping describes the currently implemented increment and must be updated as remaining SRS v2.0 Must requirements are implemented or explicitly accepted as exceptions.
+This architecture represents a progressive course MVP/CDR subset, not the complete SRS v2.0 implementation. SRS v2.0 is the normative product baseline. This mapping describes the currently implemented increment and must be updated as remaining SRS v2.0 Must requirements are implemented or explicitly accepted as exceptions. SPEC-0010 and ADR-0010/0011 document the approved next increment; they do not mark CSV import as implemented in the current MVP.
 
 SRS v2.0 supersedes v1.0 and narrows the MVP away from CSV import and runtime AI while adding or sharpening requirements for current-week spending, export/delete, audit events, AI Future guardrails, error contracts, observability, coverage, security evidence, and release evidence.
 
@@ -33,6 +33,18 @@ The current MVP proves the core planning loop:
 4. Backend calculates deterministic pace results.
 5. Backend stores immutable snapshots.
 6. Dashboard displays safe-to-spend, pace status, progress, and calculation details.
+
+## Approved Next Increment
+
+The next implementation increment is the canonical planning CSV importer,
+defined by [SPEC-0010](0010-planning-csv-import.md) and justified by
+[ADR-0010](../adr/0010-canonical-planning-csv-import.md) and
+[ADR-0011](../adr/0011-atomic-complete-plan-import.md).
+
+Its approved behavior is a previewed, explicitly confirmed, atomic replacement
+of one complete planning setup. This approval does not enable raw transaction
+import, bank-statement parsing, transaction correction, or runtime AI. Those
+remain separate deferred decisions.
 
 ## Functional Requirement Mapping
 
