@@ -66,7 +66,7 @@ test("completes the first-run setup and reaches a ready dashboard", async ({ pag
   await expect(page).toHaveURL(/\/financial-inputs#cash-picture$/);
   const cashForm = page.locator("form#cash-picture");
   await cashForm.getByLabel("Starting cash").fill("1200");
-  await cashForm.getByLabel("Balance as of").fill(dateFromToday(0));
+  await cashForm.getByLabel("Balance as of").fill(dateFromToday(-1));
   await cashForm.getByLabel("Reserve buffer").fill("100");
   await cashForm.getByLabel("Protect this reserve").check();
   await cashForm.getByRole("button", { name: "Save cash picture" }).click();
