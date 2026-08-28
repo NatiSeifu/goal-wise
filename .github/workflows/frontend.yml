@@ -91,22 +91,6 @@ jobs:
           cd backend
           UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen alembic upgrade head
 
-      - name: Start API
-        env:
-          DATABASE_URL: postgresql+psycopg://goalwise:goalwise_ci_password@127.0.0.1:5432/goalwise_e2e
-          ENVIRONMENT: test
-          SESSION_SECRET: e2e-session-secret
-          SECURE_COOKIES: "false"
-          COOKIE_SAMESITE: lax
-          ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
-        run: |
-          cd backend
-          UV_PROJECT_ENVIRONMENT=../.venv uv run --frozen uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
-          if ! curl --fail --retry 30 --retry-delay 1 http://127.0.0.1:8000/health; then
-            cat ../backend-e2e.log
-            exit 1
-          fi
-
       - name: Sync frontend dependencies
         run: make frontend-sync
 
@@ -118,7 +102,19 @@ jobs:
         working-directory: frontend
         env:
           CI: "true"
-        run: npm run e2e
+          DATABASE_URL: postgresql+psycopg://goalwise:goalwise_ci_password@127.0.0.1:5432/goalwise_e2e
+          ENVIRONMENT: test
+          SESSION_SECRET: e2e-session-secret
+          SECURE_COOKIES: "false"
+          COOKIE_SAMESITE: lax
+          ALLOWED_FRONTEND_ORIGIN: http://localhost:5173
+        run: |
+          ../.venv/bin/uvicorn app.main:app --app-dir ../backend --host 127.0.0.1 --port 8000 > ../backend-e2e.log 2>&1 &
+          if ! curl --fail --retry 30 --retry-delay 1 http://127.0.0.1:8000/health; then
+            cat ../backend-e2e.log
+            exit 1
+          fi
+          npm run e2e
 
       - name: Upload Playwright artifacts
         if: ${{ !cancelled() }}
