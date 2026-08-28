@@ -52,7 +52,8 @@ export async function completeGoalAndCashSetup(page: Page, scenario: DashboardSc
   await page.waitForURL(/\/financial-inputs#cash-picture$/);
   const cashForm = page.locator("form#cash-picture");
   await cashForm.getByLabel("Starting cash").fill(String(scenario.startingCash));
-  await cashForm.getByLabel("Balance as of").fill(dateFromToday(0));
+  // Keep the fixture valid when CI's UTC date has crossed midnight before the user's local date.
+  await cashForm.getByLabel("Balance as of").fill(dateFromToday(-1));
   await cashForm.getByLabel("Reserve buffer").fill("0");
   await cashForm.getByLabel("Protect this reserve").check();
   await cashForm.getByRole("button", { name: "Save cash picture" }).click();
