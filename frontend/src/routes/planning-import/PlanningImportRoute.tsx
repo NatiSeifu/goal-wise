@@ -116,7 +116,17 @@ export function PlanningImportRoute() {
         </div>
       </div>
 
-      {preview === null ? null : <ImportPreview preview={preview} isBusy={isBusy} onConfirm={() => void handleConfirm()} />}
+      {preview === null ? null : (
+        <ImportPreview
+          preview={preview}
+          isBusy={isBusy}
+          onCancel={() => {
+            setPreview(null);
+            setError(null);
+          }}
+          onConfirm={() => void handleConfirm()}
+        />
+      )}
     </section>
   );
 }
@@ -124,10 +134,12 @@ export function PlanningImportRoute() {
 function ImportPreview({
   preview,
   isBusy,
+  onCancel,
   onConfirm,
 }: {
   preview: PlanningImportPreviewResponse;
   isBusy: boolean;
+  onCancel: () => void;
   onConfirm: () => void;
 }) {
   return (
@@ -149,9 +161,14 @@ function ImportPreview({
       <ImportSourceTable title="Planned expenses" items={preview.planned_expenses} kind="expense" />
       <div className="import-confirmation">
         <p>Only confirm when these values match the plan you want GoalWise to use.</p>
-        <Button disabled={isBusy} type="button" onClick={onConfirm}>
-          {isBusy ? "Importing plan" : "Confirm import"}
-        </Button>
+        <div className="form-actions">
+          <Button disabled={isBusy} variant="secondary" type="button" onClick={onCancel}>
+            Cancel import
+          </Button>
+          <Button disabled={isBusy} type="button" onClick={onConfirm}>
+            {isBusy ? "Importing plan" : "Confirm import"}
+          </Button>
+        </div>
       </div>
     </section>
   );
