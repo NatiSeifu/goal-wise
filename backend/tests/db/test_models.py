@@ -6,6 +6,7 @@ from app.db.base import Base
 from app.db.session import make_engine, make_session_factory
 from app.db.types import utc_now
 from app.models import (
+    AIExplanation,
     CalculationSnapshot,
     FinancialProfile,
     Goal,
@@ -44,6 +45,7 @@ def test_metadata_registers_auth_tables() -> None:
     assert "income_sources" in Base.metadata.tables
     assert "planned_expenses" in Base.metadata.tables
     assert "calculation_snapshots" in Base.metadata.tables
+    assert "ai_explanations" in Base.metadata.tables
     assert "weekly_plans" in Base.metadata.tables
 
 
@@ -307,6 +309,74 @@ def test_calculation_snapshot_round_trip(session: Session) -> None:
     assert snapshot.result_json["schema_version"] == "snapshot-result-v1"
     assert snapshot.calculated_at.tzinfo is UTC
     assert snapshot.created_at.tzinfo is UTC
+
+
+def test_ai_explanation_round_trip_and_version_uniqueness(session: Session) -> None:
+    user = User(
+        email_normalized="ai-explanation@example.com",
+        password_hash="argon2-hash-placeholder",
+        time_zone="America/Los_Angeles",
+    )
+    session.add(user)
+    session.flush()
+    goal = Goal(
+        user_id=user.id,
+        name="Emergency fund",
+        target_cents=300000,
+        initial_saved_cents=50000,
+        current_saved_cents=75000,
+        start_date=date(2026, 8, 1),
+        target_date=date(2026, 12, 31),
+        status="active",
+    )
+    session.add(goal)
+    session.flush()
+    snapshot = CalculationSnapshot(
+        user_id=user.id,
+        goal_id=goal.id,
+        formula_version="pace-v1",
+        trigger="goal_updated",
+        normalized_input_json={"schema_version": "snapshot-input-v1"},
+        result_json={"schema_version": "snapshot-result-v1"},
+        calculated_at=utc_now(),
+    )
+    session.add(snapshot)
+    session.flush()
+
+    explanation = AIExplanation(
+        user_id=user.id,
+        snapshot_id=snapshot.id,
+        provider="groq",
+        model="llama-3.3-70b-versatile",
+        prompt_version="ai-explanation-prompt-v1",
+        response_schema_version="ai-explanation-v1",
+        response_json={"schema_version": "ai-explanation-v1", "headline": "On track"},
+        generated_at=utc_now(),
+    )
+    session.add(explanation)
+    session.commit()
+    session.refresh(explanation)
+
+    assert UUID(explanation.id).version == 4
+    assert explanation.user == user
+    assert explanation.snapshot == snapshot
+    assert explanation.response_json["schema_version"] == "ai-explanation-v1"
+    assert explanation.generated_at.tzinfo is UTC
+
+    duplicate = AIExplanation(
+        user_id=user.id,
+        snapshot_id=snapshot.id,
+        provider="groq",
+        model="llama-3.3-70b-versatile",
+        prompt_version="ai-explanation-prompt-v1",
+        response_schema_version="ai-explanation-v1",
+        response_json={"schema_version": "ai-explanation-v1", "headline": "Duplicate"},
+        generated_at=utc_now(),
+    )
+    session.add(duplicate)
+
+    with pytest.raises(IntegrityError):
+        session.commit()
 
 
 def test_weekly_plan_round_trip_and_uniqueness(session: Session) -> None:

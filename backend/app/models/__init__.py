@@ -1,5 +1,6 @@
 """SQLAlchemy ORM persistence models."""
 
+from app.models.ai_explanation import AIExplanation
 from app.models.calculation_snapshot import CalculationSnapshot
 from app.models.financial_profile import FinancialProfile
 from app.models.goal import Goal
@@ -12,6 +13,7 @@ from app.models.weekly_plan import WeeklyPlan
 
 __all__ = [
     "CalculationSnapshot",
+    "AIExplanation",
     "FinancialProfile",
     "Goal",
     "IncomeSource",
