@@ -268,7 +268,11 @@ implementation uses complete-plan replacement as specified by ADR-0011:
   before writing;
 - the existing setup is replaced only after all imported values pass domain
   validation;
+- when an active goal exists, its editable goal and financial-profile values
+  are updated in place rather than creating and archiving a second goal;
 - stale income and expense rows from the previous setup are not left active;
+- prior goal and financial-input values are not retained as a separate editable
+  plan, but prior immutable calculation snapshots remain available as history;
 - the write and resulting calculation snapshot commit atomically;
 - a failure leaves the prior committed setup and latest snapshot unchanged;
 - the calculation is run by the existing deterministic service path;
