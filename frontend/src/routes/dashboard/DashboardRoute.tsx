@@ -206,7 +206,11 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
 
 function PaceStatusExplanation({ goal, pace }: { goal: NonNullable<DashboardItem["goal"]>; pace: DashboardPaceSummary }) {
   const progressDelta = pace.expected_savings_to_date_cents - goal.current_saved_cents;
-  if (pace.pace_status !== "At Risk" || progressDelta <= 0) {
+  if (
+    pace.pace_status !== "At Risk" ||
+    !Number.isFinite(pace.expected_savings_to_date_cents) ||
+    progressDelta <= 0
+  ) {
     return null;
   }
 
