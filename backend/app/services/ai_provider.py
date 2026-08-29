@@ -8,6 +8,8 @@ from urllib import error, request
 
 from pydantic import SecretStr
 
+from app.services.ai_prompts import AI_EXPLANATION_PROMPT_V1
+
 AiPayload = Mapping[str, object]
 AiResponse = Mapping[str, object]
 
@@ -42,7 +44,7 @@ class GroqAiProvider:
         *,
         api_key: SecretStr,
         model: str,
-        system_prompt: str = "Return a valid JSON object matching the requested schema.",
+        system_prompt: str = AI_EXPLANATION_PROMPT_V1,
     ) -> None:
         self._api_key = api_key
         self._model = model
