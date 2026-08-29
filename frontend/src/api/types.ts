@@ -194,6 +194,7 @@ export type DashboardGoalSummary = {
 export type DashboardPaceSummary = {
   pace_status: string;
   weekly_safe_to_spend_cents: number;
+  expected_savings_to_date_cents: number;
   projected_shortfall_cents: number;
   remaining_weeks: number;
   progress_percentage: number;

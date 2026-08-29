@@ -17,6 +17,7 @@ class DashboardGoalSummary(BaseModel):
 class DashboardPaceSummary(BaseModel):
     pace_status: str
     weekly_safe_to_spend_cents: int
+    expected_savings_to_date_cents: int
     projected_shortfall_cents: int
     remaining_weeks: int
     progress_percentage: float

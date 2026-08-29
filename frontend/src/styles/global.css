@@ -479,6 +479,20 @@ select:focus-visible {
   letter-spacing: -0.035em;
 }
 
+.metric-support {
+  max-width: 62ch;
+  margin: var(--gw-space-4) 0 0;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.5;
+}
+
+.metric-status-explanation {
+  max-width: 62ch;
+  margin: var(--gw-space-4) 0 0;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.5;
+}
+
 .status-stack {
   display: grid;
   justify-items: end;

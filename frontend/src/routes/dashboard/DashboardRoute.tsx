@@ -95,6 +95,7 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           <p className="metric-support">
             This is the amount left for weekly spending while staying aligned with your goal.
           </p>
+          <PaceStatusExplanation goal={item.goal} pace={pace} />
         </div>
         <div className="status-stack">
           <span className="status-pill">{pace.pace_status}</span>
@@ -200,6 +201,19 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
         </Panel>
       </section>
     </section>
+  );
+}
+
+function PaceStatusExplanation({ goal, pace }: { goal: NonNullable<DashboardItem["goal"]>; pace: DashboardPaceSummary }) {
+  const progressDelta = pace.expected_savings_to_date_cents - goal.current_saved_cents;
+  if (pace.pace_status !== "At Risk" || progressDelta <= 0) {
+    return null;
+  }
+
+  return (
+    <p className="metric-status-explanation">
+      Your saved progress is {formatCents(progressDelta)} behind the target pace. The {formatCents(pace.weekly_safe_to_spend_cents)} shown above is still available based on your forecasted cash flow.
+    </p>
   );
 }
 

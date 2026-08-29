@@ -119,6 +119,7 @@ def _ready_dashboard_item(
         pace=DashboardPaceSummary(
             pace_status=str(outputs["pace_status"]),
             weekly_safe_to_spend_cents=int(outputs["weekly_safe_to_spend_cents"]),
+            expected_savings_to_date_cents=int(outputs["expected_savings_to_date_cents"]),
             projected_shortfall_cents=int(outputs["projected_shortfall_cents"]),
             remaining_weeks=int(outputs["remaining_weeks"]),
             progress_percentage=float(outputs["progress_percentage"]),
