@@ -1,0 +1,108 @@
+import pytest
+from app.services.ai_explanation_contract import (
+    AiContractError,
+    build_ai_payload,
+    validate_ai_response,
+)
+
+
+def test_build_ai_payload_allowlists_snapshot_outputs() -> None:
+    result_json = {
+        "schema_version": "snapshot-result-v1",
+        "formula_version": "pace-v1",
+        "outputs": {
+            "pace_status": "On Track",
+            "weekly_safe_to_spend_cents": 81800,
+            "projected_shortfall_cents": 0,
+            "progress_percentage": 28.0,
+            "remaining_weeks": 16,
+            "formula_version": "pace-v1",
+            "current_cash_cents": 220000,
+        },
+        "goal": {"name": "Private goal"},
+    }
+
+    payload = build_ai_payload(result_json)
+
+    assert payload == {
+        "pace_status": "On Track",
+        "weekly_safe_to_spend_cents": 81800,
+        "projected_shortfall_cents": 0,
+        "progress_percentage": 28.0,
+        "remaining_weeks": 16,
+        "formula_version": "pace-v1",
+    }
+    assert "current_cash_cents" not in payload
+    assert "goal" not in payload
+
+
+def test_build_ai_payload_rejects_missing_outputs() -> None:
+    with pytest.raises(AiContractError, match="outputs"):
+        build_ai_payload({})
+
+
+def test_validate_ai_response_accepts_natural_language_without_numbers() -> None:
+    response = validate_ai_response(
+        {
+            "schema_version": "ai-explanation-v1",
+            "headline": "Your plan is on track",
+            "body": (
+                "Your current plan leaves room for weekly spending while keeping the goal in view."
+            ),
+            "observations": [
+                {
+                    "kind": "pace",
+                    "tone": "positive",
+                    "metric_refs": ["pace_status", "weekly_safe_to_spend_cents"],
+                }
+            ],
+            "next_step": "Keep your planned expenses up to date.",
+        }
+    )
+
+    assert response.schema_version == "ai-explanation-v1"
+    assert response.observations[0].metric_refs == [
+        "pace_status",
+        "weekly_safe_to_spend_cents",
+    ]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "You can spend $818 this week.",
+        "Consider investing the available money.",
+        "Transfer money automatically to stay on track.",
+    ],
+)
+def test_validate_ai_response_rejects_numeric_or_prohibited_text(body: str) -> None:
+    with pytest.raises(AiContractError):
+        validate_ai_response(
+            {
+                "schema_version": "ai-explanation-v1",
+                "headline": "Plan summary",
+                "body": body,
+                "observations": [],
+                "next_step": None,
+            }
+        )
+
+
+def test_validate_ai_response_rejects_unknown_fields_and_metrics() -> None:
+    with pytest.raises(AiContractError):
+        validate_ai_response(
+            {
+                "schema_version": "ai-explanation-v1",
+                "headline": "Plan summary",
+                "body": "Your plan has been reviewed.",
+                "observations": [
+                    {
+                        "kind": "pace",
+                        "tone": "neutral",
+                        "metric_refs": ["private_goal_name"],
+                    }
+                ],
+                "next_step": None,
+                "provider_raw_text": "must not be accepted",
+            }
+        )
