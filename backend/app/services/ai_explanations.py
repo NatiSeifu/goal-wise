@@ -47,7 +47,7 @@ def generate_or_reuse_latest_explanation(
     db_session: Session,
     *,
     user_id: str,
-    provider: AiProvider,
+    provider: AiProvider | None,
     settings: Settings,
     generated_at: datetime | None = None,
 ) -> AiExplanationResult:
@@ -88,6 +88,8 @@ def generate_or_reuse_latest_explanation(
 
     try:
         payload = build_ai_payload(snapshot.result_json)
+        if provider is None:
+            return _fallback_result(snapshot)
         raw_response = provider.generate(
             payload=payload,
             timeout_seconds=settings.ai_summary_timeout_seconds,
