@@ -13,6 +13,8 @@ import type {
   PlannedExpenseItemResponse,
   PlannedExpenseListResponse,
   PlannedExpenseRequest,
+  PlanningImportConfirmResponse,
+  PlanningImportPreviewResponse,
 } from "./types.ts";
 
 export function getDashboard() {
@@ -103,5 +105,21 @@ export function updatePlannedExpense(plannedExpenseId: string, payload: PlannedE
 export function deletePlannedExpense(plannedExpenseId: string) {
   return apiRequest<void>(endpoints.plannedExpenses.item(plannedExpenseId), {
     method: "DELETE",
+  });
+}
+
+export function previewPlanningImport(file: File) {
+  const body = new FormData();
+  body.append("file", file);
+  return apiRequest<PlanningImportPreviewResponse>(endpoints.planningImport.preview, {
+    method: "POST",
+    body,
+  });
+}
+
+export function confirmPlanningImport(previewToken: string) {
+  return apiRequest<PlanningImportConfirmResponse>(endpoints.planningImport.confirm, {
+    method: "POST",
+    body: { preview_token: previewToken },
   });
 }
