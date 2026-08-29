@@ -41,11 +41,12 @@ def request_latest_explanation(
         db_session.commit()
 
     return AIExplanationItemResponse(
+        enabled=settings.ai_summary_enabled,
         item=AIExplanationItem(
             snapshot_id=result.snapshot.id,
             calculated_at=result.snapshot.calculated_at,
             formula_version=result.snapshot.formula_version,
             source=result.source.value,
             explanation=result.response,
-        )
+        ),
     )

@@ -152,6 +152,11 @@ schema tuple. Failed responses are not presented as accepted explanations.
 
 ## Request and failure behavior
 
+The explanation request response includes a non-sensitive `enabled` boolean so
+the frontend can distinguish a disabled environment from an enabled feature
+that returned deterministic fallback content. It does not expose the provider,
+model, prompt, credential state, or provider error details.
+
 - Explanation requests require authentication and the existing ownership
   checks for the requested snapshot.
 - The request must target a committed snapshot and must not trigger a new

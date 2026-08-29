@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { DashboardItem, DashboardPaceSummary, JsonValue } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
 import { Alert } from "../../components/feedback/Alert.tsx";
+import { AIExplanationPanel } from "../../components/dashboard/AIExplanationPanel.tsx";
 import { EmptyState } from "../../components/feedback/EmptyState.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
@@ -200,6 +201,7 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           <p className="panel-copy">{weeklyChangeLabel}</p>
         </Panel>
       </section>
+      <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
     </section>
   );
 }

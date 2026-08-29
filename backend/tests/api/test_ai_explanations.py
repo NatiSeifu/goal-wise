@@ -86,6 +86,7 @@ def test_disabled_request_returns_fallback_and_does_not_call_provider(
     )
 
     assert response.status_code == 200
+    assert response.json()["enabled"] is False
     assert response.json()["item"]["source"] == "fallback"
     assert response.json()["item"]["explanation"]["schema_version"] == "ai-explanation-v1"
     assert provider.calls == []
@@ -115,6 +116,7 @@ def test_enabled_request_returns_generated_explanation_and_reuses_it(
 
     assert first.status_code == 200
     assert second.status_code == 200
+    assert first.json()["enabled"] is True
     assert first.json()["item"]["source"] == "generated"
     assert second.json()["item"]["source"] == "generated"
     assert first.json()["item"]["snapshot_id"] == second.json()["item"]["snapshot_id"]

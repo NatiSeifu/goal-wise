@@ -2,6 +2,7 @@ import { apiRequest } from "./client.ts";
 import { endpoints } from "./endpoints.ts";
 import type {
   CalculationSnapshotItemResponse,
+  AIExplanationItemResponse,
   DashboardResponse,
   FinancialProfileItemResponse,
   FinancialProfileRequest,
@@ -23,6 +24,12 @@ export function getDashboard() {
 
 export function getLatestCalculationSnapshot() {
   return apiRequest<CalculationSnapshotItemResponse>(endpoints.calculationSnapshots.latest);
+}
+
+export function requestLatestAIExplanation() {
+  return apiRequest<AIExplanationItemResponse>(endpoints.aiExplanations.latest, {
+    method: "POST",
+  });
 }
 
 export function getActiveGoal() {
