@@ -17,6 +17,8 @@ Included:
 - explicit request mode by default;
 - synchronous provider call with a four-second timeout;
 - provider adapter and fake provider for tests;
+- Groq API as the first provider implementation, using
+  `llama-3.3-70b-versatile` by default;
 - allowlisted snapshot payload;
 - versioned structured response validation;
 - snapshot-scoped persistence and reuse;
@@ -49,8 +51,9 @@ Success criteria:
 ### Slice 2 - Server-side configuration
 
 Add typed settings for enablement, trigger mode, provider configuration, model,
-prompt version, response schema version, and the four-second timeout. Keep the
-feature disabled by default and keep all secrets out of frontend configuration.
+prompt version, response schema version, and the four-second timeout. Configure
+Groq through `GROQ_API_KEY`, keep the feature disabled by default, and keep all
+secrets out of frontend configuration.
 
 Success criteria:
 
@@ -58,6 +61,7 @@ Success criteria:
 - Invalid trigger or timeout configuration fails clearly at startup or uses a
   documented safe default.
 - Frontend bundles contain no provider credentials.
+- Groq and `llama-3.3-70b-versatile` are the default provider/model values.
 - Unit tests prove disabled configuration makes zero provider calls.
 
 ## Phase 2 - Provider boundary and validation

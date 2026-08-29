@@ -30,6 +30,10 @@ Included:
 - persistence scoped to the exact snapshot, model, prompt, and response schema versions;
 - natural user-facing rendering of accepted structured content.
 
+The initial provider is the Groq API using `llama-3.3-70b-versatile` as the
+default model. This is an implementation choice behind the provider adapter,
+not part of the application-level explanation response contract.
+
 Deferred:
 
 - AI calculation, recommendations, or overrides;
@@ -50,7 +54,10 @@ Required configuration concepts:
 - `AI_SUMMARY_ENABLED`: disabled by default; when disabled, zero provider calls
   are permitted;
 - `AI_SUMMARY_TRIGGER`: `request` or `automatic`, defaulting to `request`;
-- provider credentials and model configuration from the runtime secret store;
+- `GROQ_API_KEY`: provider credential read only by the backend runtime secret
+  store;
+- `AI_SUMMARY_PROVIDER`: defaults to `groq` for the first implementation;
+- `AI_SUMMARY_MODEL`: defaults to `llama-3.3-70b-versatile`;
 - provider timeout fixed at four seconds for this increment;
 - prompt version and response schema version controlled by the application.
 

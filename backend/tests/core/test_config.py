@@ -27,8 +27,9 @@ def test_ai_summary_defaults_to_disabled_and_explicit_request() -> None:
 
     assert settings.ai_summary_enabled is False
     assert settings.ai_summary_trigger == "request"
-    assert settings.ai_summary_provider is None
-    assert settings.ai_summary_model is None
+    assert settings.ai_summary_provider == "groq"
+    assert settings.ai_summary_model == "llama-3.3-70b-versatile"
+    assert settings.groq_api_key is None
     assert settings.ai_summary_prompt_version == "ai-explanation-prompt-v1"
     assert settings.ai_summary_response_schema_version == "ai-explanation-v1"
     assert settings.ai_summary_timeout_seconds == 4.0
@@ -38,15 +39,18 @@ def test_ai_summary_settings_can_be_enabled_by_server_configuration() -> None:
     settings = Settings(
         ai_summary_enabled=True,
         ai_summary_trigger="automatic",
-        ai_summary_provider="test-provider",
+        ai_summary_provider="groq",
         ai_summary_model="test-model",
+        groq_api_key="test-key",
         _env_file=None,
     )
 
     assert settings.ai_summary_enabled is True
     assert settings.ai_summary_trigger == "automatic"
-    assert settings.ai_summary_provider == "test-provider"
+    assert settings.ai_summary_provider == "groq"
     assert settings.ai_summary_model == "test-model"
+    assert settings.groq_api_key is not None
+    assert settings.groq_api_key.get_secret_value() == "test-key"
 
 
 def test_ai_summary_timeout_cannot_exceed_four_seconds() -> None:

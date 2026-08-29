@@ -30,8 +30,9 @@ class Settings(BaseSettings):
     allowed_frontend_origin: str = "http://localhost:5173"
     ai_summary_enabled: bool = False
     ai_summary_trigger: AiSummaryTrigger = "request"
-    ai_summary_provider: str | None = None
-    ai_summary_model: str | None = None
+    ai_summary_provider: str = "groq"
+    ai_summary_model: str = "llama-3.3-70b-versatile"
+    groq_api_key: SecretStr | None = None
     ai_summary_prompt_version: str = "ai-explanation-prompt-v1"
     ai_summary_response_schema_version: str = "ai-explanation-v1"
     ai_summary_timeout_seconds: float = 4.0

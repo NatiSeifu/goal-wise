@@ -23,6 +23,11 @@ only a committed calculation snapshot's approved aggregate fields. The
 default trigger mode is an explicit user request. The first implementation is
 synchronous and has a four-second provider timeout.
 
+The first provider implementation will use the Groq API with
+`llama-3.3-70b-versatile` as the default server-side model. The provider and
+model remain behind the adapter so they can be replaced without changing the
+explanation domain contract.
+
 The AI provider will return a versioned JSON response. GoalWise will validate
 the response, reject unsafe or inconsistent output, and present the accepted
 content as generated explanation. The AI response will never calculate,
@@ -65,6 +70,9 @@ flowchart LR
 - **Direct provider calls from routes or frontend code** - Rejected because it
   leaks provider concerns across the application and makes privacy and testing
   harder.
+- **Make Groq-specific request and response shapes the application contract** -
+  Rejected because it would make the provider choice difficult to replace and
+  spread vendor assumptions through the codebase.
 - **Transaction classification in the same increment** - Rejected because it
   requires separate transaction semantics, confidence handling, correction
   behavior, and evaluation criteria.
