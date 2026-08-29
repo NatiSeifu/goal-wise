@@ -9,6 +9,7 @@ import { FormError } from "../../components/feedback/FormError.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { formatCents, formatDate } from "../../utils/format.ts";
+import { classificationLabel, confidenceLabel, frequencyLabel } from "../../utils/labels.ts";
 
 export function PlanningImportRoute() {
   const queryClient = useQueryClient();
@@ -168,7 +169,7 @@ function ImportSourceTable({ title, items, kind }: { title: string; items: Plann
         <div className="import-table-wrap">
           <table>
             <thead><tr><th scope="col">Name</th><th scope="col">Amount</th><th scope="col">Next date</th><th scope="col">Frequency</th><th scope="col">{kind === "income" ? "Confidence" : "Type"}</th></tr></thead>
-            <tbody>{items.map((item) => <tr key={`${kind}-${item.name}-${item.next_date}`}><th scope="row">{item.name}</th><td>{formatCents(item.amount_cents)}</td><td>{formatDate(item.next_date)}</td><td>{item.frequency}</td><td>{kind === "income" ? item.confidence : item.classification}</td></tr>)}</tbody>
+            <tbody>{items.map((item) => <tr key={`${kind}-${item.name}-${item.next_date}`}><th scope="row">{item.name}</th><td>{formatCents(item.amount_cents)}</td><td>{formatDate(item.next_date)}</td><td>{frequencyLabel(item.frequency)}</td><td>{kind === "income" ? confidenceLabel(item.confidence) : classificationLabel(item.classification)}</td></tr>)}</tbody>
           </table>
         </div>
       )}
