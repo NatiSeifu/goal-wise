@@ -260,3 +260,7 @@ export type AIExplanationItemResponse = {
   item: AIExplanationItem;
   enabled: boolean;
 };
+
+export type AIExplanationAvailabilityResponse = {
+  enabled: boolean;
+};

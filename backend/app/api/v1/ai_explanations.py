@@ -3,15 +3,37 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from app.api.dependencies import AiProviderDep, CsrfSessionDep, DbSessionDep, NowDep, SettingsDep
+from app.api.dependencies import (
+    AiProviderDep,
+    CsrfSessionDep,
+    CurrentSessionDep,
+    DbSessionDep,
+    NowDep,
+    SettingsDep,
+    ai_explanations_are_available,
+)
 from app.api.errors import error_response
-from app.schemas.ai_explanations import AIExplanationItem, AIExplanationItemResponse
+from app.schemas.ai_explanations import (
+    AIExplanationAvailabilityResponse,
+    AIExplanationItem,
+    AIExplanationItemResponse,
+)
 from app.services.ai_explanations import (
     NoSnapshotForExplanation,
     generate_or_reuse_latest_explanation,
 )
 
 router = APIRouter(prefix="/ai-explanations", tags=["ai-explanations"])
+
+
+@router.get("/status", response_model=AIExplanationAvailabilityResponse)
+def get_explanation_status(
+    _current_session: CurrentSessionDep,
+    settings: SettingsDep,
+) -> AIExplanationAvailabilityResponse:
+    return AIExplanationAvailabilityResponse(
+        enabled=ai_explanations_are_available(settings),
+    )
 
 
 @router.post("/latest", response_model=AIExplanationItemResponse)
@@ -41,7 +63,7 @@ def request_latest_explanation(
         db_session.commit()
 
     return AIExplanationItemResponse(
-        enabled=settings.ai_summary_enabled,
+        enabled=ai_explanations_are_available(settings),
         item=AIExplanationItem(
             snapshot_id=result.snapshot.id,
             calculated_at=result.snapshot.calculated_at,

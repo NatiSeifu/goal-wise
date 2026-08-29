@@ -1,6 +1,14 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-import { requestLatestAIExplanation } from "../../api/resources.ts";
+import { getAIExplanationStatus, requestLatestAIExplanation } from "../../api/resources.ts";
+import { queryKeys } from "../../api/queryKeys.ts";
+
+export function useAiExplanationAvailability() {
+  return useQuery({
+    queryFn: getAIExplanationStatus,
+    queryKey: queryKeys.aiExplanationStatus,
+  });
+}
 
 export function useAiExplanation() {
   return useMutation({ mutationFn: requestLatestAIExplanation });

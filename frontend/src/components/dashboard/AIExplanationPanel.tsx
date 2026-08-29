@@ -2,7 +2,10 @@ import type { DashboardPaceSummary, AIExplanationItem } from "../../api/types.ts
 import { Button } from "../ui/Button.tsx";
 import { Alert } from "../feedback/Alert.tsx";
 import { formatCents, formatDateTime } from "../../utils/format.ts";
-import { useAiExplanation } from "../../features/dashboard/useAiExplanation.ts";
+import {
+  useAiExplanation,
+  useAiExplanationAvailability,
+} from "../../features/dashboard/useAiExplanation.ts";
 
 type AIExplanationPanelProps = {
   pace: DashboardPaceSummary;
@@ -10,6 +13,16 @@ type AIExplanationPanelProps = {
 };
 
 export function AIExplanationPanel({ pace, snapshotId }: AIExplanationPanelProps) {
+  const availability = useAiExplanationAvailability();
+
+  if (availability.isPending || availability.isError || availability.data?.enabled !== true) {
+    return null;
+  }
+
+  return <EnabledAIExplanationPanel pace={pace} snapshotId={snapshotId} />;
+}
+
+function EnabledAIExplanationPanel({ pace, snapshotId }: AIExplanationPanelProps) {
   const explanation = useAiExplanation();
 
   const handleRequest = () => {

@@ -19,3 +19,7 @@ class AIExplanationItem(BaseModel):
 class AIExplanationItemResponse(BaseModel):
     item: AIExplanationItem
     enabled: bool
+
+
+class AIExplanationAvailabilityResponse(BaseModel):
+    enabled: bool

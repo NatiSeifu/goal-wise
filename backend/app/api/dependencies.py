@@ -35,17 +35,26 @@ NowDep = Annotated[datetime, Depends(utc_now)]
 def get_ai_provider(settings: SettingsDep) -> AiProvider | None:
     """Build the configured provider without making AI mandatory at startup."""
 
-    if not settings.ai_summary_enabled or settings.groq_api_key is None:
+    api_key = settings.groq_api_key
+    if not ai_explanations_are_available(settings) or api_key is None:
         return None
     if settings.ai_summary_provider != "groq":
         return None
     return GroqAiProvider(
-        api_key=settings.groq_api_key,
+        api_key=api_key,
         model=settings.ai_summary_model,
     )
 
 
 AiProviderDep = Annotated[AiProvider | None, Depends(get_ai_provider)]
+
+
+def ai_explanations_are_available(settings: Settings) -> bool:
+    return (
+        settings.ai_summary_enabled
+        and settings.groq_api_key is not None
+        and settings.ai_summary_provider == "groq"
+    )
 
 
 def require_current_session(

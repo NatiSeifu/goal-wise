@@ -32,5 +32,6 @@ export const endpoints = {
   },
   aiExplanations: {
     latest: `${API_PREFIX}/ai-explanations/latest`,
+    status: `${API_PREFIX}/ai-explanations/status`,
   },
 } as const;

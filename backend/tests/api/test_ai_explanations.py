@@ -48,6 +48,21 @@ def test_explanation_request_requires_authentication(client: TestClient) -> None
     assert response.status_code == 401
 
 
+def test_explanation_status_requires_authentication(client: TestClient) -> None:
+    response = client.get("/api/v1/ai-explanations/status")
+
+    assert response.status_code == 401
+
+
+def test_explanation_status_is_disabled_by_default(client: TestClient) -> None:
+    _register(client)
+
+    response = client.get("/api/v1/ai-explanations/status")
+
+    assert response.status_code == 200
+    assert response.json() == {"enabled": False}
+
+
 def test_explanation_request_requires_csrf(client: TestClient) -> None:
     _register(client)
 
