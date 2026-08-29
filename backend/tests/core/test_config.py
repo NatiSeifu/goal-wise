@@ -22,6 +22,38 @@ def test_settings_load_local_defaults() -> None:
     assert settings.allowed_frontend_origin == "http://localhost:5173"
 
 
+def test_ai_summary_defaults_to_disabled_and_explicit_request() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.ai_summary_enabled is False
+    assert settings.ai_summary_trigger == "request"
+    assert settings.ai_summary_provider is None
+    assert settings.ai_summary_model is None
+    assert settings.ai_summary_prompt_version == "ai-explanation-prompt-v1"
+    assert settings.ai_summary_response_schema_version == "ai-explanation-v1"
+    assert settings.ai_summary_timeout_seconds == 4.0
+
+
+def test_ai_summary_settings_can_be_enabled_by_server_configuration() -> None:
+    settings = Settings(
+        ai_summary_enabled=True,
+        ai_summary_trigger="automatic",
+        ai_summary_provider="test-provider",
+        ai_summary_model="test-model",
+        _env_file=None,
+    )
+
+    assert settings.ai_summary_enabled is True
+    assert settings.ai_summary_trigger == "automatic"
+    assert settings.ai_summary_provider == "test-provider"
+    assert settings.ai_summary_model == "test-model"
+
+
+def test_ai_summary_timeout_cannot_exceed_four_seconds() -> None:
+    with pytest.raises(ValidationError, match="AI_SUMMARY_TIMEOUT_SECONDS"):
+        Settings(ai_summary_timeout_seconds=5.0, _env_file=None)
+
+
 def test_pytest_runtime_settings_ignore_local_env_file() -> None:
     get_settings.cache_clear()
 
