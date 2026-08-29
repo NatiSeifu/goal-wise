@@ -150,6 +150,9 @@ def test_dashboard_returns_values_from_latest_snapshot(
     assert body["pace"]["weekly_safe_to_spend_cents"] == snapshot_outputs[
         "weekly_safe_to_spend_cents"
     ]
+    assert body["pace"]["expected_savings_to_date_cents"] == snapshot_outputs[
+        "expected_savings_to_date_cents"
+    ]
     assert body["pace"]["projected_shortfall_cents"] == snapshot_outputs[
         "projected_shortfall_cents"
     ]

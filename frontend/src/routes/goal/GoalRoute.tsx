@@ -181,6 +181,7 @@ export function GoalRoute() {
           <TextField
             error={fieldError(fields, "initial_saved_cents")}
             id="goal-initial-saved"
+            description="The amount already saved when this goal began."
             label="Initial saved"
             min="0"
             onChange={(event) =>
@@ -194,6 +195,7 @@ export function GoalRoute() {
           <TextField
             error={fieldError(fields, "current_saved_cents")}
             id="goal-current-saved"
+            description="The amount currently set aside for this goal."
             label="Current saved"
             min="0"
             onChange={(event) =>

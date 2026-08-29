@@ -124,6 +124,13 @@ Use `500 Internal Server Error` for unexpected failures.
 }
 ```
 
+## Dashboard Pace Summary
+
+The ready dashboard response includes `expected_savings_to_date_cents` in its
+pace summary. This is the backend-calculated progress benchmark used to explain
+an `At Risk` status. Clients must display or format this value and must not
+reimplement the pace calculation.
+
 ## Verification
 
 Required tests:
@@ -135,4 +142,3 @@ Required tests:
 - Validation failures return `422` with field-level errors.
 - Missing or invalid CSRF on authenticated unsafe requests returns `403` with `csrf_failed`.
 - Unexpected exception handling returns a generic message and avoids sensitive logs.
-

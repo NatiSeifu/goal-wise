@@ -215,7 +215,7 @@ Alternatives retained for future discussion:
 
 ## Completion
 
-Phase 12 is complete when the canonical planning CSV can be previewed,
+Phase 12 is complete: the canonical planning CSV can be previewed,
 confirmed, persisted atomically, and verified to produce the same result as
 equivalent manual inputs. Raw transaction import remains a separate future
 decision.

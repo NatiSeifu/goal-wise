@@ -31,13 +31,14 @@ The current MVP supports or is being built toward:
 - deterministic `pace-v1` calculations;
 - immutable calculation snapshots;
 - dashboard-ready values returned by the backend.
+- canonical planning CSV import with preview and explicit confirmation.
 
 ## Deferred Capabilities
 
 Do not present these as working MVP behavior unless the user explicitly asks and the scope docs are updated:
 
 - multiple active goals;
-- CSV import;
+- raw bank-statement or transaction import;
 - transaction correction and duplicate handling;
 - AI summaries;
 - AI transaction classification;
@@ -50,18 +51,19 @@ Do not present these as working MVP behavior unless the user explicitly asks and
 
 Deferred features may appear only as clearly marked future-state concepts, not as implemented or promised current behavior.
 
-The approved next increment, canonical planning CSV import, is specified in
-[SPEC-0010](specs/0010-planning-csv-import.md). It remains future-state until
-its implementation is complete and the MVP scope mapping is updated to record
-the implemented behavior.
+The current planning CSV increment is specified in
+[SPEC-0010](specs/0010-planning-csv-import.md). It accepts one complete,
+already-structured GoalWise plan, previews the normalized values, and replaces
+the active setup only after explicit confirmation. Raw bank-statement or
+transaction import remains future-state.
 
 ## Real Product Entities
 
 Use these entities when designing UI or mockups:
 
 - **User**: authenticated account owner.
-- **Goal**: one active savings target with target amount, saved amount, start date, target date, and lifecycle status.
-- **Financial profile**: starting cash, balance-as-of date, and reserve buffer.
+- **Goal**: one active savings target with target amount, initial saved amount, current saved amount, start date, target date, and lifecycle status. Current saved amount is money already set aside toward this goal.
+- **Financial profile**: starting cash outside current goal savings, balance-as-of date, and reserve buffer.
 - **Income source**: manual expected income with amount, date recurrence, confidence, and active state.
 - **Planned expense**: manual expected expense with amount, date recurrence, classification, and active state.
 - **Calculation snapshot**: immutable record of normalized inputs and deterministic result.

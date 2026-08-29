@@ -9,6 +9,7 @@ import { FinancialInputsRoute } from "../routes/financial-inputs/FinancialInputs
 import { GoalRoute } from "../routes/goal/GoalRoute.tsx";
 import { RegisterRoute } from "../routes/auth/RegisterRoute.tsx";
 import { LandingRoute } from "../routes/landing/LandingRoute.tsx";
+import { PlanningImportRoute } from "../routes/planning-import/PlanningImportRoute.tsx";
 import { routes } from "./routes.ts";
 
 export const router = createBrowserRouter([
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
       {
         path: routes.calculation,
         element: <CalculationRoute />,
+      },
+      {
+        path: routes.planningImport,
+        element: <PlanningImportRoute />,
       },
     ],
   },

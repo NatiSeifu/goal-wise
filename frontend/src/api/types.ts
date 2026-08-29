@@ -139,6 +139,50 @@ export type PlannedExpenseListResponse = {
   items: PlannedExpenseResponse[];
 };
 
+export type PlanningImportSourcePreview = {
+  name: string;
+  amount_cents: number;
+  next_date: IsoDate;
+  frequency: string;
+  confidence: string | null;
+  classification: string | null;
+};
+
+export type PlanningImportPreviewResponse = {
+  preview_token: string;
+  valid: boolean;
+  row_count: number;
+  counts: Record<string, number>;
+  goal: {
+    name: string;
+    target_cents: number;
+    initial_saved_cents: number;
+    current_saved_cents: number;
+    start_date: IsoDate;
+    target_date: IsoDate;
+  };
+  cash: {
+    starting_cash_cents: number;
+    balance_as_of_date: IsoDate;
+    reserve_buffer_cents: number;
+  };
+  income_sources: PlanningImportSourcePreview[];
+  planned_expenses: PlanningImportSourcePreview[];
+  errors: PlanningImportIssue[];
+};
+
+export type PlanningImportIssue = {
+  row: number;
+  field: string;
+  code: string;
+  message: string;
+};
+
+export type PlanningImportConfirmResponse = {
+  goal_id: string;
+  snapshot_id: string;
+};
+
 export type DashboardGoalSummary = {
   id: string;
   name: string;
@@ -150,6 +194,7 @@ export type DashboardGoalSummary = {
 export type DashboardPaceSummary = {
   pace_status: string;
   weekly_safe_to_spend_cents: number;
+  expected_savings_to_date_cents: number;
   projected_shortfall_cents: number;
   remaining_weeks: number;
   progress_percentage: number;

@@ -1,0 +1,5 @@
+record_type,name,target_amount,initial_saved,current_saved,starting_cash,balance_date,reserve_buffer,amount,date,frequency,confidence,classification,start_date,target_date
+goal,Moving fund,3000.00,500.00,1125.00,,,,,,,,,2026-08-01,2026-11-15
+cash,,,,,2000.00,2026-08-26,300.00,,,,,,,
+income,Salary,,,,,,,2500.00,2026-09-01,biweekly,confirmed,,,
+expense,Rent,,,,,,,1400.00,2026-09-01,monthly,,essential,,

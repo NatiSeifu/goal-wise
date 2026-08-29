@@ -56,6 +56,12 @@ The pace engine receives normalized inputs including:
 - Planned expense records.
 - Accepted transaction records when transaction support is implemented.
 
+Input meanings:
+
+- `starting_cash_cents` is liquid cash available outside the amount already set aside as current goal savings. The same money must not be counted in both values.
+- `initial_saved_cents` is the goal-savings baseline at `start_date` and is used to compare progress over time.
+- `current_saved_cents` is the amount currently set aside toward the goal and is used to calculate the remaining goal gap.
+
 ## Reserve Buffer
 
 On first financial profile setup, the system suggests a reserve buffer equal to 5% of confirmed future income, rounded upward to the nearest whole U.S. dollar.

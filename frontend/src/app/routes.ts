@@ -6,6 +6,7 @@ export const routes = {
   goal: "/goal",
   financialInputs: "/financial-inputs",
   calculation: "/calculation",
+  planningImport: "/planning-import",
 } as const;
 
 export type AppRoute = (typeof routes)[keyof typeof routes];
