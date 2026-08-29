@@ -124,7 +124,7 @@ Included in the current MVP architecture:
 
 Deferred until later increments:
 
-- CSV import and transaction correction.
+- Raw transaction import and transaction correction.
 - AI-generated summaries.
 - Account export and deletion.
 - Background scheduling.

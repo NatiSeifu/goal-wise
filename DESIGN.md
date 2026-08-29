@@ -242,7 +242,7 @@ Response conventions:
 
 ## MVP Deferrals
 
-- CSV import, duplicate detection UI, and transaction correction workflows.
+- Raw transaction import, duplicate detection UI, and transaction correction workflows. Canonical planning CSV import is implemented by SPEC-0010.
 - AI summaries, AI validation, provider adapters, and AI safety evals.
 - Account export and deletion flows.
 - Background weekly snapshot scheduler; MVP may create or refresh weekly plans on authenticated dashboard access.

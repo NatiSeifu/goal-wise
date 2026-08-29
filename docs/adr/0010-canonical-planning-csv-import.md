@@ -16,10 +16,9 @@ happen before the goal date.
 
 The next increment needs an import format that can be produced by a person or
 by a separate converter without requiring GoalWise to guess financial meaning.
-The course MVP remains a progressive subset, and ADR-0007 defers CSV import
-from the current MVP. This ADR defines a planned post-MVP extension and does
-not expose the feature until its implementation and scope mapping are
-accepted.
+The course MVP remains a progressive subset, and ADR-0007 deferred CSV import
+from the original manual-only increment. This ADR defines the accepted
+canonical planning import extension; raw transaction import remains deferred.
 
 The design must preserve the existing architectural drivers:
 
@@ -85,8 +84,8 @@ The exact contract is defined by [SPEC-0010](../specs/0010-planning-csv-import.m
 
 **Neutral / follow-ups:**
 
-- The first implementation remains a post-MVP increment while ADR-0007 and
-  the current SRS MVP mapping remain in force.
+- The implementation is a progressive increment beyond the original
+  manual-only subset while the broader SRS mapping remains in force.
 - A future transaction import may reuse parser and upload-safety utilities,
   but it needs its own data model, semantics, and scope decision.
 - Replacing or merging an existing setup is recorded separately in ADR-0011.
