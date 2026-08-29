@@ -316,6 +316,7 @@ export function FinancialInputsRoute() {
           <TextField
             error={fieldError(profileFields, "starting_cash_cents")}
             id="profile-starting-cash"
+            description="Cash outside goal savings. Do not include current saved here."
             label="Starting cash"
             min="0"
             onChange={(event) =>

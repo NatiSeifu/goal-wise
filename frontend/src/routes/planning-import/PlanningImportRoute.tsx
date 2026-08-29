@@ -154,7 +154,7 @@ function ImportPreview({
       <div className="import-summary-grid">
         <SummaryItem label="Goal" value={preview.goal.name} detail={`${formatCents(preview.goal.target_cents)} by ${formatDate(preview.goal.target_date)}`} />
         <SummaryItem label="Saved now" value={formatCents(preview.goal.current_saved_cents)} detail={`Started at ${formatCents(preview.goal.initial_saved_cents)}`} />
-        <SummaryItem label="Cash available" value={formatCents(preview.cash.starting_cash_cents)} detail={`As of ${formatDate(preview.cash.balance_as_of_date)}`} />
+        <SummaryItem label="Cash outside goal" value={formatCents(preview.cash.starting_cash_cents)} detail={`As of ${formatDate(preview.cash.balance_as_of_date)}`} />
         <SummaryItem label="Protected reserve" value={formatCents(preview.cash.reserve_buffer_cents)} detail={`${preview.income_sources.length} income · ${preview.planned_expenses.length} expenses`} />
       </div>
       <ImportSourceTable title="Expected income" items={preview.income_sources} kind="income" />

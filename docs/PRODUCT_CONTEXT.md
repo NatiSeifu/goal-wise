@@ -62,8 +62,8 @@ transaction import remains future-state.
 Use these entities when designing UI or mockups:
 
 - **User**: authenticated account owner.
-- **Goal**: one active savings target with target amount, saved amount, start date, target date, and lifecycle status.
-- **Financial profile**: starting cash, balance-as-of date, and reserve buffer.
+- **Goal**: one active savings target with target amount, initial saved amount, current saved amount, start date, target date, and lifecycle status. Current saved amount is money already set aside toward this goal.
+- **Financial profile**: starting cash outside current goal savings, balance-as-of date, and reserve buffer.
 - **Income source**: manual expected income with amount, date recurrence, confidence, and active state.
 - **Planned expense**: manual expected expense with amount, date recurrence, classification, and active state.
 - **Calculation snapshot**: immutable record of normalized inputs and deterministic result.

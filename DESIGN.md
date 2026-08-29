@@ -150,6 +150,7 @@ Required outputs:
 Calculation rules:
 
 - `current_cash = starting cash + accepted inflows after balance-as-of date - accepted outflows after balance-as-of date`.
+- `starting cash` is liquid money available outside the amount already recorded as current goal savings; goal savings must not be counted in both values.
 - Income and planned-expense occurrences are date-only local calendar events. Include only occurrences with an occurrence date greater than the user's local calculation date and less than or equal to the target date.
 - Same-day income and planned-expense occurrences are excluded from future forecasts because the MVP does not collect occurrence times.
 - On first financial profile setup, suggest `reserve_buffer_cents` as 5% of confirmed future income rounded up to the nearest whole U.S. dollar; require the user to confirm or replace it before the first calculation.
