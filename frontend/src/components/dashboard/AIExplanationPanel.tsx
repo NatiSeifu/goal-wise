@@ -92,7 +92,7 @@ function ExplanationResult({
   return (
     <div className="ai-explanation-result" data-snapshot-id={snapshotId}>
       <div className="ai-explanation-meta">
-        <span>{item.source === "generated" ? "Generated explanation" : "Plan explanation"}</span>
+        <span>Generated explanation</span>
         <span>
           Based on your plan from {formatDateTime(item.calculated_at)} · {item.formula_version}
         </span>

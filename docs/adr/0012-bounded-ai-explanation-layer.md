@@ -38,7 +38,8 @@ Validated explanations will be stored against the exact snapshot they explain,
 with provider/model, prompt, and response-schema versions. A new snapshot has
 no current explanation until one is explicitly generated for it. Provider
 failure, timeout, disabled configuration, invalid output, or unsafe output
-uses the existing deterministic explanation instead.
+returns a generic unavailable error; the deterministic dashboard remains
+available and no ungenerated prose is presented as an AI explanation.
 
 The provider boundary will be isolated behind an application adapter so the
 domain and API do not depend on one vendor SDK.
@@ -54,8 +55,8 @@ flowchart LR
     Provider --> Validate[Validate schema and safety]
     Validate -->|accepted| Store[Store explanation for this snapshot]
     Store --> Dashboard
-    Validate -->|rejected or unavailable| Fallback[Deterministic fallback]
-    Fallback --> Dashboard
+    Validate -->|rejected or unavailable| Error[Generic retry-later error]
+    Error --> Dashboard
 ```
 
 ## Alternatives considered
@@ -81,7 +82,8 @@ flowchart LR
 
 - **Positive:** deterministic financial behavior remains independent of AI;
   explanations are tied to immutable evidence; explicit requests control cost;
-  provider replacement and failure testing remain practical.
+  provider replacement and failure testing remain practical; users are not
+  misled by generated-looking fallback prose.
 - **Negative:** the feature adds provider configuration, response validation,
   retained generated text, and a new persisted explanation concept.
 - **Neutral / follow-ups:** automatic triggering may be enabled by server

@@ -22,7 +22,7 @@ Included:
 - allowlisted snapshot payload;
 - versioned structured response validation;
 - snapshot-scoped persistence and reuse;
-- deterministic fallback;
+- explicit retryable unavailable state when AI cannot produce accepted output;
 - user-facing generated summary presentation.
 
 Deferred:
@@ -113,8 +113,9 @@ Success criteria:
 Implement the service that loads the latest requested user-owned snapshot,
 returns a matching stored explanation when available, otherwise builds the
 allowlisted payload, calls the adapter, validates the response, persists it,
-and returns the result. Use the deterministic fallback for all expected AI
-failures.
+and returns the result. Raise a typed unavailable error for expected AI
+failures; do not manufacture an explanation when the provider does not produce
+accepted output.
 
 Success criteria:
 
@@ -129,20 +130,20 @@ Success criteria:
 
 Add a versioned authenticated endpoint for an explicit explanation request.
 Apply existing CSRF and ownership rules where the method is unsafe. Return
-source snapshot metadata, generated/fallback state, and user-facing content
-without exposing provider internals.
+source snapshot metadata and user-facing generated content without exposing
+provider internals; return a generic retryable error when generation fails.
 
 Success criteria:
 
 - Missing, cross-user, and unknown snapshots follow existing private-resource
   response conventions.
 - Disabled, failed, and successful requests have stable response envelopes.
-- API tests cover ownership, CSRF, fallback, and reuse behavior.
+- API tests cover ownership, CSRF, unavailable errors, and reuse behavior.
 
 ### Slice 8 - Generated summary presentation
 
 Add an explicit action on the dashboard or calculation-details surface. Show
-loading, success, fallback, and error states without blocking official values.
+loading, success, and retryable error states without blocking official values.
 Render accepted structured content as natural text and trusted metric values.
 Clearly label generated content with snapshot timestamp and formula version.
 
@@ -158,7 +159,7 @@ Success criteria:
 ### Slice 9 - Automated safety and regression suite
 
 Add contract, privacy, timeout, prohibited-advice, numeric-consistency,
-fallback, persistence, and frontend workflow tests. Use a fake provider in CI;
+failure-handling, persistence, and frontend workflow tests. Use a fake provider in CI;
 no live provider call belongs in the normal test suite.
 
 Success criteria:
@@ -192,7 +193,7 @@ Success criteria:
 6. `feat: generate or reuse snapshot explanations`
 7. `feat: expose explanation endpoint`
 8. `feat: add generated summary UI`
-9. `test: cover AI explanation safety and fallback`
+9. `test: cover AI explanation safety and failure handling`
 10. `docs: record AI evaluation results`
 
 ## Phase completion criteria
@@ -204,7 +205,8 @@ Phase 13 is complete when:
 - the provider receives only the approved minimized payload;
 - valid responses are persisted per exact snapshot and version tuple;
 - new snapshots never show stale explanations as current;
-- four-second timeout and all expected provider failures use deterministic fallback;
+- four-second timeout and all expected provider failures return a generic
+  retryable error;
 - no AI output changes official financial values;
 - frontend and backend tests cover privacy, safety, ownership, and usability;
 - human evaluation evidence supports any staging enablement.

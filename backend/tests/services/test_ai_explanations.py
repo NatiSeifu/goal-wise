@@ -11,6 +11,7 @@ from app.repositories.goals import create_goal
 from app.services.ai_explanation_contract import AI_EXPLANATION_SCHEMA_VERSION
 from app.services.ai_explanations import (
     AiExplanationSource,
+    AiExplanationUnavailable,
     NoSnapshotForExplanation,
     generate_or_reuse_latest_explanation,
 )
@@ -33,23 +34,20 @@ def db_session(engine: Engine) -> Session:
         yield session
 
 
-def test_disabled_ai_returns_deterministic_fallback_without_provider_call(
+def test_disabled_ai_is_unavailable_without_provider_call(
     db_session: Session,
 ) -> None:
     user, _snapshot = _create_snapshot(db_session)
     provider = FakeAiProvider(response=_valid_response())
 
-    result = generate_or_reuse_latest_explanation(
-        db_session,
-        user_id=user.id,
-        provider=provider,
-        settings=Settings(_env_file=None),
-    )
+    with pytest.raises(AiExplanationUnavailable):
+        generate_or_reuse_latest_explanation(
+            db_session,
+            user_id=user.id,
+            provider=provider,
+            settings=Settings(_env_file=None),
+        )
 
-    assert result.source is AiExplanationSource.FALLBACK
-    assert result.explanation is None
-    assert result.response.schema_version == AI_EXPLANATION_SCHEMA_VERSION
-    assert result.response.headline == "Your plan is on track"
     assert provider.calls == []
     assert db_session.scalars(select(AIExplanation)).all() == []
 
@@ -156,19 +154,18 @@ def test_new_latest_snapshot_does_not_reuse_older_explanation(
     assert len(provider.calls) == 2
 
 
-def test_provider_failure_returns_fallback_without_persistence(db_session: Session) -> None:
+def test_provider_failure_is_unavailable_without_persistence(db_session: Session) -> None:
     user, _snapshot = _create_snapshot(db_session)
     provider = FakeAiProvider(error=AiProviderError("provider failed"))
 
-    result = generate_or_reuse_latest_explanation(
-        db_session,
-        user_id=user.id,
-        provider=provider,
-        settings=_enabled_settings(),
-    )
+    with pytest.raises(AiExplanationUnavailable):
+        generate_or_reuse_latest_explanation(
+            db_session,
+            user_id=user.id,
+            provider=provider,
+            settings=_enabled_settings(),
+        )
 
-    assert result.source is AiExplanationSource.FALLBACK
-    assert result.explanation is None
     assert db_session.scalars(select(AIExplanation)).all() == []
 
 
@@ -200,7 +197,7 @@ def test_unknown_user_cannot_receive_another_users_explanation(db_session: Sessi
     assert len(provider.calls) == 1
 
 
-def test_invalid_provider_response_returns_fallback(db_session: Session) -> None:
+def test_invalid_provider_response_is_unavailable(db_session: Session) -> None:
     user, _snapshot = _create_snapshot(db_session)
     provider = FakeAiProvider(
         response={
@@ -212,15 +209,14 @@ def test_invalid_provider_response_returns_fallback(db_session: Session) -> None
         }
     )
 
-    result = generate_or_reuse_latest_explanation(
-        db_session,
-        user_id=user.id,
-        provider=provider,
-        settings=_enabled_settings(),
-    )
+    with pytest.raises(AiExplanationUnavailable):
+        generate_or_reuse_latest_explanation(
+            db_session,
+            user_id=user.id,
+            provider=provider,
+            settings=_enabled_settings(),
+        )
 
-    assert result.source is AiExplanationSource.FALLBACK
-    assert result.explanation is None
     assert db_session.scalars(select(AIExplanation)).all() == []
 
 

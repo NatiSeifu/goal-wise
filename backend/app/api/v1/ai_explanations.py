@@ -19,6 +19,7 @@ from app.schemas.ai_explanations import (
     AIExplanationItemResponse,
 )
 from app.services.ai_explanations import (
+    AiExplanationUnavailable,
     NoSnapshotForExplanation,
     generate_or_reuse_latest_explanation,
 )
@@ -57,6 +58,12 @@ def request_latest_explanation(
             status_code=404,
             code="calculation_snapshot_not_found",
             message="No calculation snapshot is available to explain.",
+        )
+    except AiExplanationUnavailable:
+        return error_response(
+            status_code=503,
+            code="ai_explanation_unavailable",
+            message="We could not prepare an explanation right now. Please try again later.",
         )
 
     if result.explanation is not None:

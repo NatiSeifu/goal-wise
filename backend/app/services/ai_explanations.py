@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
-from typing import Literal
 
 from sqlalchemy.orm import Session
 
@@ -15,7 +14,6 @@ from app.repositories.ai_explanations import (
 )
 from app.repositories.calculation_snapshots import get_latest_snapshot_for_user
 from app.services.ai_explanation_contract import (
-    AI_EXPLANATION_SCHEMA_VERSION,
     AiContractError,
     AiExplanationResponse,
     build_ai_payload,
@@ -26,11 +24,14 @@ from app.services.ai_provider import AiProvider, AiProviderError
 
 class AiExplanationSource(StrEnum):
     GENERATED = "generated"
-    FALLBACK = "fallback"
 
 
 class NoSnapshotForExplanation(LookupError):
     """Raised when a user has no committed calculation snapshot to explain."""
+
+
+class AiExplanationUnavailable(RuntimeError):
+    """Raised when an explanation request cannot produce accepted AI output."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,7 +76,7 @@ def generate_or_reuse_latest_explanation(
         try:
             response = validate_ai_response(stored.response_json)
         except AiContractError:
-            return _fallback_result(snapshot)
+            raise AiExplanationUnavailable from None
         return AiExplanationResult(
             snapshot=snapshot,
             response=response,
@@ -84,19 +85,19 @@ def generate_or_reuse_latest_explanation(
         )
 
     if not settings.ai_summary_enabled:
-        return _fallback_result(snapshot)
+        raise AiExplanationUnavailable
 
     try:
         payload = build_ai_payload(snapshot.result_json)
         if provider is None:
-            return _fallback_result(snapshot)
+            raise AiExplanationUnavailable
         raw_response = provider.generate(
             payload=payload,
             timeout_seconds=settings.ai_summary_timeout_seconds,
         )
         response = validate_ai_response(raw_response)
-    except (AiProviderError, AiContractError):
-        return _fallback_result(snapshot)
+    except (AiProviderError, AiContractError) as exc:
+        raise AiExplanationUnavailable from exc
 
     explanation = create_ai_explanation(
         db_session,
@@ -115,50 +116,3 @@ def generate_or_reuse_latest_explanation(
         source=AiExplanationSource.GENERATED,
         explanation=explanation,
     )
-
-
-def _fallback_result(snapshot: CalculationSnapshot) -> AiExplanationResult:
-    return AiExplanationResult(
-        snapshot=snapshot,
-        response=_deterministic_fallback(snapshot),
-        source=AiExplanationSource.FALLBACK,
-        explanation=None,
-    )
-
-
-def _deterministic_fallback(snapshot: CalculationSnapshot) -> AiExplanationResponse:
-    pace_status = _pace_status(snapshot)
-    headline_by_status = {
-        "Completed": "Your goal is complete",
-        "Ahead": "Your plan is ahead",
-        "On Track": "Your plan is on track",
-        "At Risk": "Your plan needs attention",
-        "Off Pace": "Your plan needs a closer look",
-    }
-    tone: Literal["positive", "neutral", "caution"] = (
-        "positive" if pace_status in {"Completed", "Ahead", "On Track"} else "caution"
-    )
-    return validate_ai_response(
-        {
-            "schema_version": AI_EXPLANATION_SCHEMA_VERSION,
-            "headline": headline_by_status.get(pace_status, "Your plan is ready to review"),
-            "body": "Review your current plan and keep the saved assumptions up to date.",
-            "observations": [
-                {
-                    "kind": "pace",
-                    "tone": tone,
-                    "metric_refs": ["pace_status"],
-                }
-            ],
-            "next_step": "Review your plan when your goal or expected cash flow changes.",
-        }
-    )
-
-
-def _pace_status(snapshot: CalculationSnapshot) -> str:
-    outputs = snapshot.result_json.get("outputs")
-    if isinstance(outputs, dict):
-        pace_status: object = outputs.get("pace_status")
-        if isinstance(pace_status, str):
-            return pace_status
-    return ""

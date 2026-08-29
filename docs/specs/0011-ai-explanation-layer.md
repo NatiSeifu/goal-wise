@@ -14,7 +14,8 @@ surface, not a calculation, recommendation, transaction-classification, or
 planning-authority feature.
 
 The current MVP may continue to run with the feature disabled and no provider
-configured. The deterministic fallback remains the authoritative explanation.
+configured. The deterministic dashboard remains the authoritative source of
+financial values; it is not presented as an AI explanation.
 
 ## Scope
 
@@ -26,7 +27,7 @@ Included:
 - synchronous provider invocation with a four-second timeout;
 - provider-independent adapter boundary;
 - minimized aggregate payload;
-- strict response validation and deterministic fallback;
+- strict response validation with an explicit unavailable state on failure;
 - persistence scoped to the exact snapshot, model, prompt, and response schema versions;
 - natural user-facing rendering of accepted structured content.
 
@@ -152,12 +153,11 @@ schema tuple. Failed responses are not presented as accepted explanations.
 
 ## Request and failure behavior
 
-The authenticated explanation status response and explanation request response
-include a non-sensitive `enabled` boolean so the frontend can avoid rendering
-the explanation workflow when the feature is unavailable and distinguish a
-disabled environment from an enabled feature that returned deterministic
-fallback content. They do not expose the provider, model, prompt, credential
-state, or provider error details.
+The authenticated explanation status response and successful explanation
+response include a non-sensitive `enabled` boolean so the frontend can avoid
+rendering the explanation workflow when the feature is unavailable. They do not
+expose the provider, model, prompt, credential state, or provider error
+details.
 
 - Explanation requests require authentication and the existing ownership
   checks for the requested snapshot.
@@ -166,19 +166,19 @@ state, or provider error details.
 - The provider call is synchronous and is cancelled or treated as failed
   after four seconds.
 - Disabled configuration, missing provider configuration, timeout, provider
-  error, invalid response, unsafe text, or inconsistent references all return
-  the deterministic fallback explanation.
+  error, invalid response, unsafe text, or inconsistent references return a
+  generic `503 ai_explanation_unavailable` error. The UI tells the user that
+  the explanation could not be prepared and offers a retry; it does not present
+  deterministic prose as if it were AI-generated.
 - Core dashboard, calculation, input, and goal workflows remain available
   when AI fails.
 - The API must not expose provider errors, prompts, secrets, or raw payloads.
 - A generated explanation is labeled as generated and includes the source
   snapshot timestamp and formula version in the user-facing view.
 
-## Deterministic fallback
-
-The fallback is produced from existing backend-owned result fields and does not
-call AI. It must remain understandable without provider availability and must
-not imply that AI authored it.
+There is no user-facing AI fallback. The deterministic dashboard values remain
+available when an explanation request fails, and the explanation panel reports
+the failure without persisting an ungenerated response.
 
 ## Security and privacy
 
@@ -201,8 +201,10 @@ Tests must prove:
 - another user's snapshot cannot be explained;
 - a new snapshot does not reuse an older snapshot's explanation as current;
 - valid structured output is persisted and reused for the same version tuple;
-- malformed, overlong, unsafe, or inconsistent responses fall back;
-- provider errors and four-second timeouts fall back without breaking core APIs;
+- malformed, overlong, unsafe, or inconsistent responses return the generic
+  unavailable error;
+- provider errors and four-second timeouts return the generic unavailable error
+  without breaking core APIs;
 - generated content is labeled and source metadata is shown;
 - numeric values displayed in the explanation come from the trusted snapshot;
 - the feature does not calculate or modify any official financial output.

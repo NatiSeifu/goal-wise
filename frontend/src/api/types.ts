@@ -252,7 +252,7 @@ export type AIExplanationItem = {
   snapshot_id: string;
   calculated_at: IsoDateTime;
   formula_version: string;
-  source: "generated" | "fallback";
+  source: "generated";
   explanation: AIExplanation;
 };
 

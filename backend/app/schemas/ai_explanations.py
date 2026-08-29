@@ -12,7 +12,7 @@ class AIExplanationItem(BaseModel):
     snapshot_id: str
     calculated_at: datetime
     formula_version: str
-    source: Literal["generated", "fallback"]
+    source: Literal["generated"]
     explanation: AiExplanationResponse
 
 
