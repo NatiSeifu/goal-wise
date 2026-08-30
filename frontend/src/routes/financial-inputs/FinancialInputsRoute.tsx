@@ -65,20 +65,20 @@ type ExpenseFormState = {
 };
 
 const frequencyOptions = [
-  { label: "One time", value: "one_time" },
-  { label: "Weekly", value: "weekly" },
-  { label: "Biweekly", value: "biweekly" },
-  { label: "Monthly", value: "monthly" },
+  { label: frequencyLabel("one_time"), value: "one_time" },
+  { label: frequencyLabel("weekly"), value: "weekly" },
+  { label: frequencyLabel("biweekly"), value: "biweekly" },
+  { label: frequencyLabel("monthly"), value: "monthly" },
 ];
 
 const confidenceOptions = [
-  { label: "Confirmed", value: "confirmed" },
-  { label: "Unconfirmed", value: "unconfirmed" },
+  { label: confidenceLabel("confirmed"), value: "confirmed" },
+  { label: confidenceLabel("unconfirmed"), value: "unconfirmed" },
 ];
 
 const classificationOptions = [
-  { label: "Essential", value: "essential" },
-  { label: "Discretionary", value: "discretionary" },
+  { label: classificationLabel("essential"), value: "essential" },
+  { label: classificationLabel("discretionary"), value: "discretionary" },
 ];
 
 const emptyProfileForm: ProfileFormState = {
