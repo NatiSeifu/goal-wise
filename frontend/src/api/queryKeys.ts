@@ -1,6 +1,7 @@
 export const queryKeys = {
   activeGoal: ["active-goal"],
   dashboard: ["dashboard"],
+  aiExplanationStatus: ["ai-explanation-status"],
   financialInputs: ["financial-inputs"],
   financialProfile: ["financial-profile"],
   incomeSources: ["income-sources"],

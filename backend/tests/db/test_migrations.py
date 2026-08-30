@@ -21,6 +21,7 @@ def test_initial_migration_runs_against_sqlite(tmp_path: Path) -> None:
     assert set(inspector.get_table_names()) >= {
         "alembic_version",
         "calculation_snapshots",
+        "ai_explanations",
         "financial_profiles",
         "goals",
         "income_sources",
@@ -149,6 +150,7 @@ def test_initial_migration_can_downgrade_sqlite(tmp_path: Path) -> None:
     assert "planned_expenses" not in inspector.get_table_names()
     assert "calculation_snapshots" not in inspector.get_table_names()
     assert "weekly_plans" not in inspector.get_table_names()
+    assert "ai_explanations" not in inspector.get_table_names()
 
 
 def _column_names(columns: list[dict[str, object]]) -> set[str]:

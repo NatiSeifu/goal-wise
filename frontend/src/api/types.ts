@@ -233,3 +233,34 @@ export type CalculationSnapshotResponse = {
 export type CalculationSnapshotItemResponse = {
   item: CalculationSnapshotResponse | null;
 };
+
+export type AIObservation = {
+  kind: "pace" | "allowance" | "progress" | "shortfall";
+  tone: "positive" | "neutral" | "caution";
+  metric_refs: string[];
+};
+
+export type AIExplanation = {
+  schema_version: "ai-explanation-v1";
+  headline: string;
+  body: string;
+  observations: AIObservation[];
+  next_step: string | null;
+};
+
+export type AIExplanationItem = {
+  snapshot_id: string;
+  calculated_at: IsoDateTime;
+  formula_version: string;
+  source: "generated";
+  explanation: AIExplanation;
+};
+
+export type AIExplanationItemResponse = {
+  item: AIExplanationItem;
+  enabled: boolean;
+};
+
+export type AIExplanationAvailabilityResponse = {
+  enabled: boolean;
+};

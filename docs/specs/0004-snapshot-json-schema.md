@@ -169,6 +169,19 @@ Rationale:
 
 ## Versioning Rules
 
+The JSON columns are a storage representation, not the application's type
+system. The application must represent `snapshot-input-v1` and
+`snapshot-result-v1` with explicit versioned validation models at the
+persistence boundary. Snapshot creation must validate before insert, and
+snapshot consumers must parse persisted JSON through the corresponding typed
+boundary before reading known fields. The database columns remain JSON so the
+historical document stays immutable and independent of the live ORM entities.
+
+This validation applies to all snapshot consumers, not only the optional AI
+explanation layer. Once typed parsing is established, consumers should not use
+scattered defensive `isinstance` checks for fields guaranteed by the contract;
+checks at raw JSON and external-provider boundaries remain required.
+
 - `schema_version` is required in both JSON columns.
 - `formula_version` is required in both JSON columns.
 - Incompatible shape changes require a new schema version.

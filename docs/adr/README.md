@@ -21,6 +21,7 @@ Use [template.md](template.md) when creating a new ADR.
 | [0009](0009-railway-deployment.md) | Deploy the Course MVP on Railway | Accepted |
 | [0010](0010-canonical-planning-csv-import.md) | Use a Canonical Planning CSV for Structured Imports | Accepted |
 | [0011](0011-atomic-complete-plan-import.md) | Preview and Atomically Replace the Complete Planning Setup | Accepted |
+| [0012](0012-bounded-ai-explanation-layer.md) | Add a Bounded AI Explanation Layer at the Edge | Accepted |
 
 ## Template
 

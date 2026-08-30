@@ -30,4 +30,8 @@ export const endpoints = {
   calculationSnapshots: {
     latest: `${API_PREFIX}/calculation-snapshots/latest`,
   },
+  aiExplanations: {
+    latest: `${API_PREFIX}/ai-explanations/latest`,
+    status: `${API_PREFIX}/ai-explanations/status`,
+  },
 } as const;
