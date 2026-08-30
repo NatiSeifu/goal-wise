@@ -529,7 +529,7 @@ select:focus-visible {
 
 .dashboard-primary-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.52fr);
+  grid-template-columns: minmax(0, 2.2fr) minmax(18rem, 0.8fr);
   gap: var(--gw-space-4);
   align-items: start;
 }
@@ -542,6 +542,10 @@ select:focus-visible {
 
 .dashboard-main-column .dashboard-grid.secondary {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-main-column > .dashboard-grid:not(.secondary) {
+  grid-template-columns: minmax(18rem, 1.35fr) repeat(2, minmax(12rem, 0.8fr));
 }
 
 .dashboard-primary-layout > .ai-explanation-panel {
@@ -1530,7 +1534,9 @@ select:focus-visible {
 
   .dashboard-grid,
   .dashboard-grid.secondary,
-  .dashboard-primary-layout {
+  .dashboard-primary-layout,
+  .dashboard-main-column > .dashboard-grid:not(.secondary),
+  .dashboard-main-column .dashboard-grid.secondary {
     grid-template-columns: 1fr;
   }
 
