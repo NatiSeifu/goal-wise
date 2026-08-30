@@ -550,6 +550,28 @@ select:focus-visible {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.calculation-metrics {
+  gap: var(--gw-space-6) var(--gw-space-5);
+}
+
+.calculation-metrics > div {
+  min-width: 0;
+  align-content: start;
+  gap: var(--gw-space-2);
+}
+
+.calculation-metrics dd {
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.calculation-status-note {
+  max-width: 28rem;
+  margin: var(--gw-space-6) 0 0;
+  color: var(--gw-color-muted);
+  line-height: 1.45;
+}
+
 .calculation-meta {
   margin: calc(var(--gw-space-3) * -1) 0 var(--gw-space-4);
   color: var(--gw-color-muted);
@@ -1746,6 +1768,10 @@ select:focus-visible {
 
   .calculation-plan .metric-list {
     grid-template-columns: 1fr;
+  }
+
+  .calculation-status-note {
+    margin-top: var(--gw-space-5);
   }
 
   .dashboard-supporting-cards > .panel + .panel {

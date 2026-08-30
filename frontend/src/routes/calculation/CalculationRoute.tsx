@@ -50,6 +50,7 @@ export function CalculationRoute() {
   const outputs = getJsonObject(snapshot.data.result_json, "outputs");
   const explanation = getJsonObject(snapshot.data.result_json, "explanation");
   const explanationSummary = getJsonObject(explanation, "summary");
+  const paceStatus = getStringValue(outputs, "pace_status");
 
   return (
     <section className="dashboard-page" aria-labelledby="calculation-title">
@@ -57,13 +58,16 @@ export function CalculationRoute() {
       <p className="calculation-meta">Last calculated {formatDateTime(snapshot.data.calculated_at)}</p>
       <section className="calculation-layout" aria-label="Plan details">
         <Panel className="calculation-plan" title="Your current plan">
-          <dl className="metric-list compact">
+          <dl className="metric-list compact calculation-metrics">
             <SnapshotMoneyValue label="Weekly safe-to-spend" outputs={outputs} field="weekly_safe_to_spend_cents" />
             <SnapshotStatusValue outputs={outputs} />
             <SnapshotMoneyValue label="Projected shortfall" outputs={outputs} field="projected_shortfall_cents" />
             <SnapshotNumberValue label="Remaining weeks" outputs={outputs} field="remaining_weeks" />
             <SnapshotPercentValue label="Progress" outputs={outputs} field="progress_percentage" />
           </dl>
+          {paceStatus === null ? null : (
+            <p className="calculation-status-note">{paceStatusDescription(paceStatus)}</p>
+          )}
         </Panel>
 
         <Panel title="Included in this plan">
@@ -189,7 +193,6 @@ function SnapshotStatusValue({ outputs }: { outputs: Record<string, JsonValue> |
     <div>
       <dt>Plan status</dt>
       <dd>{value === null ? "Not available" : paceStatusLabel(value)}</dd>
-      {value === null ? null : <p className="snapshot-status-description">{paceStatusDescription(value)}</p>}
     </div>
   );
 }
