@@ -1389,6 +1389,16 @@ select:focus-visible {
   gap: var(--gw-space-4);
 }
 
+.source-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gw-space-4);
+}
+
+.source-fields > .field:first-child {
+  grid-column: 1 / -1;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1783,6 +1793,14 @@ select:focus-visible {
 
   .input-section-grid {
     grid-template-columns: 1fr;
+  }
+
+  .source-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .source-fields > .field:first-child {
+    grid-column: auto;
   }
 
   .setup-steps {

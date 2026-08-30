@@ -392,26 +392,28 @@ export function FinancialInputsRoute() {
             </div>
           </div>
           <FormError message={incomeError} />
-          <SourceFields
-            amountDollars={incomeForm.amountDollars}
-            fields={incomeFields}
-            frequency={incomeForm.frequency}
-            name={incomeForm.name}
-            nextDate={incomeForm.nextDate}
-            prefix="income"
-            onAmountChange={(amountDollars) => setIncomeForm((current) => ({ ...current, amountDollars }))}
-            onFrequencyChange={(frequency) => setIncomeForm((current) => ({ ...current, frequency }))}
-            onNameChange={(name) => setIncomeForm((current) => ({ ...current, name }))}
-            onNextDateChange={(nextDate) => setIncomeForm((current) => ({ ...current, nextDate }))}
-          />
-          <SelectField
-            error={fieldError(incomeFields, "confidence")}
-            id="income-confidence"
-            label="Confidence"
-            onChange={(event) => setIncomeForm((current) => ({ ...current, confidence: event.target.value }))}
-            options={confidenceOptions}
-            value={incomeForm.confidence}
-          />
+          <div className="source-fields">
+            <SourceFields
+              amountDollars={incomeForm.amountDollars}
+              fields={incomeFields}
+              frequency={incomeForm.frequency}
+              name={incomeForm.name}
+              nextDate={incomeForm.nextDate}
+              prefix="income"
+              onAmountChange={(amountDollars) => setIncomeForm((current) => ({ ...current, amountDollars }))}
+              onFrequencyChange={(frequency) => setIncomeForm((current) => ({ ...current, frequency }))}
+              onNameChange={(name) => setIncomeForm((current) => ({ ...current, name }))}
+              onNextDateChange={(nextDate) => setIncomeForm((current) => ({ ...current, nextDate }))}
+            />
+            <SelectField
+              error={fieldError(incomeFields, "confidence")}
+              id="income-confidence"
+              label="Confidence"
+              onChange={(event) => setIncomeForm((current) => ({ ...current, confidence: event.target.value }))}
+              options={confidenceOptions}
+              value={incomeForm.confidence}
+            />
+          </div>
           <div className="form-actions">
             <Button disabled={isBusy} type="submit">
               {busyAction === "income" ? "Saving income" : editingIncomeId === null ? "Add income" : "Save income"}
@@ -437,28 +439,30 @@ export function FinancialInputsRoute() {
             </div>
           </div>
           <FormError message={expenseError} />
-          <SourceFields
-            amountDollars={expenseForm.amountDollars}
-            fields={expenseFields}
-            frequency={expenseForm.frequency}
-            name={expenseForm.name}
-            nextDate={expenseForm.nextDate}
-            prefix="expense"
-            onAmountChange={(amountDollars) => setExpenseForm((current) => ({ ...current, amountDollars }))}
-            onFrequencyChange={(frequency) => setExpenseForm((current) => ({ ...current, frequency }))}
-            onNameChange={(name) => setExpenseForm((current) => ({ ...current, name }))}
-            onNextDateChange={(nextDate) => setExpenseForm((current) => ({ ...current, nextDate }))}
-          />
-          <SelectField
-            error={fieldError(expenseFields, "classification")}
-            id="expense-classification"
-            label="Classification"
-            onChange={(event) =>
-              setExpenseForm((current) => ({ ...current, classification: event.target.value }))
-            }
-            options={classificationOptions}
-            value={expenseForm.classification}
-          />
+          <div className="source-fields">
+            <SourceFields
+              amountDollars={expenseForm.amountDollars}
+              fields={expenseFields}
+              frequency={expenseForm.frequency}
+              name={expenseForm.name}
+              nextDate={expenseForm.nextDate}
+              prefix="expense"
+              onAmountChange={(amountDollars) => setExpenseForm((current) => ({ ...current, amountDollars }))}
+              onFrequencyChange={(frequency) => setExpenseForm((current) => ({ ...current, frequency }))}
+              onNameChange={(name) => setExpenseForm((current) => ({ ...current, name }))}
+              onNextDateChange={(nextDate) => setExpenseForm((current) => ({ ...current, nextDate }))}
+            />
+            <SelectField
+              error={fieldError(expenseFields, "classification")}
+              id="expense-classification"
+              label="Classification"
+              onChange={(event) =>
+                setExpenseForm((current) => ({ ...current, classification: event.target.value }))
+              }
+              options={classificationOptions}
+              value={expenseForm.classification}
+            />
+          </div>
           <div className="form-actions">
             <Button disabled={isBusy} type="submit">
               {busyAction === "expense"
