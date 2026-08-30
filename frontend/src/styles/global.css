@@ -520,6 +520,7 @@ select:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.8fr) minmax(16rem, 0.8fr);
   gap: var(--gw-space-4);
+  align-items: start;
 }
 
 .dashboard-grid.secondary {
@@ -632,6 +633,13 @@ select:focus-visible {
   margin: 0;
   color: var(--gw-color-muted);
   line-height: 1.55;
+}
+
+.ai-explanation-intro {
+  max-width: 28ch;
+  margin: 0;
+  color: var(--gw-color-muted);
+  line-height: 1.5;
 }
 
 .ai-explanation-result {

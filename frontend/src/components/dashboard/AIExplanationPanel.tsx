@@ -41,8 +41,14 @@ function EnabledAIExplanationPanel({ pace, snapshotId }: AIExplanationPanelProps
             : explanation.data === undefined
               ? "Generate analysis"
               : "Refresh analysis"}
-        </Button>
+          </Button>
       </div>
+
+      {explanation.data === undefined && !explanation.isPending && !explanation.isError ? (
+        <p className="ai-explanation-intro">
+          Get a concise read on whether your current plan gives you enough room to spend.
+        </p>
+      ) : null}
 
       {explanation.isPending ? (
         <p className="ai-explanation-status" role="status">
