@@ -82,12 +82,11 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
   const changedInputCategories = getStringList(item.changed_from_previous, "changed_input_categories");
   const weeklyDelta = getNumberValue(item.changed_from_previous, "weekly_safe_to_spend_delta_cents");
   const weeklyChangeLabel = formatWeeklyChange(weeklyDelta);
-  const guideState = setupGuideStateFromDashboard(item);
+  const hasPlanChanges = changedInputCategories.length > 0 || weeklyDelta !== null;
 
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} compact />
 
       <section className="metric-hero" aria-labelledby="safe-to-spend-title">
         <div>
@@ -157,11 +156,11 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
             </div>
           </section>
 
-          <section className="dashboard-context" aria-label="Plan context">
+          <section className={`dashboard-context${hasPlanChanges ? "" : " single"}`} aria-label="Plan context">
             <div className="dashboard-context-block">
               <h2>Plan context</h2>
               <p className="panel-copy">Your dashboard is based on these saved assumptions.</p>
-              <dl className="metric-list compact">
+              <dl className="dashboard-context-summary">
                 <div>
                   <dt>Confirmed income sources</dt>
                   <dd>{getNumberValue(explanationSummary, "confirmed_income_count") ?? "0"}</dd>
@@ -180,15 +179,13 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               </Link>
             </div>
 
-            <div className="dashboard-context-block">
-              <h2>What changed</h2>
-              <p className="panel-copy">
-                {changedInputCategories.length === 0
-                  ? "No prior plan changes are available yet."
-                  : formatInputCategoryList(changedInputCategories)}
-              </p>
-              <p className="panel-copy">{weeklyChangeLabel}</p>
-            </div>
+            {hasPlanChanges ? (
+              <div className="dashboard-context-block">
+                <h2>What changed</h2>
+                <p className="panel-copy">{formatInputCategoryList(changedInputCategories)}</p>
+                <p className="panel-copy">{weeklyChangeLabel}</p>
+              </div>
+            ) : null}
           </section>
         </div>
 

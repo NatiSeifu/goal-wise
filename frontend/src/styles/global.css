@@ -638,6 +638,10 @@ select:focus-visible {
   box-shadow: var(--gw-shadow-raised);
 }
 
+.dashboard-context.single {
+  grid-template-columns: 1fr;
+}
+
 .dashboard-context-block + .dashboard-context-block {
   padding-left: var(--gw-space-6);
   border-left: 1px solid var(--gw-color-line);
@@ -646,6 +650,30 @@ select:focus-visible {
 .dashboard-context-block h2 {
   margin: 0;
   font-size: 1.2rem;
+}
+
+.dashboard-context-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gw-space-4);
+  margin: var(--gw-space-5) 0 0;
+}
+
+.dashboard-context-summary div {
+  display: grid;
+  gap: var(--gw-space-1);
+}
+
+.dashboard-context-summary dt {
+  color: var(--gw-color-muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.dashboard-context-summary dd {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 850;
 }
 
 .dashboard-primary-layout > .ai-explanation-panel {
@@ -1644,6 +1672,10 @@ select:focus-visible {
   .dashboard-context-block + .dashboard-context-block {
     padding: 0;
     border-left: 0;
+  }
+
+  .dashboard-context-summary {
+    grid-template-columns: 1fr;
   }
 
   .dashboard-overview > .goal-panel {
