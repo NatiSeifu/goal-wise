@@ -303,7 +303,6 @@ export function FinancialInputsRoute() {
     <section className="form-page wide" aria-labelledby="financial-inputs-title">
       <RouteHeader />
       <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} />
-      <InputSetupSummary />
       {successMessage === null ? null : (
         <p className="form-success" role="status">
           {successMessage}
@@ -318,7 +317,7 @@ export function FinancialInputsRoute() {
           </div>
         </div>
         <FormError message={profileError} />
-        <div className="form-grid">
+        <div className="cash-picture-fields">
           <TextField
             error={fieldError(profileFields, "starting_cash_cents")}
             id="profile-starting-cash"
@@ -344,30 +343,35 @@ export function FinancialInputsRoute() {
             type="date"
             value={profileForm.balanceAsOfDate}
           />
-          <TextField
-            error={fieldError(profileFields, "reserve_buffer_cents")}
-            id="profile-reserve-buffer"
-            label="Reserve buffer"
-            min="0"
-            onChange={(event) =>
-              setProfileForm((current) => ({ ...current, reserveBufferDollars: event.target.value }))
-            }
-            required
-            step="0.01"
-            type="number"
-            value={profileForm.reserveBufferDollars}
-          />
-          <label className="checkbox-field" htmlFor="profile-reserve-confirmed">
-            <input
-              checked={profileForm.reserveBufferConfirmed}
-              id="profile-reserve-confirmed"
+          <div className="reserve-field">
+            <TextField
+              error={fieldError(profileFields, "reserve_buffer_cents")}
+              id="profile-reserve-buffer"
+              label="Reserve buffer"
+              min="0"
               onChange={(event) =>
-                setProfileForm((current) => ({ ...current, reserveBufferConfirmed: event.target.checked }))
+                setProfileForm((current) => ({ ...current, reserveBufferDollars: event.target.value }))
               }
-              type="checkbox"
+              required
+              step="0.01"
+              type="number"
+              value={profileForm.reserveBufferDollars}
             />
-            <span>Protect this reserve</span>
-          </label>
+            <label className="reserve-confirmation" htmlFor="profile-reserve-confirmed">
+              <input
+                checked={profileForm.reserveBufferConfirmed}
+                id="profile-reserve-confirmed"
+                onChange={(event) =>
+                  setProfileForm((current) => ({ ...current, reserveBufferConfirmed: event.target.checked }))
+                }
+                type="checkbox"
+              />
+              <span>
+                <strong>Protect this reserve</strong>
+                <small>Keep this amount outside weekly spending.</small>
+              </span>
+            </label>
+          </div>
         </div>
         <div className="form-actions">
           <Button disabled={isBusy} type="submit">
@@ -520,29 +524,10 @@ async function invalidateFinancialPlanningQueries(queryClient: QueryClient) {
 function RouteHeader() {
   return (
     <PageHeader
-      description="Manual assumptions used to plan your weekly safe-to-spend amount."
+      description="Start with cash, then add expected income and planned expenses to plan your weekly safe-to-spend amount."
       title="Financial inputs"
       titleId="financial-inputs-title"
     />
-  );
-}
-
-function InputSetupSummary() {
-  return (
-    <section className="input-guide-strip" aria-label="Financial input order">
-      <div>
-        <strong>Cash first</strong>
-        <span>What you have available now.</span>
-      </div>
-      <div>
-        <strong>Income next</strong>
-        <span>Money you expect before the goal.</span>
-      </div>
-      <div>
-        <strong>Expenses last</strong>
-        <span>Known costs to hold aside.</span>
-      </div>
-    </section>
   );
 }
 

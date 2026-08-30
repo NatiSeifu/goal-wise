@@ -35,6 +35,11 @@ try {
   await cashForm.getByRole("button", { name: "Save cash picture" }).click();
   await page.getByRole("status").waitFor();
 
+  await page.screenshot({ path: "/tmp/goal-wise-financial-inputs-desktop.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: "/tmp/goal-wise-financial-inputs-mobile.png", fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
   await page.getByRole("link", { name: "View dashboard" }).click();
   await page.waitForURL(/\/dashboard$/);
   await page.getByRole("heading", { name: "Weekly safe-to-spend" }).waitFor();
@@ -58,5 +63,7 @@ try {
 
 console.log("Wrote /tmp/goal-wise-dashboard-desktop.png");
 console.log("Wrote /tmp/goal-wise-dashboard-mobile.png");
+console.log("Wrote /tmp/goal-wise-financial-inputs-desktop.png");
+console.log("Wrote /tmp/goal-wise-financial-inputs-mobile.png");
 console.log("Wrote /tmp/goal-wise-plan-details-desktop.png");
 console.log("Wrote /tmp/goal-wise-plan-details-mobile.png");
