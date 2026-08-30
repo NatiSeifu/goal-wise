@@ -7,6 +7,8 @@ import {
   frequencyLabel,
   humanizeTechnicalKey,
   inputCategoryLabel,
+  paceStatusDescription,
+  paceStatusLabel,
 } from "./labels.ts";
 
 describe("label utilities", () => {
@@ -43,5 +45,11 @@ describe("label utilities", () => {
     expect(frequencyLabel("every_other_month")).toBe("Every Other Month");
     expect(confidenceLabel(null)).toBe("Not specified");
     expect(classificationLabel(null)).toBe("Not specified");
+  });
+
+  it("makes pace statuses clear to users", () => {
+    expect(paceStatusLabel("At Risk")).toBe("At risk");
+    expect(paceStatusLabel("off_pace")).toBe("Needs attention");
+    expect(paceStatusDescription("On Track")).toBe("Your current plan is keeping the goal on schedule.");
   });
 });

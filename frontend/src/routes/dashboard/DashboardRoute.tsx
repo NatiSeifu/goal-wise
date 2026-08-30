@@ -13,7 +13,7 @@ import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
 import { setupGuideStateFromDashboard } from "../../features/setup/setupGuideState.ts";
 import { formatCents, formatDate, formatDateTime } from "../../utils/format.ts";
-import { formatInputCategoryList } from "../../utils/labels.ts";
+import { formatInputCategoryList, paceStatusDescription, paceStatusLabel } from "../../utils/labels.ts";
 
 const missingInputLabels: Record<string, { action: string; label: string; to: string }> = {
   active_goal: {
@@ -98,7 +98,8 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           <PaceStatusExplanation goal={item.goal} pace={pace} />
         </div>
         <div className="status-stack">
-          <span className="status-pill">{pace.pace_status}</span>
+          <span className="status-pill">{paceStatusLabel(pace.pace_status)}</span>
+          <span className="status-context">{paceStatusDescription(pace.pace_status)}</span>
           <span>Updated {formatDateTime(item.calculated_at)}</span>
         </div>
       </section>

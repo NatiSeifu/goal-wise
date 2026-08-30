@@ -507,6 +507,14 @@ select:focus-visible {
   font-weight: 750;
 }
 
+.status-context {
+  max-width: 18ch;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
 .status-pill {
   min-height: 2.25rem;
   padding: 0.45rem 0.8rem;
@@ -525,6 +533,51 @@ select:focus-visible {
 
 .dashboard-grid.secondary {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.calculation-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+  gap: var(--gw-space-4);
+  align-items: start;
+}
+
+.calculation-layout .panel {
+  min-width: 0;
+}
+
+.calculation-plan .metric-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.calculation-meta {
+  margin: calc(var(--gw-space-3) * -1) 0 var(--gw-space-4);
+  color: var(--gw-color-muted);
+  font-size: 0.95rem;
+}
+
+.calculation-input-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gw-space-5) var(--gw-space-4);
+  margin: var(--gw-space-6) 0 0;
+}
+
+.calculation-input-summary div {
+  display: grid;
+  gap: var(--gw-space-1);
+}
+
+.calculation-input-summary dt {
+  color: var(--gw-color-muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.calculation-input-summary dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 850;
 }
 
 .dashboard-primary-layout {
@@ -678,6 +731,14 @@ select:focus-visible {
 
 .dashboard-primary-layout > .ai-explanation-panel {
   min-width: 0;
+}
+
+.ai-status-description,
+.snapshot-status-description {
+  margin: var(--gw-space-2) 0 0;
+  color: var(--gw-color-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 
 .panel {
@@ -1660,8 +1721,13 @@ select:focus-visible {
     justify-items: start;
   }
 
+  .status-context {
+    text-align: left;
+  }
+
   .dashboard-grid,
   .dashboard-grid.secondary,
+  .calculation-layout,
   .dashboard-primary-layout,
   .dashboard-overview,
   .dashboard-context,
@@ -1684,6 +1750,14 @@ select:focus-visible {
   }
 
   .dashboard-overview > .goal-panel .metric-list {
+    grid-template-columns: 1fr;
+  }
+
+  .calculation-input-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .calculation-plan .metric-list {
     grid-template-columns: 1fr;
   }
 

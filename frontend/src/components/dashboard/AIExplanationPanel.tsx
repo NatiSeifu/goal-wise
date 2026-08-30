@@ -2,6 +2,7 @@ import type { DashboardPaceSummary, AIExplanationItem } from "../../api/types.ts
 import { Button } from "../ui/Button.tsx";
 import { Alert } from "../feedback/Alert.tsx";
 import { formatCents, formatDateTime } from "../../utils/format.ts";
+import { paceStatusDescription, paceStatusLabel } from "../../utils/labels.ts";
 import {
   useAiExplanation,
   useAiExplanationAvailability,
@@ -99,8 +100,9 @@ function ExplanationResult({
         <div>
           <h3>{item.explanation.headline}</h3>
         </div>
-        <span className={`ai-status-badge ${statusTone}`}>{pace.pace_status}</span>
+        <span className={`ai-status-badge ${statusTone}`}>{paceStatusLabel(pace.pace_status)}</span>
       </div>
+      <p className="ai-status-description">{paceStatusDescription(pace.pace_status)}</p>
       <TrustedMetrics pace={pace} />
       <div className="ai-explanation-copy">
         <p className="ai-explanation-label">What this means</p>

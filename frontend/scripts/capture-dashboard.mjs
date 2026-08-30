@@ -40,7 +40,17 @@ try {
   await page.getByRole("heading", { name: "Weekly safe-to-spend" }).waitFor();
   await page.screenshot({ path: "/tmp/goal-wise-dashboard-desktop.png", fullPage: true });
 
+  await page.getByRole("link", { name: "View plan details" }).click();
+  await page.waitForURL(/\/calculation$/);
+  await page.getByRole("heading", { name: "Plan details" }).waitFor();
+  await page.screenshot({ path: "/tmp/goal-wise-plan-details-desktop.png", fullPage: true });
+
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: "/tmp/goal-wise-plan-details-mobile.png", fullPage: true });
+
+  await page.getByRole("link", { name: "Back to dashboard" }).click();
+  await page.waitForURL(/\/dashboard$/);
+  await page.getByRole("heading", { name: "Weekly safe-to-spend" }).waitFor();
   await page.screenshot({ path: "/tmp/goal-wise-dashboard-mobile.png", fullPage: true });
 } finally {
   await browser.close();
@@ -48,3 +58,5 @@ try {
 
 console.log("Wrote /tmp/goal-wise-dashboard-desktop.png");
 console.log("Wrote /tmp/goal-wise-dashboard-mobile.png");
+console.log("Wrote /tmp/goal-wise-plan-details-desktop.png");
+console.log("Wrote /tmp/goal-wise-plan-details-mobile.png");
