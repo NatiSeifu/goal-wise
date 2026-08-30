@@ -14,6 +14,7 @@ from app.repositories.ai_explanations import (
     get_ai_explanation_for_version,
 )
 from app.repositories.calculation_snapshots import get_latest_snapshot_for_user
+from app.schemas.snapshots import SnapshotContractError, parse_snapshot_result
 from app.services.ai_explanation_contract import (
     AiContractError,
     AiExplanationResponse,
@@ -93,7 +94,8 @@ def generate_or_reuse_latest_explanation(
         raise AiExplanationUnavailable
 
     try:
-        payload = build_ai_payload(snapshot.result_json)
+        snapshot_result = parse_snapshot_result(snapshot.result_json)
+        payload = build_ai_payload(snapshot_result)
         if provider is None:
             logger.warning("AI explanation unavailable: provider is not configured")
             raise AiExplanationUnavailable
@@ -105,6 +107,9 @@ def generate_or_reuse_latest_explanation(
     except AiProviderError as exc:
         logger.warning("AI explanation unavailable: provider failure (%s)", type(exc).__name__)
         raise AiExplanationUnavailable from exc
+    except SnapshotContractError:
+        logger.warning("AI explanation unavailable: snapshot failed contract validation")
+        raise AiExplanationUnavailable from None
     except AiContractError:
         logger.warning("AI explanation unavailable: provider response failed contract validation")
         raise AiExplanationUnavailable from None
