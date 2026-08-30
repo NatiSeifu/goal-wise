@@ -106,83 +106,89 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
 
       <div className="dashboard-primary-layout">
         <div className="dashboard-main-column">
-          <section className="dashboard-grid" aria-label="Plan summary">
-        <Panel className="goal-panel" title={item.goal.name}>
-          <ProgressBar label="Goal progress" value={pace.progress_percentage} />
-          <dl className="metric-list">
-            <div>
-              <dt>Saved</dt>
-              <dd>{formatCents(item.goal.current_saved_cents)}</dd>
-            </div>
-            <div>
-              <dt>Target</dt>
-              <dd>{formatCents(item.goal.target_cents)}</dd>
-            </div>
-            <div>
-              <dt>Target date</dt>
-              <dd>{formatDate(item.goal.target_date)}</dd>
-            </div>
-          </dl>
-        </Panel>
+          <section className="dashboard-overview" aria-label="Plan summary">
+            <Panel className="goal-panel" title={item.goal.name}>
+              <ProgressBar label="Goal progress" value={pace.progress_percentage} />
+              <dl className="metric-list">
+                <div>
+                  <dt>Saved</dt>
+                  <dd>{formatCents(item.goal.current_saved_cents)}</dd>
+                </div>
+                <div>
+                  <dt>Target</dt>
+                  <dd>{formatCents(item.goal.target_cents)}</dd>
+                </div>
+                <div>
+                  <dt>Target date</dt>
+                  <dd>{formatDate(item.goal.target_date)}</dd>
+                </div>
+              </dl>
+            </Panel>
 
-        <Panel title="Current week">
-          <dl className="metric-list compact">
-            <div>
-              <dt>Weekly allowance</dt>
-              <dd>{formatCents(pace.weekly_safe_to_spend_cents)}</dd>
-            </div>
-            <div>
-              <dt>Weeks to target</dt>
-              <dd>{pace.remaining_weeks}</dd>
-            </div>
-          </dl>
-        </Panel>
+            <div className="dashboard-supporting-cards">
+              <Panel title="Current week">
+                <dl className="dashboard-feature-metric">
+                  <div>
+                    <dt>Weekly allowance</dt>
+                    <dd>{formatCents(pace.weekly_safe_to_spend_cents)}</dd>
+                  </div>
+                </dl>
+                <dl className="dashboard-supporting-detail">
+                  <div>
+                    <dt>Weeks to target</dt>
+                    <dd>{pace.remaining_weeks}</dd>
+                  </div>
+                </dl>
+              </Panel>
 
-        <Panel title="Goal outlook">
-          <dl className="metric-list compact">
-            <div>
-              <dt>Projected shortfall</dt>
-              <dd>{formatCents(pace.projected_shortfall_cents)}</dd>
+              <Panel title="Goal outlook">
+                <dl className="dashboard-feature-metric">
+                  <div>
+                    <dt>Projected shortfall</dt>
+                    <dd>{formatCents(pace.projected_shortfall_cents)}</dd>
+                  </div>
+                </dl>
+                <p className="dashboard-feature-support">
+                  {pace.projected_shortfall_cents === 0
+                    ? "Your current forecast covers the remaining goal amount."
+                    : "Your current forecast does not cover the remaining goal amount yet."}
+                </p>
+              </Panel>
             </div>
-          </dl>
-          <p className="panel-copy">
-            {pace.projected_shortfall_cents === 0
-              ? "Your current forecast covers the remaining goal amount."
-              : "Your current forecast does not cover the remaining goal amount yet."}
-          </p>
-        </Panel>
           </section>
 
-          <section className="dashboard-grid secondary" aria-label="Plan context">
-        <Panel title="Plan context">
-          <p className="panel-copy">Your dashboard is based on these saved assumptions.</p>
-          <dl className="metric-list compact">
-            <div>
-              <dt>Confirmed income sources</dt>
-              <dd>{getNumberValue(explanationSummary, "confirmed_income_count") ?? "0"}</dd>
+          <section className="dashboard-context" aria-label="Plan context">
+            <div className="dashboard-context-block">
+              <h2>Plan context</h2>
+              <p className="panel-copy">Your dashboard is based on these saved assumptions.</p>
+              <dl className="metric-list compact">
+                <div>
+                  <dt>Confirmed income sources</dt>
+                  <dd>{getNumberValue(explanationSummary, "confirmed_income_count") ?? "0"}</dd>
+                </div>
+                <div>
+                  <dt>Planned expenses</dt>
+                  <dd>{getNumberValue(explanationSummary, "planned_expense_count") ?? "0"}</dd>
+                </div>
+                <div>
+                  <dt>Unconfirmed income</dt>
+                  <dd>{getNumberValue(explanationSummary, "unconfirmed_income_count") ?? "0"}</dd>
+                </div>
+              </dl>
+              <Link className="text-link" to={routes.calculation}>
+                View plan details
+              </Link>
             </div>
-            <div>
-              <dt>Planned expenses</dt>
-              <dd>{getNumberValue(explanationSummary, "planned_expense_count") ?? "0"}</dd>
-            </div>
-            <div>
-              <dt>Unconfirmed income</dt>
-              <dd>{getNumberValue(explanationSummary, "unconfirmed_income_count") ?? "0"}</dd>
-            </div>
-          </dl>
-          <Link className="text-link" to={routes.calculation}>
-            View plan details
-          </Link>
-        </Panel>
 
-        <Panel title="What changed">
-          <p className="panel-copy">
-            {changedInputCategories.length === 0
-              ? "No prior plan changes are available yet."
-              : formatInputCategoryList(changedInputCategories)}
-          </p>
-          <p className="panel-copy">{weeklyChangeLabel}</p>
-        </Panel>
+            <div className="dashboard-context-block">
+              <h2>What changed</h2>
+              <p className="panel-copy">
+                {changedInputCategories.length === 0
+                  ? "No prior plan changes are available yet."
+                  : formatInputCategoryList(changedInputCategories)}
+              </p>
+              <p className="panel-copy">{weeklyChangeLabel}</p>
+            </div>
           </section>
         </div>
 
