@@ -8,7 +8,6 @@ import { ButtonLink } from "../../components/ui/Button.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { useLatestCalculationSnapshot } from "../../features/snapshots/useLatestCalculationSnapshot.ts";
 import { formatCents, formatDateTime, formatPercent } from "../../utils/format.ts";
-import { humanizeTechnicalKey } from "../../utils/labels.ts";
 
 export function CalculationRoute() {
   const snapshot = useLatestCalculationSnapshot();
@@ -45,7 +44,6 @@ export function CalculationRoute() {
     );
   }
 
-  const calculation = getJsonObject(snapshot.data.normalized_input_json, "calculation");
   const incomeSources = getArrayValue(snapshot.data.normalized_input_json, "income_sources");
   const plannedExpenses = getArrayValue(snapshot.data.normalized_input_json, "planned_expenses");
   const outputs = getJsonObject(snapshot.data.result_json, "outputs");
@@ -61,14 +59,6 @@ export function CalculationRoute() {
             <div>
               <dt>Last updated</dt>
               <dd>{formatDateTime(snapshot.data.calculated_at)}</dd>
-            </div>
-            <div>
-              <dt>Method</dt>
-              <dd>Consistent rules</dd>
-            </div>
-            <div>
-              <dt>Updated because</dt>
-              <dd>{humanizeTechnicalKey(getStringValue(calculation, "trigger") ?? snapshot.data.trigger)}</dd>
             </div>
           </dl>
         </Panel>

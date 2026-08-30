@@ -102,7 +102,7 @@ function ExplanationResult({
       </div>
       {item.explanation.next_step === null ? null : (
         <div className="ai-explanation-recommendation">
-          <p className="ai-explanation-label">Recommended next step</p>
+          <p className="ai-explanation-label">Next step</p>
           <p>{item.explanation.next_step}</p>
         </div>
       )}

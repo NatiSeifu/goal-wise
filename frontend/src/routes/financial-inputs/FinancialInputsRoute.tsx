@@ -32,8 +32,14 @@ import { TextField } from "../../components/ui/TextField.tsx";
 import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
 import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
 import { setupGuideStateFromInputs } from "../../features/setup/setupGuideState.ts";
-import { centsToDollarInput, dollarInputToCents, formatCents, formatDate } from "../../utils/format.ts";
+import {
+  centsToDollarInput,
+  dollarInputToCents,
+  formatCents,
+  formatDate,
+} from "../../utils/format.ts";
 import { fieldError, firstFormError } from "../../utils/forms.ts";
+import { classificationLabel, confidenceLabel, frequencyLabel } from "../../utils/labels.ts";
 
 type ProfileFormState = {
   balanceAsOfDate: string;
@@ -641,7 +647,10 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
               <div>
                 <h3>{item.name}</h3>
                 <p>
-                  {formatCents(item.amount_cents)} · {item.frequency} · {formatDate(item.next_date)}
+                  {formatCents(item.amount_cents)} · {frequencyLabel(item.frequency)} · {formatDate(item.next_date)}
+                  {kind === "income"
+                    ? ` · ${confidenceLabel((item as IncomeSourceResponse).confidence)}`
+                    : ` · ${classificationLabel((item as PlannedExpenseResponse).classification)}`}
                 </p>
               </div>
               <div className="resource-actions">

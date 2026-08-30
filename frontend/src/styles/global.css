@@ -632,7 +632,7 @@ select:focus-visible {
 }
 
 .ai-explanation-conclusion h3 {
-  max-width: 42rem;
+  max-width: 38rem;
   font-size: 1.7rem;
   line-height: 1.15;
 }
@@ -668,19 +668,28 @@ select:focus-visible {
 }
 
 .ai-explanation-copy {
-  max-width: 48rem;
+  max-width: 58rem;
 }
 
 .ai-explanation-copy .panel-copy {
-  max-width: 72ch;
+  max-width: 68ch;
   margin-top: 0;
 }
 
 .ai-explanation-recommendation {
-  max-width: 48rem;
-  padding: var(--gw-space-4) var(--gw-space-5);
-  background: var(--gw-color-green-soft);
-  border-radius: var(--gw-radius-md);
+  display: grid;
+  max-width: 58rem;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--gw-space-4);
+  align-items: baseline;
+  padding: var(--gw-space-4) 0;
+  border-top: 1px solid var(--gw-color-line);
+  border-bottom: 1px solid var(--gw-color-line);
+}
+
+.ai-explanation-recommendation .ai-explanation-label {
+  margin: 0;
+  color: var(--gw-color-green);
 }
 
 .ai-explanation-recommendation p:last-child {
@@ -702,7 +711,7 @@ select:focus-visible {
   gap: var(--gw-space-1);
   min-width: 0;
   padding: var(--gw-space-3) var(--gw-space-4);
-  background: var(--gw-color-canvas);
+  background: transparent;
 }
 
 .ai-trusted-metrics div + div {

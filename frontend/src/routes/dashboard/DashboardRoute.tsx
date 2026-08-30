@@ -165,10 +165,6 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               <dt>Last updated</dt>
               <dd>{formatDateTime(item.calculated_at)}</dd>
             </div>
-            <div>
-              <dt>Method</dt>
-              <dd>Consistent rules</dd>
-            </div>
           </dl>
           <Link className="text-link" to={routes.calculation}>
             View calculation details
