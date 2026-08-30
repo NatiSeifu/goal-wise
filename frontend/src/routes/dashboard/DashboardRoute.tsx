@@ -126,12 +126,8 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
         <Panel title="Current week">
           <dl className="metric-list compact">
             <div>
-              <dt>Opening allowance</dt>
-              <dd>{formatCents(pace.current_week_opening_allowance_cents)}</dd>
-            </div>
-            <div>
-              <dt>Remainder</dt>
-              <dd>{formatCents(pace.current_week_remainder_cents)}</dd>
+              <dt>Weekly allowance</dt>
+              <dd>{formatCents(pace.weekly_safe_to_spend_cents)}</dd>
             </div>
             <div>
               <dt>Remaining weeks</dt>
