@@ -6,6 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
+from app.schemas.snapshots import SnapshotContractError, SnapshotResultV1, parse_snapshot_result
+
 AI_EXPLANATION_SCHEMA_VERSION = "ai-explanation-v1"
 
 PaceMetric = Literal[
@@ -84,21 +86,22 @@ class AiExplanationResponse(BaseModel):
         return value
 
 
-def build_ai_payload(result_json: Mapping[str, object]) -> dict[str, object]:
+def build_ai_payload(result: SnapshotResultV1 | Mapping[str, object]) -> dict[str, object]:
     """Extract and validate the allowlisted fields from a snapshot result."""
 
-    outputs = result_json.get("outputs")
-    formula_version = result_json.get("formula_version")
-    if not isinstance(outputs, Mapping):
-        raise AiContractError("AI payload is missing outputs.")
+    if isinstance(result, Mapping):
+        try:
+            result = parse_snapshot_result(result)
+        except SnapshotContractError as exc:
+            raise AiContractError("AI payload failed snapshot contract validation.") from exc
 
     raw_payload = {
-        "pace_status": outputs.get("pace_status"),
-        "weekly_safe_to_spend_cents": outputs.get("weekly_safe_to_spend_cents"),
-        "projected_shortfall_cents": outputs.get("projected_shortfall_cents"),
-        "progress_percentage": outputs.get("progress_percentage"),
-        "remaining_weeks": outputs.get("remaining_weeks"),
-        "formula_version": formula_version,
+        "pace_status": result.outputs.pace_status,
+        "weekly_safe_to_spend_cents": result.outputs.weekly_safe_to_spend_cents,
+        "projected_shortfall_cents": result.outputs.projected_shortfall_cents,
+        "progress_percentage": result.outputs.progress_percentage,
+        "remaining_weeks": result.outputs.remaining_weeks,
+        "formula_version": result.formula_version,
     }
     try:
         return AiSummaryPayload.model_validate(raw_payload).model_dump()

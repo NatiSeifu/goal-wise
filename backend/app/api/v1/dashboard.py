@@ -1,7 +1,6 @@
 """Dashboard API routes."""
 
-from datetime import date, datetime
-from typing import Any
+from datetime import datetime
 
 from fastapi import APIRouter
 from sqlalchemy.orm import Session
@@ -15,6 +14,7 @@ from app.schemas.dashboard import (
     DashboardPaceSummary,
     DashboardResponse,
 )
+from app.schemas.snapshots import parse_snapshot_input, parse_snapshot_result
 from app.services.auth import CurrentSession
 from app.services.recalculation_boundary import (
     RecalculationStatus,
@@ -98,10 +98,10 @@ def _ready_dashboard_item(
     current_week_opening_allowance_cents: int,
     current_week_remainder_cents: int,
 ) -> DashboardItem:
-    result_json = snapshot.result_json
-    normalized_input_json = snapshot.normalized_input_json
-    outputs = _dict_value(result_json, "outputs")
-    goal = _dict_value(normalized_input_json, "goal")
+    result = parse_snapshot_result(snapshot.result_json)
+    snapshot_input = parse_snapshot_input(snapshot.normalized_input_json)
+    outputs = result.outputs
+    goal = snapshot_input.goal
 
     return DashboardItem(
         status="ready",
@@ -110,29 +110,22 @@ def _ready_dashboard_item(
         calculated_at=snapshot.calculated_at,
         formula_version=snapshot.formula_version,
         goal=DashboardGoalSummary(
-            id=str(goal["id"]),
-            name=str(goal["name"]),
-            target_cents=int(goal["target_cents"]),
-            current_saved_cents=int(goal["current_saved_cents"]),
-            target_date=date.fromisoformat(str(goal["target_date"])),
+            id=goal.id,
+            name=goal.name,
+            target_cents=goal.target_cents,
+            current_saved_cents=goal.current_saved_cents,
+            target_date=goal.target_date,
         ),
         pace=DashboardPaceSummary(
-            pace_status=str(outputs["pace_status"]),
-            weekly_safe_to_spend_cents=int(outputs["weekly_safe_to_spend_cents"]),
-            expected_savings_to_date_cents=int(outputs["expected_savings_to_date_cents"]),
-            projected_shortfall_cents=int(outputs["projected_shortfall_cents"]),
-            remaining_weeks=int(outputs["remaining_weeks"]),
-            progress_percentage=float(outputs["progress_percentage"]),
+            pace_status=outputs.pace_status,
+            weekly_safe_to_spend_cents=outputs.weekly_safe_to_spend_cents,
+            expected_savings_to_date_cents=outputs.expected_savings_to_date_cents,
+            projected_shortfall_cents=outputs.projected_shortfall_cents,
+            remaining_weeks=outputs.remaining_weeks,
+            progress_percentage=outputs.progress_percentage,
             current_week_opening_allowance_cents=current_week_opening_allowance_cents,
             current_week_remainder_cents=current_week_remainder_cents,
         ),
-        explanation=_dict_value(result_json, "explanation"),
-        changed_from_previous=_dict_value(result_json, "changed_from_previous"),
+        explanation=result.explanation.model_dump(mode="json"),
+        changed_from_previous=result.changed_from_previous.model_dump(mode="json"),
     )
-
-
-def _dict_value(source: dict[str, Any], key: str) -> dict[str, Any]:
-    value = source[key]
-    if not isinstance(value, dict):
-        raise TypeError(f"Expected {key} to be a JSON object.")
-    return value

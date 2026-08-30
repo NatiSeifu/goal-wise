@@ -133,7 +133,7 @@ def test_new_latest_snapshot_does_not_reuse_older_explanation(
         goal_id=first_snapshot.goal_id,
         formula_version="pace-v1",
         trigger="goal_updated",
-        normalized_input_json={"schema_version": "snapshot-input-v1"},
+        normalized_input_json=_input_json(),
         result_json=_result_json(weekly_safe_to_spend_cents=90000),
         calculated_at=_timestamp() + timedelta(minutes=1),
     )
@@ -244,7 +244,7 @@ def _create_snapshot(db_session: Session) -> tuple[User, CalculationSnapshot]:
         goal_id=goal.id,
         formula_version="pace-v1",
         trigger="goal_updated",
-        normalized_input_json={"schema_version": "snapshot-input-v1"},
+        normalized_input_json=_input_json(),
         result_json=_result_json(weekly_safe_to_spend_cents=81800),
         calculated_at=_timestamp(),
     )
@@ -257,14 +257,69 @@ def _result_json(*, weekly_safe_to_spend_cents: int) -> dict[str, object]:
         "schema_version": "snapshot-result-v1",
         "formula_version": "pace-v1",
         "outputs": {
+            "confirmed_future_income_cents": 100000,
+            "planned_future_expenses_cents": 50000,
+            "reserve_buffer_cents": 10000,
+            "forecast_resources_cents": 260000,
+            "goal_gap_cents": 80000,
+            "discretionary_capacity_cents": 90000,
             "pace_status": "On Track",
             "weekly_safe_to_spend_cents": weekly_safe_to_spend_cents,
             "projected_shortfall_cents": 0,
             "progress_percentage": 28.0,
             "remaining_weeks": 16,
             "current_cash_cents": 220000,
+            "expected_savings_to_date_cents": 84000,
+            "current_week_opening_allowance_cents": weekly_safe_to_spend_cents,
+            "current_week_remainder_cents": weekly_safe_to_spend_cents,
         },
-        "goal": {"name": "Private goal"},
+        "explanation": {
+            "included_income_source_ids": [],
+            "excluded_income_source_ids": [],
+            "included_planned_expense_ids": [],
+            "excluded_planned_expense_ids": [],
+            "summary": {
+                "confirmed_income_count": 0,
+                "planned_expense_count": 0,
+                "unconfirmed_income_count": 0,
+            },
+        },
+        "changed_from_previous": {
+            "previous_snapshot_id": None,
+            "changed_input_categories": [],
+            "weekly_safe_to_spend_delta_cents": None,
+        },
+    }
+
+
+def _input_json() -> dict[str, object]:
+    return {
+        "schema_version": "snapshot-input-v1",
+        "formula_version": "pace-v1",
+        "calculation": {
+            "timestamp_utc": "2026-08-29T12:00:00Z",
+            "user_time_zone": "America/Los_Angeles",
+            "trigger": "financial_profile_updated",
+        },
+        "goal": {
+            "id": "goal-1",
+            "name": "Emergency fund",
+            "target_cents": 300000,
+            "initial_saved_cents": 50000,
+            "current_saved_cents": 75000,
+            "start_date": "2026-08-01",
+            "target_date": "2026-12-31",
+            "status": "active",
+        },
+        "financial_profile": {
+            "starting_cash_cents": 120000,
+            "balance_as_of_date": "2026-08-07",
+            "reserve_buffer_cents": 10000,
+            "reserve_buffer_confirmed": True,
+        },
+        "income_sources": [],
+        "planned_expenses": [],
+        "transactions": [],
     }
 
 

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.models import CalculationSnapshot, WeeklyPlan
 from app.repositories.weekly_plans import create_weekly_plan, get_weekly_plan
+from app.schemas.snapshots import parse_snapshot_result
 from app.services.local_dates import local_week_start
 
 
@@ -38,8 +39,4 @@ def get_or_create_current_week_plan(
 
 
 def _weekly_safe_to_spend_cents(snapshot: CalculationSnapshot) -> int:
-    outputs = snapshot.result_json.get("outputs", {})
-    value = outputs.get("weekly_safe_to_spend_cents", 0)
-    if not isinstance(value, int):
-        return 0
-    return value
+    return parse_snapshot_result(snapshot.result_json).outputs.weekly_safe_to_spend_cents

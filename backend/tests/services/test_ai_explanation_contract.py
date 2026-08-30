@@ -11,15 +11,38 @@ def test_build_ai_payload_allowlists_snapshot_outputs() -> None:
         "schema_version": "snapshot-result-v1",
         "formula_version": "pace-v1",
         "outputs": {
+            "current_cash_cents": 220000,
+            "confirmed_future_income_cents": 100000,
+            "planned_future_expenses_cents": 50000,
+            "reserve_buffer_cents": 10000,
+            "forecast_resources_cents": 260000,
+            "goal_gap_cents": 80000,
+            "discretionary_capacity_cents": 90000,
             "pace_status": "On Track",
             "weekly_safe_to_spend_cents": 81800,
             "projected_shortfall_cents": 0,
             "progress_percentage": 28.0,
             "remaining_weeks": 16,
-            "formula_version": "pace-v1",
-            "current_cash_cents": 220000,
+            "expected_savings_to_date_cents": 84000,
+            "current_week_opening_allowance_cents": 81800,
+            "current_week_remainder_cents": 81800,
         },
-        "goal": {"name": "Private goal"},
+        "explanation": {
+            "included_income_source_ids": [],
+            "excluded_income_source_ids": [],
+            "included_planned_expense_ids": [],
+            "excluded_planned_expense_ids": [],
+            "summary": {
+                "confirmed_income_count": 0,
+                "planned_expense_count": 0,
+                "unconfirmed_income_count": 0,
+            },
+        },
+        "changed_from_previous": {
+            "previous_snapshot_id": None,
+            "changed_input_categories": [],
+            "weekly_safe_to_spend_delta_cents": None,
+        },
     }
 
     payload = build_ai_payload(result_json)
@@ -37,7 +60,7 @@ def test_build_ai_payload_allowlists_snapshot_outputs() -> None:
 
 
 def test_build_ai_payload_rejects_missing_outputs() -> None:
-    with pytest.raises(AiContractError, match="outputs"):
+    with pytest.raises(AiContractError, match="snapshot contract"):
         build_ai_payload({})
 
 
