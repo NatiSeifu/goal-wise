@@ -142,6 +142,6 @@ Success criteria:
 - [x] Dashboard and weekly-plan consumers use typed values.
 - [x] AI payload extraction uses the typed result contract and its allowlist.
 - [x] Obsolete `isinstance` checks are removed only after migration.
-- [ ] Malformed and unknown-version snapshots fail predictably.
-- [ ] SQLite and PostgreSQL compatibility remains intact.
-- [ ] Full backend tests, Ruff, and mypy pass.
+- [x] Malformed and unknown-version snapshots fail predictably.
+- [x] SQLite and PostgreSQL compatibility remains intact.
+- [x] Full backend tests, Ruff, and mypy pass.

@@ -6,6 +6,7 @@ from app.db.session import make_engine, make_session_factory
 from app.repositories.auth import create_user
 from app.repositories.calculation_snapshots import create_calculation_snapshot
 from app.repositories.goals import create_goal
+from app.schemas.snapshots import SnapshotContractError
 from app.services.weekly_plans import get_or_create_current_week_plan
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
@@ -84,6 +85,25 @@ def test_get_or_create_current_week_plan_does_not_replace_existing_plan(
     assert second_plan == first_plan
     assert second_plan.opening_allowance_cents == 15400
     assert second_plan.created_from_snapshot_id == first_snapshot.id
+
+
+def test_get_or_create_current_week_plan_rejects_malformed_snapshot(
+    db_session: Session,
+) -> None:
+    user, _goal, snapshot = _create_user_goal_and_snapshot(
+        db_session,
+        weekly_safe_to_spend_cents=15400,
+    )
+    snapshot.result_json = {"schema_version": "snapshot-result-v2"}
+
+    with pytest.raises(SnapshotContractError):
+        get_or_create_current_week_plan(
+            db_session,
+            user_id=user.id,
+            user_time_zone="America/Los_Angeles",
+            snapshot=snapshot,
+            now=datetime(2026, 8, 8, 12, 0, tzinfo=UTC),
+        )
 
 
 def _create_user_goal_and_snapshot(

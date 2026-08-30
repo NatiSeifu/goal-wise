@@ -169,6 +169,22 @@ def test_provider_failure_is_unavailable_without_persistence(db_session: Session
     assert db_session.scalars(select(AIExplanation)).all() == []
 
 
+def test_malformed_snapshot_is_unavailable_without_provider_call(db_session: Session) -> None:
+    user, snapshot = _create_snapshot(db_session)
+    snapshot.result_json = {"schema_version": "snapshot-result-v2"}
+    provider = FakeAiProvider(response=_valid_response())
+
+    with pytest.raises(AiExplanationUnavailable):
+        generate_or_reuse_latest_explanation(
+            db_session,
+            user_id=user.id,
+            provider=provider,
+            settings=_enabled_settings(),
+        )
+
+    assert provider.calls == []
+
+
 def test_unknown_user_cannot_receive_another_users_explanation(db_session: Session) -> None:
     owner, _snapshot = _create_snapshot(db_session)
     other_user = create_user(

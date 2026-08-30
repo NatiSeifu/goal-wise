@@ -1,5 +1,6 @@
 from datetime import UTC, date, datetime
 
+import pytest
 from app.models import (
     CalculationSnapshot,
     FinancialProfile,
@@ -8,6 +9,7 @@ from app.models import (
     PlannedExpense,
 )
 from app.pace_engine.types import FORMULA_VERSION, PaceResult, PaceStatus
+from app.schemas.snapshots import SnapshotContractError
 from app.services.snapshot_json import build_snapshot_json
 
 
@@ -226,6 +228,32 @@ def test_build_snapshot_json_compares_previous_snapshot() -> None:
         "changed_input_categories": ["goal"],
         "weekly_safe_to_spend_delta_cents": 400,
     }
+
+
+def test_build_snapshot_json_rejects_malformed_previous_snapshot() -> None:
+    previous_snapshot = CalculationSnapshot(
+        id="snapshot-1",
+        user_id="user-1",
+        goal_id="goal-1",
+        formula_version=FORMULA_VERSION,
+        trigger="goal_updated",
+        normalized_input_json={"schema_version": "snapshot-input-v2"},
+        result_json={"schema_version": "snapshot-result-v2"},
+        calculated_at=_calculated_at(),
+    )
+
+    with pytest.raises(SnapshotContractError):
+        build_snapshot_json(
+            trigger="goal_updated",
+            calculated_at=_calculated_at(),
+            user_time_zone="America/Los_Angeles",
+            goal=_goal(),
+            financial_profile=_profile(),
+            income_sources=(),
+            planned_expenses=(),
+            pace_result=_pace_result(),
+            previous_snapshot=previous_snapshot,
+        )
 
 
 def test_snapshot_json_does_not_include_raw_transaction_descriptions() -> None:
