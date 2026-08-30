@@ -46,3 +46,21 @@ test("keeps an invalid planning CSV in review with row errors", async ({ page })
   await expect(page.getByText(/Row 2, target_date/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Confirm import" })).not.toBeVisible();
 });
+
+test("can cancel a valid planning CSV from the review step", async ({ page }) => {
+  await registerUser(page);
+  await page.getByRole("link", { name: "Import plan" }).click();
+  await page.waitForURL(/\/planning-import$/);
+
+  await page.getByLabel("GoalWise planning CSV").setInputFiles(
+    path.resolve("public/planning-import-template.csv"),
+  );
+  await page.getByRole("button", { name: "Review file" }).click();
+  await expect(page.getByRole("heading", { name: "Ready to import" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Cancel import" }).click();
+
+  await expect(page.getByRole("heading", { name: "Ready to import" })).not.toBeVisible();
+  await expect(page.getByRole("button", { name: "Review file" })).toBeEnabled();
+  await expect(page.getByText("planning-import-template.csv")).toBeVisible();
+});

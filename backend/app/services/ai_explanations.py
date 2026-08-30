@@ -1,5 +1,6 @@
 """Generate and reuse snapshot-scoped AI explanations."""
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -20,6 +21,8 @@ from app.services.ai_explanation_contract import (
     validate_ai_response,
 )
 from app.services.ai_provider import AiProvider, AiProviderError
+
+logger = logging.getLogger(__name__)
 
 
 class AiExplanationSource(StrEnum):
@@ -76,6 +79,7 @@ def generate_or_reuse_latest_explanation(
         try:
             response = validate_ai_response(stored.response_json)
         except AiContractError:
+            logger.warning("AI explanation unavailable: stored response failed contract validation")
             raise AiExplanationUnavailable from None
         return AiExplanationResult(
             snapshot=snapshot,
@@ -85,19 +89,25 @@ def generate_or_reuse_latest_explanation(
         )
 
     if not settings.ai_summary_enabled:
+        logger.info("AI explanation unavailable: feature is disabled")
         raise AiExplanationUnavailable
 
     try:
         payload = build_ai_payload(snapshot.result_json)
         if provider is None:
+            logger.warning("AI explanation unavailable: provider is not configured")
             raise AiExplanationUnavailable
         raw_response = provider.generate(
             payload=payload,
             timeout_seconds=settings.ai_summary_timeout_seconds,
         )
         response = validate_ai_response(raw_response)
-    except (AiProviderError, AiContractError) as exc:
+    except AiProviderError as exc:
+        logger.warning("AI explanation unavailable: provider failure (%s)", type(exc).__name__)
         raise AiExplanationUnavailable from exc
+    except AiContractError:
+        logger.warning("AI explanation unavailable: provider response failed contract validation")
+        raise AiExplanationUnavailable from None
 
     explanation = create_ai_explanation(
         db_session,

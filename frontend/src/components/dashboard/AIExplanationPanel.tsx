@@ -33,17 +33,15 @@ function EnabledAIExplanationPanel({ pace, snapshotId }: AIExplanationPanelProps
     <section className="ai-explanation-panel panel" aria-labelledby="ai-explanation-title">
       <div className="ai-explanation-header">
         <div>
-          <p className="panel-eyebrow">Optional explanation</p>
-          <h2 id="ai-explanation-title">Make sense of this plan</h2>
-          <p className="panel-copy">
-            Get a short, plain-language read of the plan behind your weekly spending number.
-          </p>
+          <h2 id="ai-explanation-title">Plan insights</h2>
         </div>
-        {explanation.data?.enabled === false ? null : (
-          <Button onClick={handleRequest} disabled={explanation.isPending}>
-            {explanation.isPending ? "Preparing explanation" : "Explain this plan"}
-          </Button>
-        )}
+        <Button onClick={handleRequest} disabled={explanation.isPending}>
+          {explanation.isPending
+            ? "Preparing analysis"
+            : explanation.data === undefined
+              ? "Generate analysis"
+              : "Refresh analysis"}
+        </Button>
       </div>
 
       {explanation.isPending ? (
@@ -87,54 +85,52 @@ function ExplanationResult({
   pace: DashboardPaceSummary;
   snapshotId: string;
 }) {
-  const references = new Set(item.explanation.observations.flatMap((observation) => observation.metric_refs));
+  const statusTone = getStatusTone(pace.pace_status);
 
   return (
     <div className="ai-explanation-result" data-snapshot-id={snapshotId}>
-      <div className="ai-explanation-meta">
-        <span>Generated explanation</span>
-        <span>
-          Based on your plan from {formatDateTime(item.calculated_at)} · {item.formula_version}
-        </span>
+      <div className="ai-explanation-conclusion">
+        <div>
+          <h3>{item.explanation.headline}</h3>
+        </div>
+        <span className={`ai-status-badge ${statusTone}`}>{pace.pace_status}</span>
       </div>
-      <h3>{item.explanation.headline}</h3>
-      <p className="panel-copy">{item.explanation.body}</p>
+      <TrustedMetrics pace={pace} />
+      <div className="ai-explanation-copy">
+        <p className="ai-explanation-label">What this means</p>
+        <p className="panel-copy">{item.explanation.body}</p>
+      </div>
       {item.explanation.next_step === null ? null : (
-        <p className="ai-explanation-next-step">
-          <strong>Next step:</strong> {item.explanation.next_step}
-        </p>
+        <div className="ai-explanation-recommendation">
+          <p className="ai-explanation-label">Recommended next step</p>
+          <p>{item.explanation.next_step}</p>
+        </div>
       )}
-      <TrustedMetrics references={references} pace={pace} />
+      <p className="ai-explanation-meta">Analysis based on {formatDateTime(item.calculated_at)}</p>
     </div>
   );
 }
 
+function getStatusTone(status: string) {
+  if (status === "At Risk" || status === "Off Pace") {
+    return "warning";
+  }
+  if (status === "Completed" || status === "Ahead" || status === "On Track") {
+    return "positive";
+  }
+  return "neutral";
+}
+
 function TrustedMetrics({
-  references,
   pace,
 }: {
-  references: Set<string>;
   pace: DashboardPaceSummary;
 }) {
   const metrics = [
-    references.has("pace_status") ? { label: "Plan status", value: pace.pace_status } : null,
-    references.has("weekly_safe_to_spend_cents")
-      ? { label: "Weekly spending", value: formatCents(pace.weekly_safe_to_spend_cents) }
-      : null,
-    references.has("projected_shortfall_cents")
-      ? { label: "Projected shortfall", value: formatCents(pace.projected_shortfall_cents) }
-      : null,
-    references.has("progress_percentage")
-      ? { label: "Progress", value: `${pace.progress_percentage}%` }
-      : null,
-    references.has("remaining_weeks")
-      ? { label: "Weeks remaining", value: String(pace.remaining_weeks) }
-      : null,
-  ].filter((metric): metric is { label: string; value: string } => metric !== null);
-
-  if (metrics.length === 0) {
-    return null;
-  }
+    { label: "Weekly spending", value: formatCents(pace.weekly_safe_to_spend_cents) },
+    { label: "Progress", value: `${pace.progress_percentage}%` },
+    { label: "Projected shortfall", value: formatCents(pace.projected_shortfall_cents) },
+  ];
 
   return (
     <dl className="ai-trusted-metrics" aria-label="Trusted plan values">

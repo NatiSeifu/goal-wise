@@ -31,7 +31,7 @@ Included:
 - persistence scoped to the exact snapshot, model, prompt, and response schema versions;
 - natural user-facing rendering of accepted structured content.
 
-The initial provider is the Groq API using `llama-3.3-70b-versatile` as the
+The initial provider is the Groq API using `openai/gpt-oss-120b` as the
 default model. This is an implementation choice behind the provider adapter,
 not part of the application-level explanation response contract.
 
@@ -58,9 +58,18 @@ Required configuration concepts:
 - `GROQ_API_KEY`: provider credential read only by the backend runtime secret
   store;
 - `AI_SUMMARY_PROVIDER`: defaults to `groq` for the first implementation;
-- `AI_SUMMARY_MODEL`: defaults to `llama-3.3-70b-versatile`;
+- `AI_SUMMARY_MODEL`: defaults to `openai/gpt-oss-120b`;
 - provider timeout fixed at four seconds for this increment;
 - prompt version and response schema version controlled by the application.
+
+The active prompt is `ai-explanation-prompt-v3`. It requires the explanation to
+interpret pace status, weekly spending room, and projected shortfall together.
+For example, an `At Risk` pace with positive weekly spending room and no
+projected shortfall must be described as a goal-pace concern, not as an
+immediate inability to spend. The generated next step must be proportionate to
+the supplied metrics and must not recommend cutting spending unless the data
+supports that warning. User-facing copy must avoid technical phrases such as
+"risk signal" and "savings pace assumptions."
 
 Automatic mode is a configuration extension, not a reason to add calls to
 ordinary dashboard reads or input-save requests unless explicitly enabled.

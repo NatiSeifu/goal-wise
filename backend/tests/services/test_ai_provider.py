@@ -2,6 +2,10 @@ import json
 from unittest.mock import patch
 
 import pytest
+from app.services.ai_prompts import (
+    AI_EXPLANATION_PROMPT_V3,
+    AI_EXPLANATION_PROMPT_VERSION,
+)
 from app.services.ai_provider import (
     AiProviderError,
     AiProviderTimeout,
@@ -10,6 +14,14 @@ from app.services.ai_provider import (
     ProviderCall,
 )
 from pydantic import SecretStr
+
+
+def test_active_prompt_version_explains_status_and_spending_together() -> None:
+    assert AI_EXPLANATION_PROMPT_VERSION == "ai-explanation-prompt-v3"
+    assert '"At Risk"' in AI_EXPLANATION_PROMPT_V3
+    assert "projected shortfall is zero" in AI_EXPLANATION_PROMPT_V3
+    assert "cut spending" in AI_EXPLANATION_PROMPT_V3
+    assert "Never contradict a supplied metric" in AI_EXPLANATION_PROMPT_V3
 
 
 class StubHttpResponse:
@@ -54,7 +66,7 @@ def test_groq_provider_sends_minimal_json_request_and_decodes_json_content() -> 
     }
     provider = GroqAiProvider(
         api_key=SecretStr("groq-test-key"),
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         system_prompt="Return the approved schema.",
     )
 
@@ -72,7 +84,8 @@ def test_groq_provider_sends_minimal_json_request_and_decodes_json_content() -> 
     assert result == {"schema_version": "ai-explanation-v1", "headline": "Good"}
     assert request.full_url == "https://api.groq.com/openai/v1/chat/completions"
     assert request.headers["Authorization"] == "Bearer groq-test-key"
-    assert request_body["model"] == "llama-3.3-70b-versatile"
+    assert request.headers["User-agent"] == "GoalWise/1.0"
+    assert request_body["model"] == "openai/gpt-oss-120b"
     assert request_body["response_format"] == {"type": "json_object"}
     assert request_body["temperature"] == 0
     assert request_body["messages"] == [

@@ -24,7 +24,7 @@ default trigger mode is an explicit user request. The first implementation is
 synchronous and has a four-second provider timeout.
 
 The first provider implementation will use the Groq API with
-`llama-3.3-70b-versatile` as the default server-side model. The provider and
+`openai/gpt-oss-120b` as the default server-side model. The provider and
 model remain behind the adapter so they can be replaced without changing the
 explanation domain contract.
 

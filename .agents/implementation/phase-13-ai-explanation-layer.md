@@ -18,12 +18,14 @@ Included:
 - synchronous provider call with a four-second timeout;
 - provider adapter and fake provider for tests;
 - Groq API as the first provider implementation, using
-  `llama-3.3-70b-versatile` by default;
+  `openai/gpt-oss-120b` by default;
 - allowlisted snapshot payload;
 - versioned structured response validation;
 - snapshot-scoped persistence and reuse;
 - explicit retryable unavailable state when AI cannot produce accepted output;
 - user-facing generated summary presentation.
+- prompt guidance that distinguishes goal-pace risk from immediate spending
+  risk and avoids alarmist advice when the forecast has no shortfall.
 
 Deferred:
 
@@ -61,7 +63,7 @@ Success criteria:
 - Invalid trigger or timeout configuration fails clearly at startup or uses a
   documented safe default.
 - Frontend bundles contain no provider credentials.
-- Groq and `llama-3.3-70b-versatile` are the default provider/model values.
+- Groq and `openai/gpt-oss-120b` are the default provider/model values.
 - Unit tests prove disabled configuration makes zero provider calls.
 
 ## Phase 2 - Provider boundary and validation

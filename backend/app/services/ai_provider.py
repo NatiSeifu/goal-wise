@@ -8,7 +8,7 @@ from urllib import error, request
 
 from pydantic import SecretStr
 
-from app.services.ai_prompts import AI_EXPLANATION_PROMPT_V1
+from app.services.ai_prompts import AI_EXPLANATION_PROMPT_V3
 
 AiPayload = Mapping[str, object]
 AiResponse = Mapping[str, object]
@@ -44,7 +44,7 @@ class GroqAiProvider:
         *,
         api_key: SecretStr,
         model: str,
-        system_prompt: str = AI_EXPLANATION_PROMPT_V1,
+        system_prompt: str = AI_EXPLANATION_PROMPT_V3,
     ) -> None:
         self._api_key = api_key
         self._model = model
@@ -71,6 +71,7 @@ class GroqAiProvider:
             headers={
                 "Authorization": f"Bearer {self._api_key.get_secret_value()}",
                 "Content-Type": "application/json",
+                "User-Agent": "GoalWise/1.0",
             },
             method="POST",
         )
