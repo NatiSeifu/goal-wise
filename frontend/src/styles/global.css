@@ -526,6 +526,27 @@ select:focus-visible {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.dashboard-primary-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.52fr);
+  gap: var(--gw-space-4);
+  align-items: start;
+}
+
+.dashboard-main-column {
+  display: grid;
+  gap: var(--gw-space-4);
+  min-width: 0;
+}
+
+.dashboard-main-column .dashboard-grid.secondary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-primary-layout > .ai-explanation-panel {
+  min-width: 0;
+}
+
 .panel {
   padding: var(--gw-space-6);
   background: var(--gw-color-panel);
@@ -732,6 +753,29 @@ select:focus-visible {
 
 .ai-explanation-retry {
   margin-top: var(--gw-space-2);
+}
+
+.dashboard-primary-layout .ai-explanation-conclusion {
+  display: grid;
+  gap: var(--gw-space-3);
+}
+
+.dashboard-primary-layout .ai-explanation-conclusion h3 {
+  font-size: 1.45rem;
+}
+
+.dashboard-primary-layout .ai-trusted-metrics {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-primary-layout .ai-trusted-metrics div + div {
+  border-top: 1px solid var(--gw-color-line);
+  border-left: 0;
+}
+
+.dashboard-primary-layout .ai-explanation-recommendation {
+  grid-template-columns: 1fr;
+  gap: var(--gw-space-2);
 }
 
 .setup-guide {
@@ -1477,7 +1521,8 @@ select:focus-visible {
   }
 
   .dashboard-grid,
-  .dashboard-grid.secondary {
+  .dashboard-grid.secondary,
+  .dashboard-primary-layout {
     grid-template-columns: 1fr;
   }
 

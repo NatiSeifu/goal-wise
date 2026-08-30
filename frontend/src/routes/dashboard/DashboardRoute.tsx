@@ -12,7 +12,7 @@ import { Panel } from "../../components/ui/Panel.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
 import { setupGuideStateFromDashboard } from "../../features/setup/setupGuideState.ts";
-import { formatCents, formatDate, formatDateTime, formatPercent } from "../../utils/format.ts";
+import { formatCents, formatDate, formatDateTime } from "../../utils/format.ts";
 import { formatInputCategoryList } from "../../utils/labels.ts";
 
 const missingInputLabels: Record<string, { action: string; label: string; to: string }> = {
@@ -104,7 +104,9 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
         </div>
       </section>
 
-      <section className="dashboard-grid" aria-label="Plan summary">
+      <div className="dashboard-primary-layout">
+        <div className="dashboard-main-column">
+          <section className="dashboard-grid" aria-label="Plan summary">
         <Panel className="goal-panel" title={item.goal.name}>
           <ProgressBar label="Goal progress" value={pace.progress_percentage} />
           <dl className="metric-list">
@@ -130,44 +132,30 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               <dd>{formatCents(pace.weekly_safe_to_spend_cents)}</dd>
             </div>
             <div>
-              <dt>Remaining weeks</dt>
+              <dt>Weeks to target</dt>
               <dd>{pace.remaining_weeks}</dd>
             </div>
           </dl>
         </Panel>
 
-        <Panel title="Risk view">
+        <Panel title="Goal outlook">
           <dl className="metric-list compact">
             <div>
               <dt>Projected shortfall</dt>
               <dd>{formatCents(pace.projected_shortfall_cents)}</dd>
             </div>
-            <div>
-              <dt>Progress</dt>
-              <dd>{formatPercent(pace.progress_percentage)}</dd>
-            </div>
-            <div>
-              <dt>Calculated</dt>
-              <dd>{formatDateTime(item.calculated_at)}</dd>
-            </div>
           </dl>
+          <p className="panel-copy">
+            {pace.projected_shortfall_cents === 0
+              ? "Your current forecast covers the remaining goal amount."
+              : "Your current forecast does not cover the remaining goal amount yet."}
+          </p>
         </Panel>
-      </section>
+          </section>
 
-      <section className="dashboard-grid secondary" aria-label="Plan explanation">
-        <Panel title="Plan details">
-          <dl className="snapshot-list">
-            <div>
-              <dt>Last updated</dt>
-              <dd>{formatDateTime(item.calculated_at)}</dd>
-            </div>
-          </dl>
-          <Link className="text-link" to={routes.calculation}>
-            View calculation details
-          </Link>
-        </Panel>
-
-        <Panel title="Included assumptions">
+          <section className="dashboard-grid secondary" aria-label="Plan context">
+        <Panel title="Plan context">
+          <p className="panel-copy">Your dashboard is based on these saved assumptions.</p>
           <dl className="metric-list compact">
             <div>
               <dt>Confirmed income sources</dt>
@@ -182,6 +170,9 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
               <dd>{getNumberValue(explanationSummary, "unconfirmed_income_count") ?? "0"}</dd>
             </div>
           </dl>
+          <Link className="text-link" to={routes.calculation}>
+            View plan details
+          </Link>
         </Panel>
 
         <Panel title="What changed">
@@ -192,8 +183,11 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           </p>
           <p className="panel-copy">{weeklyChangeLabel}</p>
         </Panel>
-      </section>
-      <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
+          </section>
+        </div>
+
+        <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
+      </div>
     </section>
   );
 }
