@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from app.schemas.snapshots import SnapshotContractError, SnapshotResultV1, parse_snapshot_result
+from app.schemas.snapshots import SnapshotResultV1
 
 AI_EXPLANATION_SCHEMA_VERSION = "ai-explanation-v1"
 
@@ -86,14 +86,8 @@ class AiExplanationResponse(BaseModel):
         return value
 
 
-def build_ai_payload(result: SnapshotResultV1 | Mapping[str, object]) -> dict[str, object]:
+def build_ai_payload(result: SnapshotResultV1) -> dict[str, object]:
     """Extract and validate the allowlisted fields from a snapshot result."""
-
-    if isinstance(result, Mapping):
-        try:
-            result = parse_snapshot_result(result)
-        except SnapshotContractError as exc:
-            raise AiContractError("AI payload failed snapshot contract validation.") from exc
 
     raw_payload = {
         "pace_status": result.outputs.pace_status,

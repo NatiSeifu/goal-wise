@@ -1,4 +1,5 @@
 import pytest
+from app.schemas.snapshots import parse_snapshot_result
 from app.services.ai_explanation_contract import (
     AiContractError,
     build_ai_payload,
@@ -45,7 +46,7 @@ def test_build_ai_payload_allowlists_snapshot_outputs() -> None:
         },
     }
 
-    payload = build_ai_payload(result_json)
+    payload = build_ai_payload(parse_snapshot_result(result_json))
 
     assert payload == {
         "pace_status": "On Track",
@@ -60,8 +61,8 @@ def test_build_ai_payload_allowlists_snapshot_outputs() -> None:
 
 
 def test_build_ai_payload_rejects_missing_outputs() -> None:
-    with pytest.raises(AiContractError, match="snapshot contract"):
-        build_ai_payload({})
+    with pytest.raises(ValueError, match="result failed contract"):
+        parse_snapshot_result({})
 
 
 def test_validate_ai_response_accepts_natural_language_without_numbers() -> None:
