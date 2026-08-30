@@ -636,7 +636,6 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
                 <div className="resource-item-main">
                   <div className="resource-item-heading">
                     <h3>{item.name}</h3>
-                    <strong>{formatCents(item.amount_cents)}</strong>
                   </div>
                   <p>
                     {frequencyLabel(item.frequency)} · {formatDate(item.next_date)}
@@ -645,6 +644,7 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
                       : ` · ${classificationLabel((item as PlannedExpenseResponse).classification)}`}
                   </p>
                 </div>
+                <strong className="resource-amount">{formatCents(item.amount_cents)}</strong>
                 <div className="resource-actions">
                   <Button disabled={busyAction !== null} variant="secondary" type="button" onClick={() => onEdit(item)}>
                     Edit
