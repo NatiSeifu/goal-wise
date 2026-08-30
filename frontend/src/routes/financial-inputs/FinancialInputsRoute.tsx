@@ -630,33 +630,36 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
           <p>{emptyHelp}</p>
         </div>
       ) : (
-        <div className="resource-list">
-          {items.map((item) => (
-            <article className="resource-item" key={item.id}>
-              <div>
-                <h3>{item.name}</h3>
-                <p>
-                  {formatCents(item.amount_cents)} · {frequencyLabel(item.frequency)} · {formatDate(item.next_date)}
-                  {kind === "income"
-                    ? ` · ${confidenceLabel((item as IncomeSourceResponse).confidence)}`
-                    : ` · ${classificationLabel((item as PlannedExpenseResponse).classification)}`}
-                </p>
-              </div>
-              <div className="resource-actions">
-                <Button disabled={busyAction !== null} variant="secondary" type="button" onClick={() => onEdit(item)}>
-                  Edit
-                </Button>
-                <Button
-                  variant="secondary"
-                  disabled={busyAction !== null}
-                  type="button"
-                  onClick={() => onDeactivate(item)}
-                >
-                  {busyAction === `${kind}-${item.id}` ? "Removing" : "Remove from plan"}
-                </Button>
-              </div>
-            </article>
-          ))}
+          <div className="resource-list">
+            {items.map((item) => (
+              <article className="resource-item" key={item.id}>
+                <div className="resource-item-main">
+                  <div className="resource-item-heading">
+                    <h3>{item.name}</h3>
+                    <strong>{formatCents(item.amount_cents)}</strong>
+                  </div>
+                  <p>
+                    {frequencyLabel(item.frequency)} · {formatDate(item.next_date)}
+                    {kind === "income"
+                      ? ` · ${confidenceLabel((item as IncomeSourceResponse).confidence)}`
+                      : ` · ${classificationLabel((item as PlannedExpenseResponse).classification)}`}
+                  </p>
+                </div>
+                <div className="resource-actions">
+                  <Button disabled={busyAction !== null} variant="secondary" type="button" onClick={() => onEdit(item)}>
+                    Edit
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={busyAction !== null}
+                    type="button"
+                    onClick={() => onDeactivate(item)}
+                  >
+                    {busyAction === `${kind}-${item.id}` ? "Removing" : "Remove"}
+                  </Button>
+                </div>
+              </article>
+            ))}
         </div>
       )}
     </section>

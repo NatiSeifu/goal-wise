@@ -40,6 +40,21 @@ try {
   await page.screenshot({ path: "/tmp/goal-wise-financial-inputs-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
 
+  const incomeForm = page.locator("form#income-sources");
+  await incomeForm.getByLabel("Name").fill("Salary");
+  await incomeForm.getByLabel("Amount").fill("2400");
+  await incomeForm.getByLabel("Next date").fill("2026-09-01");
+  await incomeForm.getByRole("button", { name: "Add income" }).click();
+  await page.getByRole("status").waitFor();
+
+  const expenseForm = page.locator("form#planned-expenses");
+  await expenseForm.getByLabel("Name").fill("Rent");
+  await expenseForm.getByLabel("Amount").fill("900");
+  await expenseForm.getByLabel("Next date").fill("2026-09-01");
+  await expenseForm.getByRole("button", { name: "Add expense" }).click();
+  await page.getByRole("status").waitFor();
+  await page.screenshot({ path: "/tmp/goal-wise-financial-inputs-populated-desktop.png", fullPage: true });
+
   await page.getByRole("link", { name: "View dashboard" }).click();
   await page.waitForURL(/\/dashboard$/);
   await page.getByRole("heading", { name: "Weekly safe-to-spend" }).waitFor();
@@ -65,5 +80,6 @@ console.log("Wrote /tmp/goal-wise-dashboard-desktop.png");
 console.log("Wrote /tmp/goal-wise-dashboard-mobile.png");
 console.log("Wrote /tmp/goal-wise-financial-inputs-desktop.png");
 console.log("Wrote /tmp/goal-wise-financial-inputs-mobile.png");
+console.log("Wrote /tmp/goal-wise-financial-inputs-populated-desktop.png");
 console.log("Wrote /tmp/goal-wise-plan-details-desktop.png");
 console.log("Wrote /tmp/goal-wise-plan-details-mobile.png");

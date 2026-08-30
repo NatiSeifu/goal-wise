@@ -1598,7 +1598,8 @@ select:focus-visible {
 
 .resource-list {
   display: grid;
-  gap: var(--gw-space-3);
+  margin-top: var(--gw-space-2);
+  border-top: 1px solid var(--gw-color-line);
 }
 
 .resource-empty {
@@ -1624,14 +1625,34 @@ select:focus-visible {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--gw-space-4);
-  padding: var(--gw-space-4);
-  background: var(--gw-color-canvas);
-  border-radius: var(--gw-radius-md);
+  padding: var(--gw-space-4) 0;
+  border-bottom: 1px solid var(--gw-color-line);
+}
+
+.resource-item-main {
+  min-width: 0;
+}
+
+.resource-item-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gw-space-4);
+}
+
+.resource-item h3,
+.resource-item-heading strong {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .resource-item h3 {
-  margin: 0;
   font-size: 1rem;
+}
+
+.resource-item-heading strong {
+  flex: 0 0 auto;
+  font-size: 1.15rem;
 }
 
 .resource-item p {
@@ -1648,6 +1669,10 @@ select:focus-visible {
 
 .resource-actions .button {
   white-space: nowrap;
+}
+
+.resource-actions .button:last-child {
+  color: var(--gw-color-muted);
 }
 
 @media (max-width: 1080px) {
@@ -1690,6 +1715,7 @@ select:focus-visible {
   }
 
   .resource-item {
+    align-items: start;
     grid-template-columns: 1fr;
   }
 
