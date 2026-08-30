@@ -136,7 +136,7 @@ Success criteria:
 
 ## Verification checklist
 
-- [ ] SPEC-0004 shape is represented by typed application contracts.
+- [x] SPEC-0004 shape is represented by typed application contracts.
 - [x] Input and result documents are validated before persistence.
 - [x] Persisted documents are parsed through one typed boundary.
 - [x] Dashboard and weekly-plan consumers use typed values.
