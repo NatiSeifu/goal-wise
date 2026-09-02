@@ -2,7 +2,7 @@
 
 GoalWise is a goal-oriented budgeting app that helps a user understand whether they are on pace to reach one near-term savings goal. Instead of focusing on broad category budgeting, the product turns a savings target, current cash, expected income, planned expenses, and a reserve buffer into a weekly safe-to-spend number.
 
-The current repository captures the architecture and planning package for the MVP/PDR stage. It is a progressive subset of the broader SRS, focused on proving the core planning loop before adding imports, AI summaries, export/delete workflows, and deeper automation.
+The current repository captures the architecture and planning package for the MVP/PDR stage. It is a progressive subset of the broader SRS, focused on the core planning loop with an accepted canonical planning CSV importer and bounded, explain-only AI summaries.
 
 ## Core Idea
 
@@ -25,6 +25,9 @@ The MVP architecture uses:
 - PostgreSQL for hosted deployment, with SQLite allowed for local development and tests.
 - A deterministic `pace-v1` calculation engine.
 - Immutable calculation snapshots for explanation and traceability.
+
+The optional CSV importer and AI explanation layer operate at the edge of this
+core. Neither is allowed to calculate or override official financial outputs.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the high-level system view and [DESIGN.md](DESIGN.md) for backend design details.
 
@@ -121,11 +124,13 @@ Included in the current MVP architecture:
 - Pace status and shortfall calculation.
 - Immutable calculation history.
 - Dashboard-ready result and explanation data.
+- Canonical planning CSV import with preview and explicit confirmation.
+- Optional AI explanations scoped to committed calculation snapshots.
 
 Deferred until later increments:
 
 - Raw transaction import and transaction correction.
-- AI-generated summaries.
+- AI transaction classification or AI-generated financial decisions.
 - Account export and deletion.
 - Background scheduling.
 - Multi-goal support.

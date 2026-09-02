@@ -30,8 +30,9 @@ The current MVP supports or is being built toward:
 - manual planned expenses;
 - deterministic `pace-v1` calculations;
 - immutable calculation snapshots;
-- dashboard-ready values returned by the backend.
+- dashboard-ready values returned by the backend;
 - canonical planning CSV import with preview and explicit confirmation.
+- optional runtime AI explanations of committed snapshots.
 
 ## Deferred Capabilities
 
@@ -40,7 +41,6 @@ Do not present these as working MVP behavior unless the user explicitly asks and
 - multiple active goals;
 - raw bank-statement or transaction import;
 - transaction correction and duplicate handling;
-- AI summaries;
 - AI transaction classification;
 - AI-generated financial decisions;
 - export/delete account workflows;
@@ -75,13 +75,18 @@ Transactions are part of the broader SRS but deferred from the current MVP imple
 
 AI may support design-time work such as drafting ADRs, diagrams, tests, review checklists, and UI variants.
 
-At runtime, AI may be added later for summaries or classification, but it must not calculate or override:
+At runtime, the optional AI explanation layer may explain a committed snapshot,
+but it must not calculate or override:
 
 - safe-to-spend;
 - pace status;
 - projected shortfall;
 - snapshot contents;
 - official dashboard metrics.
+
+AI is unavailable without blocking the deterministic planning workflow. Provider
+requests are server-side, minimized, schema-validated, and scoped to the
+authenticated user's latest committed snapshot.
 
 The deterministic backend pace engine is the source of truth for financial outputs.
 

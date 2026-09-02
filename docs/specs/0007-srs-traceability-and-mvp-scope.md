@@ -12,7 +12,7 @@ Define how the current architecture package maps to the broader GoalWise SRS.
 
 This architecture represents a progressive course MVP/CDR subset, not the complete SRS v2.0 implementation. SRS v2.0 is the normative product baseline. This mapping describes the currently implemented increment and must be updated as remaining SRS v2.0 Must requirements are implemented or explicitly accepted as exceptions. SPEC-0010 and ADR-0010/0011 document the implemented canonical planning CSV increment; they do not enable raw transaction or bank-statement import.
 
-SRS v2.0 supersedes v1.0 and narrows the MVP away from CSV import and runtime AI while adding or sharpening requirements for current-week spending, export/delete, audit events, AI Future guardrails, error contracts, observability, coverage, security evidence, and release evidence.
+SRS v2.0 supersedes v1.0 and narrows the baseline MVP away from raw transaction CSV import and runtime AI. The accepted `v0.3.0` increment intentionally extends that baseline with SPEC-0010 canonical planning CSV import and SPEC-0011 bounded runtime AI explanations. Those extensions do not enable raw transaction import or allow AI to alter financial outputs.
 
 ## Scope Status Values
 
@@ -88,7 +88,9 @@ remain separate deferred decisions.
 | FR-UI-006 | Deferred | Overspending recommendation depends on transaction/current-week spending support. |
 | FR-UI-007 | Deferred | Month-end spending suggestions are later deterministic recommendation work. |
 | FR-UI-008 | Implement Now | Field validation and canonical planning CSV row errors are included now. |
-| FR-AI-001 through FR-AI-007 | Deferred | AI summaries are not in the current MVP runtime. Deterministic core must remain AI-free. |
+| FR-AI-001 | Implement Now | AI availability is explicit and the disabled state does not call an external provider. |
+| FR-AI-002 through FR-AI-006 | Implement Now | SPEC-0011 implements minimized, explain-only, snapshot-scoped, schema-validated AI explanations with bounded failure behavior. |
+| FR-AI-007 | Partial | Objective AI quality evaluation and production evidence remain part of 1.0 readiness. |
 | FR-DATA-001 | Deferred | Export is later data-rights work and should come after this MVP subset is complete. |
 | FR-DATA-002 | Deferred | Account deletion is later data-rights work and should come after this MVP subset is complete. |
 | FR-DATA-003 | Design Constraint | MVP must not request or store bank credentials, card PINs, full card numbers, brokerage credentials, or similar sensitive credentials. |
@@ -101,7 +103,7 @@ remain separate deferred decisions.
 | NFR-ACC-002 | Implement Now | Determinism tests use identical normalized inputs, timestamps, time zone, and formula version. |
 | NFR-PERF-001 | Deferred | Full load target with 10,000 transactions waits for transaction support and production hardening. |
 | NFR-PERF-002 | Implement Now | Dashboard responsiveness should be smoke-tested for MVP demo. |
-| NFR-PERF-003 | Deferred | AI latency applies only when AI summaries are enabled. |
+| NFR-PERF-003 | Partial | AI timeout is bounded by configuration; production latency evidence remains part of 1.0 readiness. |
 | NFR-SEC-001 | Implement Now | Argon2id password hashing. |
 | NFR-SEC-002 | Implement Now | Railway-hosted traffic uses HTTPS. |
 | NFR-SEC-003 | Implement Now | Login rate limiting: 5 failed attempts within 10 minutes by account and source. |
@@ -113,11 +115,11 @@ remain separate deferred decisions.
 | NFR-SEC-009 | Deferred | Full dependency vulnerability gate is production hardening; basic dependency care still expected. |
 | NFR-PRI-001 | Implement Now | Data minimization; no bank/payment credentials. |
 | NFR-PRI-002 | Implement Now | Logs exclude sensitive values. |
-| NFR-PRI-003 | Deferred | AI payload minimization applies when AI summaries are enabled. |
+| NFR-PRI-003 | Implement Now | AI payloads are minimized to committed snapshot facts and non-identifying context. |
 | NFR-PRI-004 | Deferred | Account deletion and backup expiration are later data-rights work after this MVP subset is complete. |
 | NFR-REL-001 | Implement Now | Confirmed planning CSV replacement is atomic and rolls back on persistence failure. |
 | NFR-REL-002 | Partial | Course demo availability is supported by Railway deployment and health check; full monitoring is post-MVP. |
-| NFR-REL-003 | Implement Now | AI provider loss cannot affect MVP because runtime AI is absent. |
+| NFR-REL-003 | Implement Now | AI provider loss returns an unavailable state and cannot affect deterministic planning outputs. |
 | NFR-USA-001 | Implement Now | Primary workflow should be demoable in under five minutes. |
 | NFR-USA-002 | Implement Now | Dashboard explanation should support comprehension. |
 | NFR-A11Y-001 | Partial | MVP requires smoke accessibility checks; full WCAG audit evidence is later hardening. |
@@ -125,7 +127,7 @@ remain separate deferred decisions.
 | NFR-MNT-001 | Implement Now | Maintainable repo structure and CI-ready tests. |
 | NFR-MNT-002 | Implement Now | Pace-engine coverage target should guide implementation. |
 | NFR-MNT-003 | Implement Now | Formula changes require version and golden tests. |
-| NFR-AIQ-001 through NFR-AIQ-003 | Deferred | AI quality requirements apply when AI summaries are enabled. |
+| NFR-AIQ-001 through NFR-AIQ-003 | Partial | Runtime guardrails are implemented; objective quality and prohibited-advice evidence remain before 1.0. |
 
 ## Verification
 
