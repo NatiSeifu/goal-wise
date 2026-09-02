@@ -29,3 +29,16 @@ def validation_error_response(*, fields: dict[str, list[str]]) -> JSONResponse:
             },
         },
     )
+
+
+def planning_import_error_response(*, issues: list[dict[str, object]]) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": {
+                "code": "planning_import_invalid",
+                "message": "The planning CSV could not be imported.",
+                "issues": issues,
+            },
+        },
+    )

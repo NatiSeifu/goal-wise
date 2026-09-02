@@ -1,6 +1,6 @@
 # GoalWise Architecture
 
-GoalWise is a progressive MVP/PDR subset of the broader SRS. The current architecture proves the core planning loop: authenticate, enter one goal and manual financial assumptions, calculate an explainable weekly safe-to-spend result, store immutable snapshots, and render the dashboard.
+GoalWise is a progressive MVP/PDR subset of the broader SRS. The current architecture proves the core planning loop: authenticate, enter or import one goal and manual financial assumptions, calculate an explainable weekly safe-to-spend result, store immutable snapshots, and render the dashboard.
 
 This file holds the high-level system diagram. More focused diagrams and decision details live in:
 
@@ -43,14 +43,19 @@ flowchart TB
     Frontend -->|"render backend values only"| DashboardUI["Dashboard + Forms"]
     Dashboard -->|"dashboard JSON"| Frontend
 
+    subgraph Current["Current Planning Inputs"]
+        CSV["Canonical Planning CSV Import"]
+    end
+
     subgraph Deferred["Deferred Later Increments"]
-        CSV["CSV Import + Corrections"]
+        Transactions["Raw Transactions + Corrections"]
         AI["AI Summaries"]
         Export["Export + Account Deletion"]
         Scheduler["Monday Scheduler"]
     end
 
-    CSV -. "normalized inputs" .-> Services
+    CSV -->|"validated normalized inputs"| Services
+    Transactions -. "future transaction inputs" .-> Services
     AI -. "aggregate snapshot payload only" .-> Snapshots
     Export -. "user-owned data" .-> Services
     Scheduler -. "creates weekly plans" .-> Services
@@ -63,7 +68,7 @@ flowchart TB
 - The pace engine is deterministic and AI-free.
 - Calculation snapshots are immutable and versioned.
 - User-owned resource access is enforced server-side; cross-user private resource access returns `404`.
-- Runtime AI, CSV import, export/delete, and background scheduling are deferred from the current MVP subset.
+- Runtime AI, raw transaction import, export/delete, and background scheduling are deferred from the current MVP subset.
 
 ## Deployment Shape
 

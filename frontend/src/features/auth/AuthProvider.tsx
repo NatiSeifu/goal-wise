@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   getCurrentUser,
@@ -35,6 +36,7 @@ type AuthProviderProps = {
 };
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<AuthStatus>("checking");
   const [user, setUser] = useState<UserResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,26 +77,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (payload: LoginRequest) => {
     const response = await loginRequest(payload);
+    queryClient.clear();
     setUser(response.item.user);
     setError(null);
     setStatus("authenticated");
     return response.item.user;
-  }, []);
+  }, [queryClient]);
 
   const register = useCallback(async (payload: RegisterRequest) => {
     const response = await registerRequest(payload);
+    queryClient.clear();
     setUser(response.item.user);
     setError(null);
     setStatus("authenticated");
     return response.item.user;
-  }, []);
+  }, [queryClient]);
 
   const logout = useCallback(async () => {
     await logoutRequest();
+    queryClient.clear();
     setUser(null);
     setError(null);
     setStatus("unauthenticated");
-  }, []);
+  }, [queryClient]);
 
   const value = useMemo<AuthContextValue>(
     () => ({ error, login, logout, register, status, user }),

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import Any
 
+from pydantic import ValidationError
+
 from app.models import (
     CalculationSnapshot,
     FinancialProfile,
@@ -12,6 +14,12 @@ from app.models import (
     PlannedExpense,
 )
 from app.pace_engine.types import PaceResult
+from app.schemas.snapshots import (
+    SnapshotInputV1,
+    SnapshotResultV1,
+    parse_snapshot_input,
+    parse_snapshot_result,
+)
 
 SNAPSHOT_INPUT_SCHEMA_VERSION = "snapshot-input-v1"
 SNAPSHOT_RESULT_SCHEMA_VERSION = "snapshot-result-v1"
@@ -21,6 +29,10 @@ SNAPSHOT_RESULT_SCHEMA_VERSION = "snapshot-result-v1"
 class SnapshotJsonPayload:
     normalized_input_json: dict[str, Any]
     result_json: dict[str, Any]
+
+
+class SnapshotJsonContractError(ValueError):
+    """Raised when a newly built snapshot does not match its versioned contract."""
 
 
 def build_snapshot_json(
@@ -45,16 +57,23 @@ def build_snapshot_json(
         planned_expenses=planned_expenses,
         formula_version=pace_result.formula_version,
     )
-    return SnapshotJsonPayload(
+    result_json = _result_json(
+        goal=goal,
+        income_sources=income_sources,
+        planned_expenses=planned_expenses,
+        pace_result=pace_result,
+        previous_snapshot=previous_snapshot,
         normalized_input_json=normalized_input_json,
-        result_json=_result_json(
-            goal=goal,
-            income_sources=income_sources,
-            planned_expenses=planned_expenses,
-            pace_result=pace_result,
-            previous_snapshot=previous_snapshot,
-            normalized_input_json=normalized_input_json,
-        ),
+    )
+    try:
+        validated_input = SnapshotInputV1.model_validate(normalized_input_json)
+        validated_result = SnapshotResultV1.model_validate(result_json)
+    except ValidationError as exc:
+        raise SnapshotJsonContractError("Built snapshot failed contract validation.") from exc
+
+    return SnapshotJsonPayload(
+        normalized_input_json=validated_input.model_dump(mode="json"),
+        result_json=validated_result.model_dump(mode="json"),
     )
 
 
@@ -221,8 +240,8 @@ def _changed_from_previous_json(
     return {
         "previous_snapshot_id": previous_snapshot.id,
         "changed_input_categories": _changed_input_categories(
-            previous_snapshot.normalized_input_json,
-            normalized_input_json,
+            parse_snapshot_input(previous_snapshot.normalized_input_json),
+            parse_snapshot_input(normalized_input_json),
         ),
         "weekly_safe_to_spend_delta_cents": weekly_safe_to_spend_cents
         - _previous_weekly_safe_to_spend_cents(previous_snapshot),
@@ -230,29 +249,25 @@ def _changed_from_previous_json(
 
 
 def _changed_input_categories(
-    previous_input_json: dict[str, Any],
-    current_input_json: dict[str, Any],
+    previous_input: SnapshotInputV1,
+    current_input: SnapshotInputV1,
 ) -> list[str]:
-    categories = [
-        "goal",
-        "financial_profile",
-        "income_sources",
-        "planned_expenses",
-        "transactions",
-    ]
+    categories = (
+        ("goal", previous_input.goal, current_input.goal),
+        ("financial_profile", previous_input.financial_profile, current_input.financial_profile),
+        ("income_sources", previous_input.income_sources, current_input.income_sources),
+        ("planned_expenses", previous_input.planned_expenses, current_input.planned_expenses),
+        ("transactions", previous_input.transactions, current_input.transactions),
+    )
     return [
         category
-        for category in categories
-        if previous_input_json.get(category) != current_input_json.get(category)
+        for category, previous_value, current_value in categories
+        if previous_value != current_value
     ]
 
 
 def _previous_weekly_safe_to_spend_cents(snapshot: CalculationSnapshot) -> int:
-    outputs = snapshot.result_json.get("outputs", {})
-    value = outputs.get("weekly_safe_to_spend_cents", 0)
-    if not isinstance(value, int):
-        return 0
-    return value
+    return parse_snapshot_result(snapshot.result_json).outputs.weekly_safe_to_spend_cents
 
 
 def _progress_percentage(goal: Goal) -> float:

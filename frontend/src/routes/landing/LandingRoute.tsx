@@ -1,22 +1,36 @@
+import { Navigate } from "react-router-dom";
+
 import { routes } from "../../app/routes.ts";
+import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageShell } from "../../components/layout/PageShell.tsx";
 import { ButtonLink } from "../../components/ui/Button.tsx";
+import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
 export function LandingRoute() {
+  const auth = useAuth();
+
+  if (auth.status === "checking") {
+    return <RouteLoading label="Checking session" />;
+  }
+
+  if (auth.status === "authenticated") {
+    return <Navigate replace to={routes.dashboard} />;
+  }
+
   return (
     <PageShell>
       <section className="intro-panel" aria-labelledby="intro-title">
         <h1 id="intro-title">GoalWise</h1>
         <p className="intro-copy">
-          Plan one savings goal from manual assumptions, then let the backend calculate
-          your weekly safe-to-spend amount and preserve each result as an immutable snapshot.
+          Plan one savings goal from manual assumptions, then see a weekly safe-to-spend
+          amount you can review and revisit.
         </p>
         <div className="action-row" aria-label="GoalWise actions">
           <ButtonLink variant="primary" to={routes.register}>
             Create account
           </ButtonLink>
-          <ButtonLink to={routes.dashboard}>
-            Open dashboard
+          <ButtonLink to={routes.login}>
+            Sign in
           </ButtonLink>
         </div>
       </section>
@@ -27,17 +41,17 @@ export function LandingRoute() {
       </nav>
       <section className="detail-grid" aria-label="GoalWise product details">
         <article className="detail-panel" id="mvp-boundary">
-          <h2>Backend-owned money logic</h2>
+          <h2>Consistent money logic</h2>
           <p>
-            React may format values returned by the API, but the official safe-to-spend,
-            shortfall, pace status, and snapshot values stay owned by the backend.
+            GoalWise uses deterministic rules for safe-to-spend, shortfall, plan status,
+            and saved plan details.
           </p>
         </article>
         <article className="detail-panel" id="security">
-          <h2>Session and CSRF boundary</h2>
+          <h2>Private account access</h2>
           <p>
-            Authenticated requests will include HTTP-only session cookies, and unsafe methods
-            will send the CSRF header provided by the backend.
+            Your plan requires sign-in, protected sessions, and request checks before
+            account changes are accepted.
           </p>
         </article>
         <article className="detail-panel" id="structure">

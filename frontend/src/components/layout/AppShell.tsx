@@ -9,7 +9,8 @@ const navItems = [
   { href: routes.dashboard, label: "Dashboard" },
   { href: routes.goal, label: "Goal" },
   { href: routes.financialInputs, label: "Inputs" },
-  { href: routes.calculation, label: "Calculation" },
+  { href: routes.calculation, label: "Details" },
+  { href: routes.planningImport, label: "Import plan" },
 ];
 
 export function AppShell() {

@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { ApiError, type FieldErrors } from "../../api/errors.ts";
+import { queryKeys } from "../../api/queryKeys.ts";
 import { archiveGoal, createGoal, updateGoal } from "../../api/resources.ts";
 import type { GoalRequest, GoalResponse } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
@@ -7,9 +9,12 @@ import { Alert } from "../../components/feedback/Alert.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
+import { CoachTip, SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
+import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
 import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
+import { setupGuideStateFromInputs } from "../../features/setup/setupGuideState.ts";
 import { centsToDollarInput, dollarInputToCents, formatCents, formatDate } from "../../utils/format.ts";
 import { fieldError, firstFormError } from "../../utils/forms.ts";
 
@@ -32,7 +37,9 @@ const emptyGoalForm: GoalFormState = {
 };
 
 export function GoalRoute() {
+  const queryClient = useQueryClient();
   const activeGoal = useActiveGoal();
+  const financialInputs = useFinancialInputs();
   const [form, setForm] = useState<GoalFormState>(emptyGoalForm);
   const [fields, setFields] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -65,6 +72,13 @@ export function GoalRoute() {
   }
 
   const existingGoal = activeGoal.data;
+  const guideState = setupGuideStateFromInputs({
+    currentStep: "goal",
+    expenses: financialInputs.status === "ready" ? financialInputs.data.expenses : [],
+    hasGoal: existingGoal !== null,
+    incomeSources: financialInputs.status === "ready" ? financialInputs.data.incomeSources : [],
+    profile: financialInputs.status === "ready" ? financialInputs.data.profile : null,
+  });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,7 +95,7 @@ export function GoalRoute() {
         setForm(goalToForm(response.item));
       }
       setSuccessMessage("Goal saved. Complete the financial inputs to update dashboard results.");
-      await activeGoal.reload();
+      await invalidateGoalwiseQueries(queryClient);
     } catch (error) {
       if (error instanceof ApiError && error.fields !== null) {
         setFields(error.fields);
@@ -108,7 +122,7 @@ export function GoalRoute() {
       await archiveGoal(existingGoal.id);
       setForm(emptyGoalForm);
       setSuccessMessage("Goal archived. Its prior calculations remain saved, and you can create a new active goal.");
-      await activeGoal.reload();
+      await invalidateGoalwiseQueries(queryClient);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Goal could not be archived.");
     } finally {
@@ -117,10 +131,14 @@ export function GoalRoute() {
   }
 
   return (
-    <section className="form-page" aria-labelledby="goal-title">
+    <section className="form-page wide" aria-labelledby="goal-title">
       <GoalHeader
         title="Goal setup"
-        description="Create or update the single active savings goal used by the deterministic pace engine."
+        description="Create or update the savings goal used for your weekly plan."
+      />
+      <SetupGuide
+        activeStep={guideState.activeStep}
+        completedSteps={guideState.completedSteps}
       />
 
       {existingGoal === null ? null : (
@@ -163,6 +181,7 @@ export function GoalRoute() {
           <TextField
             error={fieldError(fields, "initial_saved_cents")}
             id="goal-initial-saved"
+            description="The amount already saved when this goal began."
             label="Initial saved"
             min="0"
             onChange={(event) =>
@@ -176,6 +195,7 @@ export function GoalRoute() {
           <TextField
             error={fieldError(fields, "current_saved_cents")}
             id="goal-current-saved"
+            description="The amount currently set aside for this goal."
             label="Current saved"
             min="0"
             onChange={(event) =>
@@ -232,8 +252,20 @@ export function GoalRoute() {
           </p>
         )}
       </form>
+      <CoachTip title="What this controls">
+        The goal sets the deadline and savings gap. After this, add cash, income, and planned expenses.
+      </CoachTip>
     </section>
   );
+}
+
+async function invalidateGoalwiseQueries(queryClient: QueryClient) {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.activeGoal }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialInputs }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.latestCalculationSnapshot }),
+  ]);
 }
 
 function GoalHeader({ description, title }: { description: string; title: string }) {

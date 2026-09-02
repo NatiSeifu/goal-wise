@@ -3,6 +3,9 @@ services:
     build:
       context: ./backend
       target: production
+    env_file:
+      - path: ./backend/.env
+        required: false
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     environment:

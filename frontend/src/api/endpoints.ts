@@ -22,8 +22,16 @@ export const endpoints = {
     collection: `${API_PREFIX}/planned-expenses`,
     item: (plannedExpenseId: string) => `${API_PREFIX}/planned-expenses/${plannedExpenseId}`,
   },
+  planningImport: {
+    preview: `${API_PREFIX}/planning-import/preview`,
+    confirm: `${API_PREFIX}/planning-import/confirm`,
+  },
   dashboard: `${API_PREFIX}/dashboard`,
   calculationSnapshots: {
     latest: `${API_PREFIX}/calculation-snapshots/latest`,
+  },
+  aiExplanations: {
+    latest: `${API_PREFIX}/ai-explanations/latest`,
+    status: `${API_PREFIX}/ai-explanations/status`,
   },
 } as const;

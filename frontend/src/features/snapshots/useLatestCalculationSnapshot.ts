@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+import { queryKeys } from "../../api/queryKeys.ts";
 import { getLatestCalculationSnapshot } from "../../api/resources.ts";
 import type { CalculationSnapshotResponse } from "../../api/types.ts";
 
@@ -9,38 +10,22 @@ type SnapshotLoadState =
   | { data: null; error: null; status: "loading" };
 
 export function useLatestCalculationSnapshot() {
-  const [state, setState] = useState<SnapshotLoadState>({
-    data: null,
-    error: null,
-    status: "loading",
+  const query = useQuery({
+    queryFn: getLatestCalculationSnapshot,
+    queryKey: queryKeys.latestCalculationSnapshot,
   });
 
-  useEffect(() => {
-    let isCurrent = true;
+  if (query.isPending) {
+    return { data: null, error: null, status: "loading" } satisfies SnapshotLoadState;
+  }
 
-    async function loadSnapshot() {
-      try {
-        const response = await getLatestCalculationSnapshot();
-        if (isCurrent) {
-          setState({ data: response.item, error: null, status: "ready" });
-        }
-      } catch (error) {
-        if (isCurrent) {
-          setState({
-            data: null,
-            error: error instanceof Error ? error.message : "Snapshot data could not be loaded.",
-            status: "error",
-          });
-        }
-      }
-    }
+  if (query.isError) {
+    return {
+      data: null,
+      error: query.error instanceof Error ? query.error.message : "Snapshot data could not be loaded.",
+      status: "error",
+    } satisfies SnapshotLoadState;
+  }
 
-    void loadSnapshot();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
-
-  return state;
+  return { data: query.data.item, error: null, status: "ready" } satisfies SnapshotLoadState;
 }

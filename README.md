@@ -97,7 +97,8 @@ not duplicate `pace-v1` formulas in React.
 
 Key project documents:
 
-- [SRS](docs/srs/goal-wise-srs-v1.md)
+- [SRS v2.0](docs/srs/goal-wise-srs-v2.md)
+- [SRS v1.0](docs/srs/goal-wise-srs-v1.md) historical baseline
 - [Architecture overview](ARCHITECTURE.md)
 - [Backend design](DESIGN.md)
 - [Product context](docs/PRODUCT_CONTEXT.md)
@@ -123,7 +124,7 @@ Included in the current MVP architecture:
 
 Deferred until later increments:
 
-- CSV import and transaction correction.
+- Raw transaction import and transaction correction.
 - AI-generated summaries.
 - Account export and deletion.
 - Background scheduling.

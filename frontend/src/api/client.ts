@@ -29,8 +29,12 @@ export async function apiRequest<TResponse>(
   };
 
   if (body !== undefined) {
-    requestHeaders.set("Content-Type", "application/json");
-    requestInit.body = JSON.stringify(body);
+    if (body instanceof FormData) {
+      requestInit.body = body;
+    } else {
+      requestHeaders.set("Content-Type", "application/json");
+      requestInit.body = JSON.stringify(body);
+    }
   }
 
   const csrfToken = getCsrfToken();

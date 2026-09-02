@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { clearCsrfToken, setCsrfToken } from "./csrf.ts";
-import { archiveGoal } from "./resources.ts";
+import { archiveGoal, requestLatestAIExplanation } from "./resources.ts";
 
 describe("API resources", () => {
   afterEach(() => {
@@ -25,6 +25,26 @@ describe("API resources", () => {
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Headers;
     expect(url.endsWith("/api/v1/goals/goal-123/archive")).toBe(true);
+    expect(init.method).toBe("POST");
+    expect(init.credentials).toBe("include");
+    expect(headers.get("X-CSRF-Token")).toBe("csrf-token");
+  });
+
+  it("requests the latest AI explanation through the CSRF-protected endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ enabled: true, item: {} }), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    setCsrfToken("csrf-token");
+
+    await requestLatestAIExplanation();
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = init.headers as Headers;
+    expect(url.endsWith("/api/v1/ai-explanations/latest")).toBe(true);
     expect(init.method).toBe("POST");
     expect(init.credentials).toBe("include");
     expect(headers.get("X-CSRF-Token")).toBe("csrf-token");
