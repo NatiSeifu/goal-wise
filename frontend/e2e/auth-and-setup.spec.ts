@@ -94,5 +94,5 @@ test("completes the first-run setup and reaches a ready dashboard", async ({ pag
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("heading", { name: "Weekly safe-to-spend" })).toBeVisible();
   await expect(page.getByText("Emergency fund")).toBeVisible();
-  await expect(page.getByText(/^(Completed|Off Pace|Ahead|At Risk|On Track)$/)).toBeVisible();
+  await expect(page.getByText(/^(Completed|Needs attention|Ahead of pace|At risk|On track)$/)).toBeVisible();
 });

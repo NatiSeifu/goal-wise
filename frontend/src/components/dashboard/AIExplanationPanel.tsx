@@ -2,6 +2,7 @@ import type { DashboardPaceSummary, AIExplanationItem } from "../../api/types.ts
 import { Button } from "../ui/Button.tsx";
 import { Alert } from "../feedback/Alert.tsx";
 import { formatCents, formatDateTime } from "../../utils/format.ts";
+import { paceStatusDescription, paceStatusLabel } from "../../utils/labels.ts";
 import {
   useAiExplanation,
   useAiExplanationAvailability,
@@ -41,8 +42,14 @@ function EnabledAIExplanationPanel({ pace, snapshotId }: AIExplanationPanelProps
             : explanation.data === undefined
               ? "Generate analysis"
               : "Refresh analysis"}
-        </Button>
+          </Button>
       </div>
+
+      {explanation.data === undefined && !explanation.isPending && !explanation.isError ? (
+        <p className="ai-explanation-intro">
+          Get a concise read on whether your current plan gives you enough room to spend.
+        </p>
+      ) : null}
 
       {explanation.isPending ? (
         <p className="ai-explanation-status" role="status">
@@ -93,8 +100,9 @@ function ExplanationResult({
         <div>
           <h3>{item.explanation.headline}</h3>
         </div>
-        <span className={`ai-status-badge ${statusTone}`}>{pace.pace_status}</span>
+        <span className={`ai-status-badge ${statusTone}`}>{paceStatusLabel(pace.pace_status)}</span>
       </div>
+      <p className="ai-status-description">{paceStatusDescription(pace.pace_status)}</p>
       <TrustedMetrics pace={pace} />
       <div className="ai-explanation-copy">
         <p className="ai-explanation-label">What this means</p>
@@ -102,7 +110,7 @@ function ExplanationResult({
       </div>
       {item.explanation.next_step === null ? null : (
         <div className="ai-explanation-recommendation">
-          <p className="ai-explanation-label">Recommended next step</p>
+          <p className="ai-explanation-label">Next step</p>
           <p>{item.explanation.next_step}</p>
         </div>
       )}

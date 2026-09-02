@@ -39,6 +39,28 @@ const classificationLabels: Record<string, string> = {
   discretionary: "Discretionary",
 };
 
+const paceStatusLabels: Record<string, string> = {
+  ahead: "Ahead of pace",
+  "at risk": "At risk",
+  at_risk: "At risk",
+  completed: "Completed",
+  "off pace": "Needs attention",
+  off_pace: "Needs attention",
+  "on track": "On track",
+  on_track: "On track",
+};
+
+const paceStatusDescriptions: Record<string, string> = {
+  ahead: "You are saving faster than your goal requires.",
+  "at risk": "Your savings pace may need attention to meet the goal.",
+  at_risk: "Your savings pace may need attention to meet the goal.",
+  completed: "You have reached your savings goal.",
+  "off pace": "Your current savings pace is below what the goal requires.",
+  off_pace: "Your current savings pace is below what the goal requires.",
+  "on track": "Your current plan is keeping the goal on schedule.",
+  on_track: "Your current plan is keeping the goal on schedule.",
+};
+
 export function frequencyLabel(value: string) {
   return frequencyLabels[value] ?? humanizeTechnicalKey(value);
 }
@@ -49,4 +71,12 @@ export function confidenceLabel(value: string | null) {
 
 export function classificationLabel(value: string | null) {
   return value === null ? "Not specified" : classificationLabels[value] ?? humanizeTechnicalKey(value);
+}
+
+export function paceStatusLabel(value: string) {
+  return paceStatusLabels[value.toLowerCase()] ?? humanizeTechnicalKey(value);
+}
+
+export function paceStatusDescription(value: string) {
+  return paceStatusDescriptions[value.toLowerCase()] ?? "Review your current plan against the goal timeline.";
 }

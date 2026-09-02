@@ -58,7 +58,11 @@ const setupSteps: SetupStep[] = [
   },
 ];
 
-export function SetupGuide({ activeStep, completedSteps = [], compact = false }: SetupGuideProps) {
+export function SetupGuide({
+  activeStep,
+  completedSteps = [],
+  compact = false,
+}: SetupGuideProps) {
   const [isDismissed, setIsDismissed] = useState(() => readDismissedState());
 
   useEffect(() => {

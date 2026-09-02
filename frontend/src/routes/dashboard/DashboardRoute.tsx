@@ -12,8 +12,8 @@ import { Panel } from "../../components/ui/Panel.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
 import { setupGuideStateFromDashboard } from "../../features/setup/setupGuideState.ts";
-import { formatCents, formatDate, formatDateTime, formatPercent } from "../../utils/format.ts";
-import { formatInputCategoryList } from "../../utils/labels.ts";
+import { formatCents, formatDate, formatDateTime } from "../../utils/format.ts";
+import { formatInputCategoryList, paceStatusDescription, paceStatusLabel } from "../../utils/labels.ts";
 
 const missingInputLabels: Record<string, { action: string; label: string; to: string }> = {
   active_goal: {
@@ -82,12 +82,11 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
   const changedInputCategories = getStringList(item.changed_from_previous, "changed_input_categories");
   const weeklyDelta = getNumberValue(item.changed_from_previous, "weekly_safe_to_spend_delta_cents");
   const weeklyChangeLabel = formatWeeklyChange(weeklyDelta);
-  const guideState = setupGuideStateFromDashboard(item);
+  const hasPlanChanges = changedInputCategories.length > 0 || weeklyDelta !== null;
 
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} compact />
 
       <section className="metric-hero" aria-labelledby="safe-to-spend-title">
         <div>
@@ -99,109 +98,100 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
           <PaceStatusExplanation goal={item.goal} pace={pace} />
         </div>
         <div className="status-stack">
-          <span className="status-pill">{pace.pace_status}</span>
+          <span className="status-pill">{paceStatusLabel(pace.pace_status)}</span>
+          <span className="status-context">{paceStatusDescription(pace.pace_status)}</span>
           <span>Updated {formatDateTime(item.calculated_at)}</span>
         </div>
       </section>
 
-      <section className="dashboard-grid" aria-label="Plan summary">
-        <Panel className="goal-panel" title={item.goal.name}>
-          <ProgressBar label="Goal progress" value={pace.progress_percentage} />
-          <dl className="metric-list">
-            <div>
-              <dt>Saved</dt>
-              <dd>{formatCents(item.goal.current_saved_cents)}</dd>
-            </div>
-            <div>
-              <dt>Target</dt>
-              <dd>{formatCents(item.goal.target_cents)}</dd>
-            </div>
-            <div>
-              <dt>Target date</dt>
-              <dd>{formatDate(item.goal.target_date)}</dd>
-            </div>
-          </dl>
-        </Panel>
+      <div className="dashboard-primary-layout">
+        <div className="dashboard-main-column">
+          <section className="dashboard-overview" aria-label="Plan summary">
+            <Panel className="goal-panel" title={item.goal.name}>
+              <ProgressBar label="Goal progress" value={pace.progress_percentage} />
+              <dl className="metric-list">
+                <div>
+                  <dt>Saved</dt>
+                  <dd>{formatCents(item.goal.current_saved_cents)}</dd>
+                </div>
+                <div>
+                  <dt>Target</dt>
+                  <dd>{formatCents(item.goal.target_cents)}</dd>
+                </div>
+                <div>
+                  <dt>Target date</dt>
+                  <dd>{formatDate(item.goal.target_date)}</dd>
+                </div>
+              </dl>
+            </Panel>
 
-        <Panel title="Current week">
-          <dl className="metric-list compact">
-            <div>
-              <dt>Opening allowance</dt>
-              <dd>{formatCents(pace.current_week_opening_allowance_cents)}</dd>
-            </div>
-            <div>
-              <dt>Remainder</dt>
-              <dd>{formatCents(pace.current_week_remainder_cents)}</dd>
-            </div>
-            <div>
-              <dt>Remaining weeks</dt>
-              <dd>{pace.remaining_weeks}</dd>
-            </div>
-          </dl>
-        </Panel>
+            <div className="dashboard-supporting-cards">
+              <Panel title="Current week">
+                <dl className="dashboard-feature-metric">
+                  <div>
+                    <dt>Weekly allowance</dt>
+                    <dd>{formatCents(pace.weekly_safe_to_spend_cents)}</dd>
+                  </div>
+                </dl>
+                <dl className="dashboard-supporting-detail">
+                  <div>
+                    <dt>Weeks to target</dt>
+                    <dd>{pace.remaining_weeks}</dd>
+                  </div>
+                </dl>
+              </Panel>
 
-        <Panel title="Risk view">
-          <dl className="metric-list compact">
-            <div>
-              <dt>Projected shortfall</dt>
-              <dd>{formatCents(pace.projected_shortfall_cents)}</dd>
+              <Panel title="Goal outlook">
+                <dl className="dashboard-feature-metric">
+                  <div>
+                    <dt>Projected shortfall</dt>
+                    <dd>{formatCents(pace.projected_shortfall_cents)}</dd>
+                  </div>
+                </dl>
+                <p className="dashboard-feature-support">
+                  {pace.projected_shortfall_cents === 0
+                    ? "Your current forecast covers the remaining goal amount."
+                    : "Your current forecast does not cover the remaining goal amount yet."}
+                </p>
+              </Panel>
             </div>
-            <div>
-              <dt>Progress</dt>
-              <dd>{formatPercent(pace.progress_percentage)}</dd>
-            </div>
-            <div>
-              <dt>Calculated</dt>
-              <dd>{formatDateTime(item.calculated_at)}</dd>
-            </div>
-          </dl>
-        </Panel>
-      </section>
+          </section>
 
-      <section className="dashboard-grid secondary" aria-label="Plan explanation">
-        <Panel title="Plan details">
-          <dl className="snapshot-list">
-            <div>
-              <dt>Last updated</dt>
-              <dd>{formatDateTime(item.calculated_at)}</dd>
+          <section className={`dashboard-context${hasPlanChanges ? "" : " single"}`} aria-label="Plan context">
+            <div className="dashboard-context-block">
+              <h2>Plan context</h2>
+              <p className="panel-copy">Your dashboard is based on these saved assumptions.</p>
+              <dl className="dashboard-context-summary">
+                <div>
+                  <dt>Confirmed income sources</dt>
+                  <dd>{getNumberValue(explanationSummary, "confirmed_income_count") ?? "0"}</dd>
+                </div>
+                <div>
+                  <dt>Planned expenses</dt>
+                  <dd>{getNumberValue(explanationSummary, "planned_expense_count") ?? "0"}</dd>
+                </div>
+                <div>
+                  <dt>Unconfirmed income</dt>
+                  <dd>{getNumberValue(explanationSummary, "unconfirmed_income_count") ?? "0"}</dd>
+                </div>
+              </dl>
+              <Link className="text-link" to={routes.calculation}>
+                View plan details
+              </Link>
             </div>
-            <div>
-              <dt>Method</dt>
-              <dd>Consistent rules</dd>
-            </div>
-          </dl>
-          <Link className="text-link" to={routes.calculation}>
-            View calculation details
-          </Link>
-        </Panel>
 
-        <Panel title="Included assumptions">
-          <dl className="metric-list compact">
-            <div>
-              <dt>Confirmed income sources</dt>
-              <dd>{getNumberValue(explanationSummary, "confirmed_income_count") ?? "0"}</dd>
-            </div>
-            <div>
-              <dt>Planned expenses</dt>
-              <dd>{getNumberValue(explanationSummary, "planned_expense_count") ?? "0"}</dd>
-            </div>
-            <div>
-              <dt>Unconfirmed income</dt>
-              <dd>{getNumberValue(explanationSummary, "unconfirmed_income_count") ?? "0"}</dd>
-            </div>
-          </dl>
-        </Panel>
+            {hasPlanChanges ? (
+              <div className="dashboard-context-block">
+                <h2>What changed</h2>
+                <p className="panel-copy">{formatInputCategoryList(changedInputCategories)}</p>
+                <p className="panel-copy">{weeklyChangeLabel}</p>
+              </div>
+            ) : null}
+          </section>
+        </div>
 
-        <Panel title="What changed">
-          <p className="panel-copy">
-            {changedInputCategories.length === 0
-              ? "No prior plan changes are available yet."
-              : formatInputCategoryList(changedInputCategories)}
-          </p>
-          <p className="panel-copy">{weeklyChangeLabel}</p>
-        </Panel>
-      </section>
-      <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
+        <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
+      </div>
     </section>
   );
 }

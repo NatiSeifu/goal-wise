@@ -32,8 +32,14 @@ import { TextField } from "../../components/ui/TextField.tsx";
 import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
 import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
 import { setupGuideStateFromInputs } from "../../features/setup/setupGuideState.ts";
-import { centsToDollarInput, dollarInputToCents, formatCents, formatDate } from "../../utils/format.ts";
+import {
+  centsToDollarInput,
+  dollarInputToCents,
+  formatCents,
+  formatDate,
+} from "../../utils/format.ts";
 import { fieldError, firstFormError } from "../../utils/forms.ts";
+import { classificationLabel, confidenceLabel, frequencyLabel } from "../../utils/labels.ts";
 
 type ProfileFormState = {
   balanceAsOfDate: string;
@@ -59,20 +65,20 @@ type ExpenseFormState = {
 };
 
 const frequencyOptions = [
-  { label: "One time", value: "one_time" },
-  { label: "Weekly", value: "weekly" },
-  { label: "Biweekly", value: "biweekly" },
-  { label: "Monthly", value: "monthly" },
+  { label: frequencyLabel("one_time"), value: "one_time" },
+  { label: frequencyLabel("weekly"), value: "weekly" },
+  { label: frequencyLabel("biweekly"), value: "biweekly" },
+  { label: frequencyLabel("monthly"), value: "monthly" },
 ];
 
 const confidenceOptions = [
-  { label: "Confirmed", value: "confirmed" },
-  { label: "Unconfirmed", value: "unconfirmed" },
+  { label: confidenceLabel("confirmed"), value: "confirmed" },
+  { label: confidenceLabel("unconfirmed"), value: "unconfirmed" },
 ];
 
 const classificationOptions = [
-  { label: "Essential", value: "essential" },
-  { label: "Discretionary", value: "discretionary" },
+  { label: classificationLabel("essential"), value: "essential" },
+  { label: classificationLabel("discretionary"), value: "discretionary" },
 ];
 
 const emptyProfileForm: ProfileFormState = {
@@ -297,7 +303,6 @@ export function FinancialInputsRoute() {
     <section className="form-page wide" aria-labelledby="financial-inputs-title">
       <RouteHeader />
       <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} />
-      <InputSetupSummary />
       {successMessage === null ? null : (
         <p className="form-success" role="status">
           {successMessage}
@@ -312,7 +317,7 @@ export function FinancialInputsRoute() {
           </div>
         </div>
         <FormError message={profileError} />
-        <div className="form-grid">
+        <div className="cash-picture-fields">
           <TextField
             error={fieldError(profileFields, "starting_cash_cents")}
             id="profile-starting-cash"
@@ -338,30 +343,35 @@ export function FinancialInputsRoute() {
             type="date"
             value={profileForm.balanceAsOfDate}
           />
-          <TextField
-            error={fieldError(profileFields, "reserve_buffer_cents")}
-            id="profile-reserve-buffer"
-            label="Reserve buffer"
-            min="0"
-            onChange={(event) =>
-              setProfileForm((current) => ({ ...current, reserveBufferDollars: event.target.value }))
-            }
-            required
-            step="0.01"
-            type="number"
-            value={profileForm.reserveBufferDollars}
-          />
-          <label className="checkbox-field" htmlFor="profile-reserve-confirmed">
-            <input
-              checked={profileForm.reserveBufferConfirmed}
-              id="profile-reserve-confirmed"
+          <div className="reserve-field">
+            <TextField
+              error={fieldError(profileFields, "reserve_buffer_cents")}
+              id="profile-reserve-buffer"
+              label="Reserve buffer"
+              min="0"
               onChange={(event) =>
-                setProfileForm((current) => ({ ...current, reserveBufferConfirmed: event.target.checked }))
+                setProfileForm((current) => ({ ...current, reserveBufferDollars: event.target.value }))
               }
-              type="checkbox"
+              required
+              step="0.01"
+              type="number"
+              value={profileForm.reserveBufferDollars}
             />
-            <span>Protect this reserve</span>
-          </label>
+            <label className="reserve-confirmation" htmlFor="profile-reserve-confirmed">
+              <input
+                checked={profileForm.reserveBufferConfirmed}
+                id="profile-reserve-confirmed"
+                onChange={(event) =>
+                  setProfileForm((current) => ({ ...current, reserveBufferConfirmed: event.target.checked }))
+                }
+                type="checkbox"
+              />
+              <span>
+                <strong>Protect this reserve</strong>
+                <small>Keep this amount outside weekly spending.</small>
+              </span>
+            </label>
+          </div>
         </div>
         <div className="form-actions">
           <Button disabled={isBusy} type="submit">
@@ -382,26 +392,28 @@ export function FinancialInputsRoute() {
             </div>
           </div>
           <FormError message={incomeError} />
-          <SourceFields
-            amountDollars={incomeForm.amountDollars}
-            fields={incomeFields}
-            frequency={incomeForm.frequency}
-            name={incomeForm.name}
-            nextDate={incomeForm.nextDate}
-            prefix="income"
-            onAmountChange={(amountDollars) => setIncomeForm((current) => ({ ...current, amountDollars }))}
-            onFrequencyChange={(frequency) => setIncomeForm((current) => ({ ...current, frequency }))}
-            onNameChange={(name) => setIncomeForm((current) => ({ ...current, name }))}
-            onNextDateChange={(nextDate) => setIncomeForm((current) => ({ ...current, nextDate }))}
-          />
-          <SelectField
-            error={fieldError(incomeFields, "confidence")}
-            id="income-confidence"
-            label="Confidence"
-            onChange={(event) => setIncomeForm((current) => ({ ...current, confidence: event.target.value }))}
-            options={confidenceOptions}
-            value={incomeForm.confidence}
-          />
+          <div className="source-fields">
+            <SourceFields
+              amountDollars={incomeForm.amountDollars}
+              fields={incomeFields}
+              frequency={incomeForm.frequency}
+              name={incomeForm.name}
+              nextDate={incomeForm.nextDate}
+              prefix="income"
+              onAmountChange={(amountDollars) => setIncomeForm((current) => ({ ...current, amountDollars }))}
+              onFrequencyChange={(frequency) => setIncomeForm((current) => ({ ...current, frequency }))}
+              onNameChange={(name) => setIncomeForm((current) => ({ ...current, name }))}
+              onNextDateChange={(nextDate) => setIncomeForm((current) => ({ ...current, nextDate }))}
+            />
+            <SelectField
+              error={fieldError(incomeFields, "confidence")}
+              id="income-confidence"
+              label="Confidence"
+              onChange={(event) => setIncomeForm((current) => ({ ...current, confidence: event.target.value }))}
+              options={confidenceOptions}
+              value={incomeForm.confidence}
+            />
+          </div>
           <div className="form-actions">
             <Button disabled={isBusy} type="submit">
               {busyAction === "income" ? "Saving income" : editingIncomeId === null ? "Add income" : "Save income"}
@@ -427,28 +439,30 @@ export function FinancialInputsRoute() {
             </div>
           </div>
           <FormError message={expenseError} />
-          <SourceFields
-            amountDollars={expenseForm.amountDollars}
-            fields={expenseFields}
-            frequency={expenseForm.frequency}
-            name={expenseForm.name}
-            nextDate={expenseForm.nextDate}
-            prefix="expense"
-            onAmountChange={(amountDollars) => setExpenseForm((current) => ({ ...current, amountDollars }))}
-            onFrequencyChange={(frequency) => setExpenseForm((current) => ({ ...current, frequency }))}
-            onNameChange={(name) => setExpenseForm((current) => ({ ...current, name }))}
-            onNextDateChange={(nextDate) => setExpenseForm((current) => ({ ...current, nextDate }))}
-          />
-          <SelectField
-            error={fieldError(expenseFields, "classification")}
-            id="expense-classification"
-            label="Classification"
-            onChange={(event) =>
-              setExpenseForm((current) => ({ ...current, classification: event.target.value }))
-            }
-            options={classificationOptions}
-            value={expenseForm.classification}
-          />
+          <div className="source-fields">
+            <SourceFields
+              amountDollars={expenseForm.amountDollars}
+              fields={expenseFields}
+              frequency={expenseForm.frequency}
+              name={expenseForm.name}
+              nextDate={expenseForm.nextDate}
+              prefix="expense"
+              onAmountChange={(amountDollars) => setExpenseForm((current) => ({ ...current, amountDollars }))}
+              onFrequencyChange={(frequency) => setExpenseForm((current) => ({ ...current, frequency }))}
+              onNameChange={(name) => setExpenseForm((current) => ({ ...current, name }))}
+              onNextDateChange={(nextDate) => setExpenseForm((current) => ({ ...current, nextDate }))}
+            />
+            <SelectField
+              error={fieldError(expenseFields, "classification")}
+              id="expense-classification"
+              label="Classification"
+              onChange={(event) =>
+                setExpenseForm((current) => ({ ...current, classification: event.target.value }))
+              }
+              options={classificationOptions}
+              value={expenseForm.classification}
+            />
+          </div>
           <div className="form-actions">
             <Button disabled={isBusy} type="submit">
               {busyAction === "expense"
@@ -514,29 +528,10 @@ async function invalidateFinancialPlanningQueries(queryClient: QueryClient) {
 function RouteHeader() {
   return (
     <PageHeader
-      description="Manual assumptions used to plan your weekly safe-to-spend amount."
+      description="Start with cash, then add expected income and planned expenses to plan your weekly safe-to-spend amount."
       title="Financial inputs"
       titleId="financial-inputs-title"
     />
-  );
-}
-
-function InputSetupSummary() {
-  return (
-    <section className="input-guide-strip" aria-label="Financial input order">
-      <div>
-        <strong>Cash first</strong>
-        <span>What you have available now.</span>
-      </div>
-      <div>
-        <strong>Income next</strong>
-        <span>Money you expect before the goal.</span>
-      </div>
-      <div>
-        <strong>Expenses last</strong>
-        <span>Known costs to hold aside.</span>
-      </div>
-    </section>
   );
 }
 
@@ -635,30 +630,36 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
           <p>{emptyHelp}</p>
         </div>
       ) : (
-        <div className="resource-list">
-          {items.map((item) => (
-            <article className="resource-item" key={item.id}>
-              <div>
-                <h3>{item.name}</h3>
-                <p>
-                  {formatCents(item.amount_cents)} · {item.frequency} · {formatDate(item.next_date)}
-                </p>
-              </div>
-              <div className="resource-actions">
-                <Button disabled={busyAction !== null} variant="secondary" type="button" onClick={() => onEdit(item)}>
-                  Edit
-                </Button>
-                <Button
-                  variant="secondary"
-                  disabled={busyAction !== null}
-                  type="button"
-                  onClick={() => onDeactivate(item)}
-                >
-                  {busyAction === `${kind}-${item.id}` ? "Removing" : "Remove from plan"}
-                </Button>
-              </div>
-            </article>
-          ))}
+          <div className="resource-list">
+            {items.map((item) => (
+              <article className="resource-item" key={item.id}>
+                <div className="resource-item-main">
+                  <div className="resource-item-heading">
+                    <h3>{item.name}</h3>
+                  </div>
+                  <p>
+                    {frequencyLabel(item.frequency)} · {formatDate(item.next_date)}
+                    {kind === "income"
+                      ? ` · ${confidenceLabel((item as IncomeSourceResponse).confidence)}`
+                      : ` · ${classificationLabel((item as PlannedExpenseResponse).classification)}`}
+                  </p>
+                </div>
+                <strong className="resource-amount">{formatCents(item.amount_cents)}</strong>
+                <div className="resource-actions">
+                  <Button disabled={busyAction !== null} variant="secondary" type="button" onClick={() => onEdit(item)}>
+                    Edit
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={busyAction !== null}
+                    type="button"
+                    onClick={() => onDeactivate(item)}
+                  >
+                    {busyAction === `${kind}-${item.id}` ? "Removing" : "Remove"}
+                  </Button>
+                </div>
+              </article>
+            ))}
         </div>
       )}
     </section>

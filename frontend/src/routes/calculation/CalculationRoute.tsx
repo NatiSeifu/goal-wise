@@ -8,13 +8,13 @@ import { ButtonLink } from "../../components/ui/Button.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { useLatestCalculationSnapshot } from "../../features/snapshots/useLatestCalculationSnapshot.ts";
 import { formatCents, formatDateTime, formatPercent } from "../../utils/format.ts";
-import { humanizeTechnicalKey } from "../../utils/labels.ts";
+import { paceStatusDescription, paceStatusLabel } from "../../utils/labels.ts";
 
 export function CalculationRoute() {
   const snapshot = useLatestCalculationSnapshot();
 
   if (snapshot.status === "loading") {
-    return <RouteLoading fullPage={false} label="Loading calculation details" />;
+    return <RouteLoading fullPage={false} label="Loading plan details" />;
   }
 
   if (snapshot.status === "error") {
@@ -34,7 +34,7 @@ export function CalculationRoute() {
         <CalculationHeader />
         <EmptyState
           title="No calculation yet"
-          description="Save a valid goal and financial assumptions before viewing calculation details."
+          description="Save a valid goal and financial assumptions before viewing plan details."
           action={
             <ButtonLink variant="primary" to={routes.financialInputs}>
               Open financial inputs
@@ -45,49 +45,36 @@ export function CalculationRoute() {
     );
   }
 
-  const calculation = getJsonObject(snapshot.data.normalized_input_json, "calculation");
   const incomeSources = getArrayValue(snapshot.data.normalized_input_json, "income_sources");
   const plannedExpenses = getArrayValue(snapshot.data.normalized_input_json, "planned_expenses");
   const outputs = getJsonObject(snapshot.data.result_json, "outputs");
   const explanation = getJsonObject(snapshot.data.result_json, "explanation");
   const explanationSummary = getJsonObject(explanation, "summary");
+  const paceStatus = getStringValue(outputs, "pace_status");
 
   return (
     <section className="dashboard-page" aria-labelledby="calculation-title">
       <CalculationHeader />
-      <section className="dashboard-grid" aria-label="Calculation details">
-        <Panel title="Calculation details">
-          <dl className="snapshot-list">
-            <div>
-              <dt>Last updated</dt>
-              <dd>{formatDateTime(snapshot.data.calculated_at)}</dd>
-            </div>
-            <div>
-              <dt>Method</dt>
-              <dd>Consistent rules</dd>
-            </div>
-            <div>
-              <dt>Updated because</dt>
-              <dd>{humanizeTechnicalKey(getStringValue(calculation, "trigger") ?? snapshot.data.trigger)}</dd>
-            </div>
-          </dl>
-        </Panel>
-
-        <Panel title="Weekly plan">
-          <dl className="metric-list compact">
+      <p className="calculation-meta">Last calculated {formatDateTime(snapshot.data.calculated_at)}</p>
+      <section className="calculation-layout" aria-label="Plan details">
+        <Panel className="calculation-plan" title="Your current plan">
+          <dl className="metric-list compact calculation-metrics">
             <SnapshotMoneyValue label="Weekly safe-to-spend" outputs={outputs} field="weekly_safe_to_spend_cents" />
-            <SnapshotTextValue label="Plan status" outputs={outputs} field="pace_status" />
+            <SnapshotStatusValue outputs={outputs} />
             <SnapshotMoneyValue label="Projected shortfall" outputs={outputs} field="projected_shortfall_cents" />
             <SnapshotNumberValue label="Remaining weeks" outputs={outputs} field="remaining_weeks" />
             <SnapshotPercentValue label="Progress" outputs={outputs} field="progress_percentage" />
           </dl>
+          {paceStatus === null ? null : (
+            <p className="calculation-status-note">{paceStatusDescription(paceStatus)}</p>
+          )}
         </Panel>
 
-        <Panel title="Included inputs">
+        <Panel title="Included in this plan">
           <p className="panel-copy">
-            These are the saved assumptions included in the latest plan calculation.
+            These saved assumptions were used to calculate your current weekly plan.
           </p>
-          <dl className="metric-list compact">
+          <dl className="calculation-input-summary">
             <div>
               <dt>Income sources</dt>
               <dd>{incomeSources.length}</dd>
@@ -119,8 +106,8 @@ function CalculationHeader() {
           Back to dashboard
         </ButtonLink>
       }
-      description="A plain-language view of the inputs and outputs behind your latest plan."
-      title="Calculation details"
+      description="A plain-language view of the numbers behind your current weekly plan."
+      title="Plan details"
       titleId="calculation-title"
     />
   );
@@ -200,20 +187,12 @@ function SnapshotPercentValue({
   );
 }
 
-function SnapshotTextValue({
-  field,
-  label,
-  outputs,
-}: {
-  field: string;
-  label: string;
-  outputs: Record<string, JsonValue> | null;
-}) {
-  const value = getStringValue(outputs, field);
+function SnapshotStatusValue({ outputs }: { outputs: Record<string, JsonValue> | null }) {
+  const value = getStringValue(outputs, "pace_status");
   return (
     <div>
-      <dt>{label}</dt>
-      <dd>{value ?? "Not available"}</dd>
+      <dt>Plan status</dt>
+      <dd>{value === null ? "Not available" : paceStatusLabel(value)}</dd>
     </div>
   );
 }

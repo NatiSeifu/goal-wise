@@ -382,6 +382,67 @@ Success criteria:
 8. `test: cover streamlined frontend behavior`
 9. `feat: cache frontend route data`
 
+## Dashboard Clarity Follow-up
+
+The current dashboard needs a focused product-language and hierarchy pass before
+more visual polish is added. The frontend must not present values that the MVP
+does not actually measure.
+
+### Slice 10 - Reconcile Weekly Allowance Display
+
+- Show the latest backend-calculated weekly safe-to-spend value as the single
+  current-week spending figure.
+- Remove or defer `remainder` display because the MVP does not record actual
+  spending transactions.
+- Keep historical opening-allowance persistence available for future weekly
+  tracking, but do not present it as a current remainder.
+
+Success criteria:
+
+- A dashboard never shows conflicting weekly spending values.
+- Every visible weekly spending number has a clear, consistent label.
+- No backend calculation formula changes.
+
+### Slice 11 - Establish Dashboard Decision Hierarchy
+
+- Make weekly spending room, goal progress, and projected shortfall the primary
+  information order.
+- Remove duplicated progress and timestamp presentations where they do not
+  support a user decision.
+- Reduce equal-weight card treatment and unnecessary empty containers.
+
+Success criteria:
+
+- A user can identify the current weekly allowance, goal status, and shortfall
+  within seconds.
+- Supporting details do not compete with the primary decision.
+
+### Slice 12 - Remove Internal Vocabulary From User Surfaces
+
+- Audit dashboard, calculation details, financial inputs, and import review for
+  enum values, implementation names, and internal calculation metadata.
+- Keep technical detail available only where it helps users understand or verify
+  their plan.
+
+Success criteria:
+
+- No raw enum or implementation labels appear in normal user workflows.
+- Labels describe the user's financial concept rather than the database or API
+  representation.
+
+### Slice 13 - State-Specific Guidance and Responsive Polish
+
+- Review `On Track`, `At Risk`, and `Off Pace` layouts and wording together.
+- Make recommendations proportionate to the state and avoid alarm when there
+  is no projected shortfall.
+- Verify desktop, mobile, keyboard, loading, empty, and error states.
+
+Success criteria:
+
+- The three story users receive distinct, understandable guidance.
+- No content overlaps or becomes ambiguous at supported widths.
+- Frontend lint, tests, and build pass.
+
 ## Phase Completion Criteria
 
 - A new user can complete the MVP workflow without facilitator explanation.
