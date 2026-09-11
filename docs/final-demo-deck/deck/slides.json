@@ -6,32 +6,32 @@
       "kind": "title",
       "kicker": "Graduate CS Final Demo",
       "title": "GoalWise",
-      "subtitle": "One focused planning loop for one savings goal",
+      "subtitle": "A small planning system for one savings goal",
       "bullets": [
-        "User question: am I on pace, and what can I safely spend this week?",
-        "Success claim: deterministic backend outputs make the answer explainable and defensible."
+        "The product answers one question: can the user stay on pace for a target date?",
+        "The system turns manual assumptions into a weekly safe-to-spend number."
       ],
-      "notes": "0:45. Open with the user problem, then state the engineering claim: GoalWise is intentionally narrow so the calculation and demo can be defended."
+      "notes": "0:45. Start with the product question. Explain that the scope is intentionally small: one goal, manual inputs, and a backend calculation the team can explain."
     },
     {
       "kind": "scope",
       "kicker": "Product Scope",
-      "title": "A narrow MVP beats a broad budget app",
-      "subtitle": "GoalWise deliberately optimizes around one active goal and manual assumptions.",
+      "title": "The MVP keeps the planning problem bounded",
+      "subtitle": "The current system supports one active goal and explicit user-entered assumptions.",
       "bullets": [
         "One active savings goal",
         "Manual income and planned expense inputs",
         "Backend-owned dashboard values",
-        "Canonical planning CSV import as a structured edge input",
-        "Deferred: bank sync, raw transactions, multi-goal support, background scheduling"
+        "Structured planning CSV import with preview and confirmation",
+        "Out of scope: bank sync, raw transactions, multi-goal support, background jobs"
       ],
-      "notes": "0:55. Make the scope explicit. This prevents the audience from evaluating the project as a full Mint-style budget app."
+      "notes": "0:55. Define the product boundary before discussing architecture. The important point is that the implementation is scoped to the planning loop, not general personal finance."
     },
     {
       "kind": "architecture",
       "kicker": "System Architecture",
-      "title": "The financial core is isolated and auditable",
-      "subtitle": "React renders values; FastAPI validates, calculates, persists, and explains.",
+      "title": "Data moves through one backend calculation path",
+      "subtitle": "The frontend captures inputs and renders results; the backend owns the official numbers.",
       "bullets": [
         "React + Vite frontend over versioned /api/v1 JSON",
         "FastAPI service layer owns validation and ownership checks",
@@ -39,41 +39,41 @@
         "SQLAlchemy/Alembic persist PostgreSQL-compatible records",
         "Snapshots and dashboard read model expose committed results"
       ],
-      "notes": "1:00. Walk left to right: browser, API, services, pace engine, snapshots, dashboard. Emphasize the frontend does not copy the formula."
+      "notes": "1:00. Walk through the request path: browser to API, service validation, pace engine, snapshot, dashboard response. State clearly that React does not duplicate the formula."
     },
     {
       "kind": "decision",
       "kicker": "Decision 1",
-      "title": "Deterministic pace-v1, no AI in the money path",
-      "subtitle": "Financial outputs must be reproducible for identical inputs.",
+      "title": "Use a deterministic pace engine for financial output",
+      "subtitle": "The same inputs, date, timezone, and formula version produce the same result.",
       "bullets": [
         "Claim: safe-to-spend, shortfall, and pace status come from a deterministic engine.",
-        "Evidence: pace-engine contract and golden tests target stable results.",
-        "Rejected alternative: AI-generated calculations would be harder to verify.",
-        "Risk: simple formulas may feel less adaptive than personalized advice.",
+        "Evidence: pace-engine contract and golden tests check stable result behavior.",
+        "Rejected alternative: AI-generated calculations would be difficult to verify.",
+        "Risk: deterministic formulas may be less flexible than open-ended advice.",
         "Mitigation: keep explanations separate from the calculation authority."
       ],
-      "notes": "1:00. This is the strongest architecture decision. Use claim, evidence, alternative, risk, mitigation, falsifier."
+      "notes": "1:00. Present this as the main technical decision. The calculation has to be testable and repeatable because it affects financial guidance."
     },
     {
       "kind": "decision",
       "kicker": "Decision 2",
-      "title": "Immutable snapshots make results defensible",
-      "subtitle": "Every committed calculation keeps normalized inputs and versioned results.",
+      "title": "Store each committed calculation as a snapshot",
+      "subtitle": "A snapshot records normalized inputs and versioned results for later review.",
       "bullets": [
         "Claim: calculations are stored as immutable snapshots after input changes.",
-        "Evidence: snapshot schema and repository tests protect stored results.",
-        "Rejected alternative: recompute-only history would hide what the user saw.",
+        "Evidence: snapshot schema and repository tests protect stored records.",
+        "Rejected alternative: recomputing history would lose what the user saw earlier.",
         "Risk: snapshots add storage and schema discipline.",
         "Mitigation: store normalized aggregate inputs, not raw transaction descriptions."
       ],
-      "notes": "0:55. Tie this to auditability: the system can explain what it showed at the time without mutating old records."
+      "notes": "0:55. Explain why this matters for review. The app can show what was calculated at a point in time instead of silently changing history."
     },
     {
       "kind": "decision",
       "kicker": "Decision 3",
-      "title": "Security boundaries match the hosted demo",
-      "subtitle": "Auth, CSRF, ownership checks, and Railway config are treated as product behavior.",
+      "title": "Apply ownership and session boundaries consistently",
+      "subtitle": "The hosted demo uses the same auth and data-isolation rules as the local system.",
       "bullets": [
         "HTTP-only server-side sessions with hashed opaque tokens",
         "CSRF required for authenticated unsafe methods",
@@ -81,26 +81,26 @@
         "Railway uses secure cookies, explicit origin allowlists, and PostgreSQL",
         "Failure case: unauthorized or cross-user access fails without leaking private data"
       ],
-      "notes": "0:55. Explain that these are not decorative backend details; they define whether a hosted financial demo is trustworthy."
+      "notes": "0:55. Explain that security is part of the product contract. Financial data only makes sense if ownership checks are enforced at the backend."
     },
     {
       "kind": "pipeline",
       "kicker": "AI and Review",
-      "title": "AI is useful at the edge, not in control",
-      "subtitle": "The runtime AI layer explains committed snapshots and can fail without blocking planning.",
+      "title": "AI explains committed results, but does not produce them",
+      "subtitle": "The planning workflow still works when the AI provider is unavailable.",
       "bullets": [
-        "Allowed: explanation prose from minimized aggregate snapshot fields",
-        "Allowed: development support for tests, diagrams, review, and slides",
-        "Blocked: AI calculating, overriding, or recommending official money outputs",
-        "Review gate: schema validation, snapshot matching, and human claim approval"
+        "Runtime AI receives minimized aggregate fields from an existing snapshot",
+        "Generated explanations are schema-checked and tied to the displayed snapshot",
+        "AI cannot calculate, override, or recommend official money outputs",
+        "Development AI use is reviewed against repo evidence before claims enter the deck"
       ],
-      "notes": "0:55. Be precise about the boundary. The course can ask about AI use, so separate runtime behavior from development assistance."
+      "notes": "0:55. Separate runtime AI from development assistance. The runtime feature is explanation only; the financial result comes from pace-v1."
     },
     {
       "kind": "verification",
       "kicker": "Verification",
-      "title": "Tests target the risky contracts",
-      "subtitle": "The evidence is strongest where correctness, privacy, and deployment could fail.",
+      "title": "Verification follows the system boundaries",
+      "subtitle": "The checks focus on calculation correctness, data isolation, persistence, and frontend contracts.",
       "bullets": [
         "Pace-engine golden scenarios for calculation behavior",
         "API tests for auth, dashboard, financial inputs, CSV import, and AI explanations",
@@ -108,20 +108,20 @@
         "Migration smoke checks for PostgreSQL-compatible persistence",
         "Frontend lint, TypeScript, Vite build, and visual capture scripts"
       ],
-      "notes": "1:00. Say what testing proves and one honest gap if asked: it does not prove production load behavior or every future financial scenario."
+      "notes": "1:00. Tie the test groups back to the architecture. Mention the honest limit: these checks do not prove production load behavior or every future financial scenario."
     },
     {
       "kind": "demo",
       "kicker": "Live Demo Contract",
-      "title": "Now we will prove the core path",
-      "subtitle": "The demo is scoped to value, safe failure, and engineering evidence.",
+      "title": "The live demo follows the same path",
+      "subtitle": "Show the normal planning flow, one safe failure, and the engineering evidence.",
       "bullets": [
         "Value path: create or load a plan and view weekly safe-to-spend",
         "Failure path: invalid or unauthorized access fails safely",
         "Evidence path: show snapshot/test/deployment proof",
         "Transition: browser app first, terminal evidence second"
       ],
-      "notes": "0:25. Keep this slide short. It is the handoff into the live app, not another architecture explanation."
+      "notes": "0:25. Keep this as the handoff. The next screen should be the app, not another explanation slide."
     }
   ]
 }

@@ -10,7 +10,7 @@ provenance live in text files so they can be reviewed and regenerated.
 cd docs/final-demo-deck
 npm install
 npm run build
-npm run build:high-end
+npm run build:high-end-v2
 ```
 
 Output:
@@ -18,6 +18,7 @@ Output:
 ```text
 docs/final-demo-deck/dist/goalwise-final-demo.pptx
 docs/final-demo-deck/dist/goalwise-final-demo-high-end.pptx
+docs/final-demo-deck/dist/goalwise-final-demo-high-end-v2.pptx
 ```
 
 The builder uses PptxGenJS and writes native editable PowerPoint text boxes,
