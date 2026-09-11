@@ -45,6 +45,7 @@ function EnabledAIExplanationPanel({ pace, snapshotId }: AIExplanationPanelProps
           <h2 id="ai-digest-title">Plan digest</h2>
         </div>
         <Button variant="secondary" onClick={handleRequest} disabled={explanation.isPending}>
+          <span className="ai-digest-sparkles" aria-hidden="true">✦</span>
           {explanation.isPending ? "Writing digest…" : isCurrent ? "Read again" : "Generate digest"}
         </Button>
       </header>

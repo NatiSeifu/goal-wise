@@ -9,6 +9,7 @@ import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { SelectField } from "../../components/ui/SelectField.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
+import { AuthBrandMark } from "../../components/auth/AuthBrandMark.tsx";
 import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
 const DEFAULT_TIME_ZONE = "America/Los_Angeles";
@@ -78,10 +79,21 @@ export function RegisterRoute() {
 
   return (
     <main className="auth-page">
+      <aside className="auth-brand-panel" aria-label="GoalWise overview">
+        <div className="auth-brand-panel-header"><BrandLockup linked /></div>
+        <div className="auth-brand-copy">
+          <p className="auth-kicker">PLAN · TRACK · ACHIEVE</p>
+          <h2>Know what you can spend.<br /><span>Stay on track for what matters.</span></h2>
+          <p>Goal-based budgeting without the guesswork.</p>
+        </div>
+        <AuthBrandMark />
+        <p className="auth-brand-footer">A more intentional<br />tomorrow.</p>
+      </aside>
       <section className="auth-panel" aria-labelledby="register-title">
         <div>
-          <BrandLockup linked />
+          <div className="auth-form-brand"><AuthBrandMark /><span>GoalWise</span></div>
           <h1 id="register-title">Create account</h1>
+          <p className="auth-subtitle">Start with a clearer plan.</p>
         </div>
         <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
           <FormError message={error ?? auth.error} />

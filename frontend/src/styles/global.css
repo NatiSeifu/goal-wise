@@ -105,9 +105,12 @@ details > p { padding-bottom: 0.75rem; color: var(--gw-color-muted); }
 .ai-digest-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .ai-digest-title { display: flex; align-items: center; gap: 0.75rem; }
 .ai-digest-title h2 { font-size: 1.35rem; font-weight: 600; }
-.ai-digest-mark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 0.6rem; color: var(--gw-color-ink); background: var(--gw-color-green-soft); font-size: 0.85rem; font-weight: 800; transform: rotate(-8deg); }
+.ai-digest-mark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 0.6rem; color: var(--gw-color-ink); background: var(--gw-color-green-soft); font-size: 0.85rem; font-weight: 800; transform: rotate(-8deg); transform-style: preserve-3d; }
+.ai-digest:hover .ai-digest-mark, .ai-digest:focus-within .ai-digest-mark { animation: ai-mark-bounce 900ms cubic-bezier(0.22, 1, 0.36, 1); }
 .ai-digest .button.secondary { border-color: #697789; color: #fff; background: transparent; font-size: 0.85rem; }
 .ai-digest .button.secondary:hover:not(:disabled) { background: #334156; border-color: #a5b5c5; }
+.ai-digest-sparkles { display: inline-block; color: #f1c776; font-size: 1.1em; line-height: 1; transform: translateY(-0.04em); transition: transform 180ms ease, text-shadow 180ms ease; }
+.ai-digest .button.secondary:hover:not(:disabled) .ai-digest-sparkles, .ai-digest .button.secondary:focus-visible .ai-digest-sparkles { transform: translateY(-0.12em) scale(1.18) rotate(12deg); text-shadow: 0 0 0.65rem rgba(241, 199, 118, 0.75); }
 .ai-digest :where(a, button):focus-visible { outline-color: #fff; }
 .ai-digest-empty { color: #c9d7df; margin-top: 1rem; font-size: 0.95rem; }
 .ai-digest-result { animation: digest-reveal 320ms ease-out; }
@@ -138,6 +141,7 @@ details > p { padding-bottom: 0.75rem; color: var(--gw-color-muted); }
 .ai-digest-error p { margin-block: 0.5rem 1rem; color: #d3dfe6; }
 @keyframes digest-reveal { from { opacity: 0.5; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes digest-pulse { from { opacity: 0.4; } to { opacity: 1; } }
+@keyframes ai-mark-bounce { 0%, 100% { transform: rotate(-8deg) rotateY(0deg) translateY(0); } 20% { transform: rotate(-3deg) rotateY(28deg) translateY(-0.18rem); } 45% { transform: rotate(-12deg) rotateY(-18deg) translateY(0.08rem); } 70% { transform: rotate(-6deg) rotateY(10deg) translateY(-0.06rem); } }
 @media (max-width: 760px) {
   .ai-digest { padding: 1.25rem; }
   .ai-digest-header { flex-wrap: wrap; }
@@ -244,7 +248,7 @@ body { background: #f7f8f5; }
   .metric-hero-action { margin-top: 1.25rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ai-digest-result, .ai-digest-skeleton span { animation: none; }
+  .ai-digest-result, .ai-digest-skeleton span, .ai-digest:hover .ai-digest-mark, .ai-digest:focus-within .ai-digest-mark { animation: none; }
 }
 
 @media (max-width: 1100px) and (min-width: 761px) {
@@ -401,4 +405,49 @@ thead th { color: var(--gw-color-muted); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }
+}
+
+/* Auth landing: a quiet form surface paired with the GoalWise visual system. */
+.auth-page { grid-template-columns: minmax(0, 1.05fr) minmax(28rem, 0.95fr); place-items: stretch; min-height: 100dvh; padding: 0; background: #f7f8f5; overflow: hidden; }
+.auth-brand-panel { position: relative; display: flex; flex-direction: column; min-height: 100dvh; overflow: hidden; padding: clamp(2rem, 5vw, 4.5rem); background: #062a22; color: #f4f7f3; }
+.auth-brand-panel::after { content: ""; position: absolute; inset: auto -10% 4%; height: 22%; border-top: 1px solid rgba(125, 220, 181, 0.28); border-radius: 50%; transform: rotate(-9deg); box-shadow: 0 2.5rem 0 rgba(125, 220, 181, 0.12), 0 5rem 0 rgba(232, 199, 122, 0.1); pointer-events: none; }
+.auth-brand-panel-header { position: relative; z-index: 1; }
+.auth-brand-panel .brand-lockup { color: #f4f7f3; font-size: 1.15rem; }
+.auth-brand-panel .brand-logo { box-shadow: none; }
+.auth-brand-copy { position: relative; z-index: 1; max-width: 28rem; margin-top: clamp(5rem, 15vh, 10rem); }
+.auth-kicker { color: #b9d0c6; font-size: 0.68rem; letter-spacing: 0.24em; }
+.auth-brand-copy h2 { margin-top: 1.4rem; font-size: clamp(2.5rem, 5vw, 4.4rem); line-height: 1.04; letter-spacing: -0.06em; }
+.auth-brand-copy h2 span { color: #82dec0; }
+.auth-brand-copy > p:last-child { max-width: 24ch; margin-top: 1.5rem; color: #d3e4dc; font-size: 1.05rem; line-height: 1.55; }
+.auth-brand-panel > .auth-brand-mark { position: absolute; z-index: 0; width: min(42vw, 31rem); height: min(42vw, 31rem); right: 5%; bottom: 9%; opacity: 0.9; }
+.auth-brand-footer { position: relative; z-index: 1; margin-top: auto; color: #c8dfd5; font-size: 0.76rem; letter-spacing: 0.18em; line-height: 2; text-transform: uppercase; }
+.auth-panel { align-self: center; justify-self: center; gap: 1.75rem; width: min(100% - 3rem, 25rem); transform: translateY(-2vh); }
+.auth-form-brand { display: inline-flex; align-items: center; gap: 0.6rem; color: #172038; font-size: 1.1rem; font-weight: 700; }
+.auth-form-brand .auth-brand-mark { width: 2.35rem; height: 2.35rem; padding: 0.25rem; border-radius: 0.65rem; background: #e8f5ef; }
+.auth-panel h1 { margin-top: 2.5rem; font-size: clamp(2rem, 4vw, 2.7rem); letter-spacing: -0.055em; }
+.auth-subtitle { margin-top: 0.45rem; color: var(--gw-color-muted); font-size: 1.05rem; }
+.auth-form { gap: 1.1rem; margin-top: 2rem; }
+.auth-form .field { gap: 0.45rem; }
+.auth-form input, .auth-form select { min-height: 3rem; border-radius: 0.5rem; background: rgba(255, 255, 255, 0.7); }
+.auth-submit { width: 100%; min-height: 3rem; margin-top: 0.6rem; border-radius: 0.5rem; }
+.auth-switch { margin-top: 0.15rem; text-align: center; }
+.auth-brand-mark { display: block; overflow: visible; }
+.auth-brand-mark-image { object-fit: contain; }
+.auth-page-transitioning .auth-brand-panel { animation: auth-stage-fade 760ms ease-in-out both; }
+.auth-page-transitioning .auth-panel { animation: auth-form-exit 760ms ease-in-out both; }
+.auth-page-transitioning .auth-brand-mark-image { animation: auth-logo-success 700ms 80ms ease-in-out both; }
+@keyframes auth-logo-success { 0% { filter: brightness(1); transform: scale(1); } 45% { filter: brightness(1.3) drop-shadow(0 0 1.2rem rgba(130, 222, 192, 0.55)); transform: scale(1.035) rotate(2deg); } 100% { filter: brightness(1); transform: scale(1); } }
+@keyframes auth-stage-fade { to { opacity: 0.72; transform: scale(1.015); } }
+@keyframes auth-form-exit { to { opacity: 0.2; transform: translate(1rem, -2vh); } }
+@media (max-width: 760px) {
+  .auth-page { grid-template-columns: 1fr; min-height: 100dvh; overflow: auto; }
+  .auth-brand-panel { min-height: 22rem; padding: 1.5rem; }
+  .auth-brand-copy { margin-top: 3.5rem; }
+  .auth-brand-copy h2 { font-size: clamp(2rem, 9vw, 3rem); }
+  .auth-brand-copy > p:last-child, .auth-brand-footer { display: none; }
+  .auth-brand-panel > .auth-brand-mark { width: 17rem; height: 17rem; right: -2rem; bottom: -5rem; opacity: 0.45; }
+  .auth-panel { width: min(100% - 2.5rem, 25rem); padding-block: 3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-page-transitioning .auth-brand-panel, .auth-page-transitioning .auth-panel, .auth-page-transitioning .auth-brand-mark-image { animation: none; }
 }
