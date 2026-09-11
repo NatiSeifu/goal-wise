@@ -1,0 +1,128 @@
+{
+  "title": "GoalWise Final Demo",
+  "subtitle": "Editable PowerPoint source package",
+  "slides": [
+    {
+      "kind": "title",
+      "kicker": "GoalWise / Final Demo",
+      "title": "A savings plan with a calculation you can inspect",
+      "subtitle": "GoalWise takes a user from one target date to a weekly plan, then shows how the number was produced.",
+      "bullets": [
+        "One goal. Explicit assumptions. A result the user can review.",
+        "Live demo: registration -> setup -> plan -> explanation."
+      ],
+      "notes": "Presenter: Vishal. 0:45. Start with the product question, not the technology. GoalWise is a focused planning workflow: one savings goal, explicit assumptions, and a weekly result that the team can trace back to its inputs."
+    },
+    {
+      "kind": "scope",
+      "kicker": "Product Scope",
+      "title": "We started with one planning question",
+      "subtitle": "Can this user reach the target by the target date, and what can they spend this week?",
+      "bullets": [
+        "One active savings goal",
+        "Manual income and planned expense inputs",
+        "Backend-owned dashboard values",
+        "Structured planning CSV import with preview and confirmation",
+        "CSV preview + confirmation and an optional AI explanation",
+        "Outside this demo: bank sync, raw transactions, and multiple active goals"
+      ],
+      "notes": "Presenter: Vishal. 0:55. Define the boundary before discussing implementation. The current product is the planning loop, not a general personal-finance system. CSV import and the AI explanation are controlled edges around that loop; bank sync, raw transaction import, and multiple active goals are outside this demo."
+    },
+    {
+      "kind": "architecture",
+      "kicker": "System Architecture",
+      "title": "The browser collects inputs; the backend decides what they mean",
+      "subtitle": "The UI guides the user, while validation, ownership, calculation, and persistence stay server-side.",
+      "bullets": [
+        "React + Vite frontend over versioned /api/v1 JSON",
+        "FastAPI service layer owns validation and ownership checks",
+        "Pure pace engine returns deterministic pace-v1 results",
+        "SQLAlchemy/Alembic persist PostgreSQL-compatible records",
+        "Snapshots and dashboard read model expose committed results"
+      ],
+      "notes": "Presenter: Nati. 1:00. Walk through the request path: the React UI sends inputs to the versioned FastAPI API; services validate and normalize them; the pure pace engine calculates the result; the database stores the committed snapshot; the dashboard reads the backend response. React formats the number but does not reproduce the formula."
+    },
+    {
+      "kind": "decision",
+      "kicker": "Calculation Decision",
+      "title": "The weekly allowance is calculated in one place",
+      "subtitle": "The backend produces safe-to-spend, shortfall, and pace status from versioned inputs.",
+      "bullets": [
+        "Decision: keep official financial output in pace-v1.",
+        "Evidence: identical inputs produce the same result; golden tests cover the calculation contract.",
+        "Alternative rejected: an AI-generated number would be harder to reproduce and audit.",
+        "Trade-off: the formula is narrower than open-ended financial advice.",
+        "Consequence: explanations can add context without changing the number."
+      ],
+      "notes": "Presenter: Nati. 1:00. This is the main technical decision. The number has to be reproducible because it is the product's most consequential output. We accepted a narrower formula in exchange for a result we can test, explain, and defend."
+    },
+    {
+      "kind": "decision",
+      "kicker": "Persistence Decision",
+      "title": "A saved plan should explain its own history",
+      "subtitle": "Each committed calculation records normalized inputs, outputs, and the formula version that produced them.",
+      "bullets": [
+        "Decision: write a new immutable snapshot after a committed plan change.",
+        "Evidence: the snapshot schema stores normalized aggregates and formula_version.",
+        "Alternative rejected: recomputing history would erase what the user saw earlier.",
+        "Trade-off: more records and more schema discipline.",
+        "Boundary: raw transaction descriptions do not enter the durable result."
+      ],
+      "notes": "Presenter: Nati. 0:55. A snapshot gives the dashboard and the explanation a stable reference. When the plan changes, the system creates a new record instead of silently rewriting the old result. That makes the calculation reviewable during the demo and later."
+    },
+    {
+      "kind": "security",
+      "kicker": "Security Boundary",
+      "title": "The deployed app does not trust the browser with ownership",
+      "subtitle": "Sessions, CSRF checks, and server-side ownership rules protect the same workflow we demo locally.",
+      "bullets": [
+        "HTTP-only server-side sessions with hashed opaque tokens",
+        "CSRF required for authenticated unsafe methods",
+        "Cross-user private resource access returns 404",
+        "Railway uses secure cookies, explicit origin allowlists, and PostgreSQL",
+        "Failure case: unauthorized or cross-user access fails without leaking private data"
+      ],
+      "notes": "Presenter: Nati. 0:55. Security is part of the product contract, not a deployment footnote. The browser can request a resource, but the backend decides whether the session owns it. We will use invalid CSV as the visible demo failure; the cross-user access tests are the stronger evidence behind the same trust boundary."
+    },
+    {
+      "kind": "pipeline",
+      "kicker": "AI Boundary",
+      "title": "The summary is downstream of the calculation",
+      "subtitle": "The model receives a minimized snapshot and writes explanation text; the official numbers remain unchanged.",
+      "bullets": [
+        "Runtime AI receives minimized aggregate fields from an existing snapshot",
+        "Generated explanations are schema-checked and tied to the displayed snapshot",
+        "AI cannot calculate, override, or recommend official money outputs",
+        "Development AI use is reviewed against repo evidence before claims enter the deck"
+      ],
+      "notes": "Presenter: Nati. 0:55. The team used AI heavily during implementation, but the specification, boundaries, and review process remained human-guided. At runtime, the model only sees minimized aggregate data from an existing snapshot. It can explain that result, but it cannot calculate, override, or turn it into financial advice."
+    },
+    {
+      "kind": "verification",
+      "kicker": "Verification and Delivery",
+      "title": "We tested the contracts that support the demo",
+      "subtitle": "The project is deployed through GitHub CI/CD to Railway, with evidence at the calculation, API, UI, and delivery boundaries.",
+      "bullets": [
+        "Calculation: pace-v1 golden scenarios",
+        "API: auth, ownership, financial inputs, CSV import, and AI routes",
+        "Persistence: migration smoke checks for PostgreSQL-compatible storage",
+        "UI and delivery: TypeScript, lint, Vite, Playwright, GitHub CI, and Railway",
+        "Known limit: these checks do not prove production-scale load behavior"
+      ],
+      "notes": "Presenter: Thanh. 1:00. Tie each evidence group to a system boundary: pace-v1 golden tests for the financial contract; API and cross-user tests for behavior and ownership; migration checks for persistence; frontend checks for the build and user flow; GitHub CI and Railway deployment for delivery. These checks support the demo, but they do not prove production-scale load behavior."
+    },
+    {
+      "kind": "demo",
+      "kicker": "Live Demo",
+      "title": "We will follow one user through the system",
+      "subtitle": "Registration, setup, plan creation, a rejected import, seeded data, and a snapshot-backed explanation.",
+      "bullets": [
+        "Value path: register, follow the starter guide, create a goal, and read the dashboard",
+        "Failure path: submit an invalid CSV and show that it is rejected before commit",
+        "Evidence path: load seeded data, generate the summary, then show CI/CD and Railway",
+        "Transition: browser first; repository and deployment evidence second"
+      ],
+      "notes": "Presenter: Vishal, then demo operator. 0:25. Hand off directly to the browser. Start at https://goalwise.up.railway.app/register. Use https://staging-goalwise.up.railway.app/register as the fallback. The visible failure is an invalid CSV import: the app should reject it during review rather than changing the plan. Then use seeded data to show the dashboard and generate the AI summary."
+    }
+  ]
+}
