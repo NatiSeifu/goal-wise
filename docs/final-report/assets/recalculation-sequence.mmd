@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant User as User
+    participant UI as React UI
+    participant API as FastAPI API
+    participant Service as Service layer
+    participant Engine as pace-v1 engine
+    participant DB as Database
+
+    User->>UI: Save goal or financial input
+    UI->>API: Authenticated request with CSRF token
+    API->>Service: Validate request and current session
+    Service->>DB: Persist user-owned input change
+    Service->>DB: Load complete normalized plan
+    alt Required inputs incomplete
+        Service-->>API: Missing-input state
+        API-->>UI: JSON response without safe-to-spend
+    else Required inputs complete
+        Service->>Engine: calculate(normalized inputs)
+        Engine-->>Service: Deterministic result
+        Service->>DB: Insert immutable calculation snapshot
+        Service-->>API: Updated dashboard-ready result
+        API-->>UI: JSON response with official values
+    end

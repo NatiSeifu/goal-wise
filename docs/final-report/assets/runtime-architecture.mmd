@@ -1,0 +1,20 @@
+flowchart TB
+    User["User browser"] --> Frontend["React + Vite frontend"]
+
+    subgraph Runtime["GoalWise runtime"]
+        Frontend -->|"HTTPS JSON /api/v1"| API["FastAPI API"]
+        API --> Auth["Session + CSRF dependencies"]
+        API --> Routers["API routers"]
+        Routers --> Schemas["Pydantic request/response schemas"]
+        Routers --> Services["Application services"]
+        Services --> Repos["Repositories"]
+        Repos --> ORM["SQLAlchemy models"]
+        ORM --> DB[("PostgreSQL hosted / SQLite tests")]
+        Services --> Engine["pace-v1 deterministic engine"]
+        Services --> Snapshots["Immutable snapshot writer"]
+        Snapshots --> DB
+    end
+
+    Services --> Importer["Canonical planning CSV importer"]
+    Snapshots --> AI["Optional AI explanation layer"]
+    AI -. "explain only, never calculate" .-> Frontend
