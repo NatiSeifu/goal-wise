@@ -1,6 +1,6 @@
 # GoalWise Architecture
 
-GoalWise is a progressive MVP/PDR subset of the broader SRS. The current architecture proves the core planning loop: authenticate, enter or import one goal and manual financial assumptions, calculate an explainable weekly safe-to-spend result, store immutable snapshots, and render the dashboard.
+GoalWise is a progressive MVP/PDR subset of the broader SRS. The current architecture proves the core planning loop: authenticate, enter or import one goal and manual financial assumptions, calculate an explainable weekly safe-to-spend result, store immutable snapshots, and render the dashboard. An accepted canonical planning CSV importer and optional explain-only AI layer sit outside the deterministic financial core.
 
 This file holds the high-level system diagram. More focused diagrams and decision details live in:
 
@@ -68,7 +68,7 @@ flowchart TB
 - The pace engine is deterministic and AI-free.
 - Calculation snapshots are immutable and versioned.
 - User-owned resource access is enforced server-side; cross-user private resource access returns `404`.
-- Runtime AI, raw transaction import, export/delete, and background scheduling are deferred from the current MVP subset.
+- Raw transaction import, export/delete, and background scheduling are deferred from the current MVP subset. Runtime AI is optional and explain-only; it cannot affect financial calculations or dashboard values.
 
 ## Deployment Shape
 

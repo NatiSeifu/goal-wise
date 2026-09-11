@@ -2,7 +2,7 @@
 
 ## Purpose
 
-GoalWise is a lightweight goal-oriented budgeting MVP. The backend owns authentication, user-owned financial data, deterministic pace calculations, and immutable calculation snapshots. The MVP intentionally avoids live bank sync, AI-generated summaries, account export/delete workflows, and production-grade automation so the team can deliver the core planning loop first.
+GoalWise is a lightweight goal-oriented budgeting MVP. The backend owns authentication, user-owned financial data, deterministic pace calculations, and immutable calculation snapshots. The product also supports an accepted canonical planning CSV importer and an optional explain-only AI layer. It intentionally avoids live bank sync, raw transaction import, account export/delete workflows, and production-grade automation.
 
 ## Architecture
 
@@ -244,8 +244,9 @@ Response conventions:
 ## MVP Deferrals
 
 - Raw transaction import, duplicate detection UI, and transaction correction workflows. Canonical planning CSV import is implemented by SPEC-0010.
-- AI summaries, AI validation, provider adapters, and AI safety evals.
-- Account export and deletion flows.
+- AI quality evaluations beyond the bounded explain-only layer in SPEC-0011.
 - Background weekly snapshot scheduler; MVP may create or refresh weekly plans on authenticated dashboard access.
+- Account export and deletion workflows.
+- Raw transaction import, correction, and duplicate handling.
 - Full production load testing and uptime monitoring.
 - Native mobile apps, bank integrations, and multi-goal support.
