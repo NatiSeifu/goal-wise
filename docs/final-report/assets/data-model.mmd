@@ -1,0 +1,55 @@
+erDiagram
+    USER ||--o{ SESSION : has
+    USER ||--o{ GOAL : owns
+    USER ||--|| FINANCIAL_PROFILE : owns
+    USER ||--o{ INCOME_SOURCE : owns
+    USER ||--o{ PLANNED_EXPENSE : owns
+    USER ||--o{ CALCULATION_SNAPSHOT : owns
+    USER ||--o{ WEEKLY_PLAN : owns
+    USER ||--o{ AI_EXPLANATION : owns
+    GOAL ||--o{ CALCULATION_SNAPSHOT : produces
+    GOAL ||--o{ WEEKLY_PLAN : has
+    CALCULATION_SNAPSHOT ||--o{ WEEKLY_PLAN : seeds
+    CALCULATION_SNAPSHOT ||--o{ AI_EXPLANATION : explains
+
+    USER {
+        string id
+        string email
+        string password_hash
+        string time_zone
+    }
+    GOAL {
+        string id
+        string user_id
+        integer target_cents
+        integer current_saved_cents
+        string status
+    }
+    FINANCIAL_PROFILE {
+        string user_id
+        integer starting_cash_cents
+        integer reserve_buffer_cents
+        date balance_as_of_date
+    }
+    INCOME_SOURCE {
+        string id
+        string user_id
+        integer amount_cents
+        string frequency
+        string confidence
+    }
+    PLANNED_EXPENSE {
+        string id
+        string user_id
+        integer amount_cents
+        string frequency
+        string classification
+    }
+    CALCULATION_SNAPSHOT {
+        string id
+        string user_id
+        string goal_id
+        string formula_version
+        json normalized_input_json
+        json result_json
+    }
