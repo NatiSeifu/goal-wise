@@ -1,5 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { registerUser, completeGoalAndCashSetup } from "./support/flows.ts";
+
+test.skip(
+  process.env.RUN_LIVE_AI_E2E !== "true",
+  "Live AI provider coverage is opt-in; CI runs with AI disabled.",
+);
+
 test("live local digest", async ({page}) => {
  await registerUser(page);
  await completeGoalAndCashSetup(page, {currentSaved:1000,name:"Digest verification",startingCash:10000,target:5000});
