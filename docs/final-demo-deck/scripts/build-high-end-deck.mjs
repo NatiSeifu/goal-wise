@@ -582,69 +582,78 @@ function pipeline(slide, item, index) {
 
 function verification(slide, item, index) {
   header(slide, item, index);
-  const bars = [
-    ["pace golden", 92, C.green],
-    ["API + auth", 84, C.blue],
-    ["migration smoke", 72, C.amber],
-    ["frontend checks", 78, C.coral]
+  const evidence = [
+    ["Calculation", "pace-v1 golden scenarios", C.green],
+    ["API", "auth, ownership, inputs, import, and AI routes", C.blue],
+    ["Persistence", "migration checks for PostgreSQL-compatible storage", C.amber],
+    ["Delivery", "TypeScript, lint, Vite, Playwright, GitHub CI, Railway", C.coral]
   ];
-  bars.forEach(([label, pct, color], i) => {
-    const y = 2.82 + i * 0.72;
-    slide.addText(label, {
-      x: 1.0,
+  evidence.forEach(([label, body, color], i) => {
+    const x = 0.9 + (i % 2) * 4.95;
+    const y = 2.75 + Math.floor(i / 2) * 1.35;
+    slide.addShape(pptx.ShapeType.rect, {
+      x,
       y,
-      w: 1.55,
-      h: 0.2,
-      fontSize: 12,
-      bold: true,
-      color: C.ink,
-      margin: 0
+      w: 4.35,
+      h: 0.98,
+      fill: { color: C.white },
+      line: { color, width: 1.1 }
     });
     slide.addShape(pptx.ShapeType.rect, {
-      x: 2.85,
-      y: y + 0.03,
-      w: 7.5,
-      h: 0.18,
-      fill: { color: C.cloud },
-      line: { color: C.cloud }
-    });
-    slide.addShape(pptx.ShapeType.rect, {
-      x: 2.85,
-      y: y + 0.03,
-      w: 7.5 * pct / 100,
-      h: 0.18,
+      x,
+      y,
+      w: 0.13,
+      h: 0.98,
       fill: { color },
       line: { color }
     });
+    slide.addText(label, {
+      x: x + 0.3,
+      y: y + 0.18,
+      w: 1.45,
+      h: 0.2,
+      fontSize: 12.5,
+      bold: true,
+      color,
+      margin: 0
+    });
+    slide.addText(body, {
+      x: x + 1.72,
+      y: y + 0.18,
+      w: 2.35,
+      h: 0.42,
+      fontSize: 11.2,
+      color: C.ink,
+      fit: "shrink",
+      margin: 0
+    });
   });
   slide.addShape(pptx.ShapeType.rect, {
-    x: 10.8,
-    y: 2.82,
-    w: 1.5,
-    h: 3.05,
+    x: 0.9,
+    y: 5.62,
+    w: 11.4,
+    h: 0.58,
     fill: { color: C.ink },
     line: { color: C.ink }
   });
   slide.addText("Known gap", {
-    x: 11.0,
-    y: 3.15,
-    w: 1.1,
-    h: 0.2,
+    x: 1.15,
+    y: 5.82,
+    w: 1.05,
+    h: 0.16,
     fontSize: 10.5,
     bold: true,
     color: C.amber,
-    align: "center",
     margin: 0
   });
   slide.addText("Tests prove contracts, not production load.", {
-    x: 10.98,
-    y: 3.72,
-    w: 1.15,
-    h: 1.0,
-    fontSize: 12.5,
+    x: 2.45,
+    y: 5.79,
+    w: 8.8,
+    h: 0.2,
+    fontSize: 12,
     bold: true,
     color: C.ivory,
-    align: "center",
     fit: "shrink",
     margin: 0
   });
@@ -706,6 +715,16 @@ function demo(slide, item, index) {
     fontSize: 19,
     bold: true,
     color: C.mint,
+    align: "center",
+    margin: 0
+  });
+  slide.addText("goalwise.up.railway.app/register  |  staging-goalwise.up.railway.app/register", {
+    x: 1.08,
+    y: 6.48,
+    w: 10.9,
+    h: 0.18,
+    fontSize: 10.5,
+    color: "AEBFB6",
     align: "center",
     margin: 0
   });

@@ -2,25 +2,25 @@
 
 ## Talk Goal
 
-Show that GoalWise is a focused, auditable planning MVP: a user enters one
-savings goal and manual assumptions, the backend calculates a weekly
-safe-to-spend number deterministically, and the system preserves enough evidence
-to explain and defend the result.
+Show a real user path through GoalWise: registration, guided setup, one savings
+goal, a backend-owned weekly result, a rejected planning import, and an
+explanation tied to the committed calculation. The technical argument is that
+the result remains reproducible, reviewable, and isolated from runtime AI.
 
 ## Narrative Arc
 
-1. GoalWise solves one near-term planning question, not broad personal finance.
-2. The architecture keeps official money outputs in the backend.
-3. The deterministic `pace-v1` engine is isolated from API, database, sessions,
-   frontend code, and AI providers.
-4. Immutable snapshots make calculations reviewable over time.
-5. Auth, CSRF, ownership checks, and Railway configuration constrain the hosted
-   demo surface.
-6. AI is useful only at the edge: explanations, review, and development support.
-7. Verification focuses on calculation correctness, API behavior, ownership,
-   migrations, and frontend build safety.
-8. The live demo will show the value path, one safe failure case, and engineering
-   evidence.
+1. The product begins with one planning question: can this user reach the goal,
+   and what can they spend this week?
+2. The first run is explicit: register, follow setup, create a goal, enter
+   assumptions, and read the dashboard.
+3. Official money outputs stay in the backend and come from `pace-v1`.
+4. Immutable snapshots preserve what was calculated and why.
+5. Sessions, CSRF, and ownership checks protect the hosted workflow.
+6. CSV import is previewed before commit; malformed input is a useful visible
+   failure case.
+7. AI explains a committed result; it does not calculate or override it.
+8. GitHub CI, Railway deployment, and boundary-focused tests provide the
+   engineering evidence.
 
 ## Timing
 
