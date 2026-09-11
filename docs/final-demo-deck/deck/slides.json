@@ -70,8 +70,8 @@
       "notes": "0:55. Explain why this matters for review. The app can show what was calculated at a point in time instead of silently changing history."
     },
     {
-      "kind": "decision",
-      "kicker": "Decision 3",
+      "kind": "security",
+      "kicker": "Security Boundary",
       "title": "Apply ownership and session boundaries consistently",
       "subtitle": "The hosted demo uses the same auth and data-isolation rules as the local system.",
       "bullets": [

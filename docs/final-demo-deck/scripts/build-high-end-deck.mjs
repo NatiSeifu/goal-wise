@@ -469,6 +469,77 @@ function decision(slide, item, index) {
   addNotes(slide, item.notes);
 }
 
+function security(slide, item, index) {
+  header(slide, item, index);
+  const controls = [
+    ["Session", "HTTP-only cookie; only a hashed opaque token is stored server-side", C.green],
+    ["CSRF", "Unsafe authenticated methods require a CSRF token", C.blue],
+    ["Ownership", "Private cross-user resource access returns 404", C.coral],
+    ["Hosting", "Railway uses secure cookies, allowlisted origins, and PostgreSQL", C.amber]
+  ];
+  controls.forEach(([titleText, body, color], i) => {
+    const x = 0.9 + (i % 2) * 5.95;
+    const y = 2.72 + Math.floor(i / 2) * 1.55;
+    slide.addShape(pptx.ShapeType.rect, {
+      x,
+      y,
+      w: 5.35,
+      h: 1.05,
+      fill: { color: C.white },
+      line: { color, width: 1.2 }
+    });
+    slide.addShape(pptx.ShapeType.rect, {
+      x,
+      y,
+      w: 0.14,
+      h: 1.05,
+      fill: { color },
+      line: { color }
+    });
+    slide.addText(titleText, {
+      x: x + 0.34,
+      y: y + 0.2,
+      w: 1.35,
+      h: 0.24,
+      fontSize: 13,
+      bold: true,
+      color,
+      margin: 0
+    });
+    slide.addText(body, {
+      x: x + 1.78,
+      y: y + 0.2,
+      w: 3.2,
+      h: 0.46,
+      fontSize: 12.2,
+      color: C.ink,
+      fit: "shrink",
+      margin: 0
+    });
+  });
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 1.05,
+    y: 5.95,
+    w: 11.1,
+    h: 0.52,
+    fill: { color: C.ink },
+    line: { color: C.ink }
+  });
+  slide.addText("Demo failure case: unauthorized or cross-user access fails without exposing another user's financial data.", {
+    x: 1.25,
+    y: 6.12,
+    w: 10.7,
+    h: 0.16,
+    fontSize: 12.2,
+    bold: true,
+    color: C.ivory,
+    align: "center",
+    fit: "shrink",
+    margin: 0
+  });
+  addNotes(slide, item.notes);
+}
+
 function pipeline(slide, item, index) {
   header(slide, item, index, true);
   const steps = [
@@ -673,6 +744,7 @@ const renderers = {
   scope,
   architecture,
   decision,
+  security,
   pipeline,
   verification,
   demo
