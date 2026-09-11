@@ -231,10 +231,6 @@ def _complete_required_setup(client: TestClient) -> str:
 
 
 def _valid_response() -> dict[str, object]:
-    return {
-        "schema_version": "ai-explanation-v1",
-        "headline": "Your plan is on track",
-        "body": "Your current plan leaves room for weekly spending while keeping the goal in view.",
-        "observations": [],
-        "next_step": "Keep your planned expenses up to date.",
-    }
+    from tests.ai_fixtures import valid_digest
+
+    return valid_digest()

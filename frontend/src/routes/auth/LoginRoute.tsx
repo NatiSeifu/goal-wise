@@ -64,9 +64,6 @@ export function LoginRoute() {
             <span>GoalWise</span>
           </Link>
           <h1 id="login-title">Sign in</h1>
-          <p className="auth-copy">
-            Continue to your savings plan.
-          </p>
         </div>
         <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
           <FormError message={error ?? auth.error} />

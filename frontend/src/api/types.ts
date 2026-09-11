@@ -237,15 +237,17 @@ export type CalculationSnapshotItemResponse = {
 export type AIObservation = {
   kind: "pace" | "allowance" | "progress" | "shortfall";
   tone: "positive" | "neutral" | "caution";
+  text: string;
   metric_refs: string[];
 };
 
 export type AIExplanation = {
-  schema_version: "ai-explanation-v1";
+  schema_version: "ai-explanation-v2";
   headline: string;
   body: string;
   observations: AIObservation[];
-  next_step: string | null;
+  next_step: string;
+  next_step_action: "review_goal" | "review_inputs";
 };
 
 export type AIExplanationItem = {

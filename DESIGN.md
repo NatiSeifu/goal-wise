@@ -250,3 +250,31 @@ Response conventions:
 - Raw transaction import, correction, and duplicate handling.
 - Full production load testing and uptime monitoring.
 - Native mobile apps, bank integrations, and multi-goal support.
+
+## Frontend Presentation
+
+The experimental frontend retains GoalWise's green and neutral palette and
+left navigation, with a compact layout centered on the weekly safe-to-spend
+amount on a green background with white text, and one savings goal. Each metric appears once in the default dashboard;
+calculation details are progressively disclosed. The optional AI digest sits
+directly below weekly safe-to-spend, with explicit generation and a full overview,
+metric-linked observations, and a bounded review action.
+Forms use direct labels without walkthroughs, coaching panels, or generic
+product narration. Field-specific guidance remains where it prevents mistakes.
+
+[SPEC-0012](docs/specs/0012-ui-content-and-hierarchy.md) defines the route-level
+content and action contract. The frontend formats backend-owned dashboard and
+snapshot values; it does not implement pace formulas or derive new financial
+metrics. Calm neutral surfaces, spacing, and dividers establish hierarchy;
+warning color is reserved for conditions requiring attention.
+
+The browser capture utility in `frontend/scripts/capture-dashboard.mjs` uses
+fixed synthetic backend responses to verify every route at desktop, tablet,
+and mobile sizes. Captures are review artifacts, not production data.
+
+The AI explanation edge uses `ai-explanation-v2` and prompt v4. It receives the
+same six aggregate fields as before, validates every prose section, and permits
+only goal/input review links as generated action types. Digests are cached by
+snapshot and version tuple; a schema upgrade does not mutate historical rows.
+The UI renders numeric evidence from the displayed snapshot and rejects a digest
+whose snapshot ID does not match it. See [SPEC-0011](docs/specs/0011-ai-explanation-layer.md).

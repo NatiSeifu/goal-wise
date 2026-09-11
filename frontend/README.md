@@ -37,3 +37,16 @@ those requests to `API_PROXY_TARGET`.
 The frontend may format backend-provided values for display, but it must not
 duplicate the backend `pace-v1` calculation formulas or official dashboard
 metric logic.
+
+## UI verification
+
+Content and hierarchy follow [SPEC-0012](../docs/specs/0012-ui-content-and-hierarchy.md).
+Run `npm run visual` with the local frontend running to capture all eight routes
+plus the generated dashboard digest at desktop, tablet, and mobile sizes. The capture uses fixed synthetic backend
+responses from `scripts/ui-fixture.json` and an accepted provider response for
+those synthetic At Risk metrics in `scripts/ai-digest-at-risk-fixture.json`.
+The digest capture explicitly clicks Generate digest and shows the returned
+overview, observations, trusted metric references, and review-goal action.
+No deferred actions are represented. The capture does not create accounts or modify
+backend data. PNGs go to `/tmp/goal-wise-ui`. Override `PLAYWRIGHT_BASE_URL` or
+`VISUAL_OUTPUT_DIR` when needed.

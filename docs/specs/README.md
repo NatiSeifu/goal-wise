@@ -20,6 +20,7 @@ Specs are serially numbered for stable references:
 0009-ui-mockup-and-screenshot-workflow.md
 0010-planning-csv-import.md
 0011-ai-explanation-layer.md
+0012-ui-content-and-hierarchy.md
 ```
 
 Rules:
@@ -63,6 +64,7 @@ Related ADRs: ADR-0005, ADR-0008
 | [0009](0009-ui-mockup-and-screenshot-workflow.md) | UI Mockup and Screenshot Workflow | Accepted |
 | [0010](0010-planning-csv-import.md) | Canonical Planning CSV Import | Accepted |
 | [0011](0011-ai-explanation-layer.md) | Bounded AI Explanation Layer | Accepted |
+| [0012](0012-ui-content-and-hierarchy.md) | UI Content and Hierarchy | Accepted |
 
 ## Initial Spec Candidates
 

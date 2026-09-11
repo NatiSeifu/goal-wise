@@ -48,8 +48,8 @@ export async function createGoal(page: Page, scenario: DashboardScenario) {
 export async function completeGoalAndCashSetup(page: Page, scenario: DashboardScenario) {
   await createGoal(page, scenario);
 
-  await page.getByRole("link", { name: /Cash:/ }).click();
-  await page.waitForURL(/\/financial-inputs#cash-picture$/);
+  await page.getByRole("link", { name: "Continue to inputs" }).click();
+  await page.waitForURL(/\/financial-inputs$/);
   const cashForm = page.locator("form#cash-picture");
   await cashForm.getByLabel("Starting cash").fill(String(scenario.startingCash));
   // Keep the fixture valid when CI's UTC date has crossed midnight before the user's local date.

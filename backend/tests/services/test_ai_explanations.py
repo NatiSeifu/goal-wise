@@ -340,19 +340,9 @@ def _input_json() -> dict[str, object]:
 
 
 def _valid_response() -> dict[str, object]:
-    return {
-        "schema_version": AI_EXPLANATION_SCHEMA_VERSION,
-        "headline": "Your plan is on track",
-        "body": "Your current plan leaves room for weekly spending while keeping the goal in view.",
-        "observations": [
-            {
-                "kind": "pace",
-                "tone": "positive",
-                "metric_refs": ["pace_status", "weekly_safe_to_spend_cents"],
-            }
-        ],
-        "next_step": "Keep your planned expenses up to date.",
-    }
+    from tests.ai_fixtures import valid_digest
+
+    return valid_digest()
 
 
 def _enabled_settings() -> Settings:
@@ -361,3 +351,35 @@ def _enabled_settings() -> Settings:
 
 def _timestamp() -> datetime:
     return datetime(2026, 8, 29, 12, 0, tzinfo=UTC)
+
+
+def test_digest_upgrade_ignores_legacy_summary_and_preserves_snapshot(db_session: Session) -> None:
+    from copy import deepcopy
+
+    from app.repositories.ai_explanations import create_ai_explanation
+
+    user, snapshot = _create_snapshot(db_session)
+    before = (deepcopy(snapshot.normalized_input_json), deepcopy(snapshot.result_json))
+    old = create_ai_explanation(
+        db_session,
+        user_id=user.id,
+        snapshot_id=snapshot.id,
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        prompt_version="ai-explanation-prompt-v3",
+        response_schema_version="ai-explanation-v1",
+        response_json={"schema_version": "ai-explanation-v1", "headline": "Old summary"},
+        generated_at=_timestamp(),
+    )
+    provider = FakeAiProvider(response=_valid_response())
+    result = generate_or_reuse_latest_explanation(
+        db_session,
+        user_id=user.id,
+        provider=provider,
+        settings=_enabled_settings(),
+    )
+    assert len(provider.calls) == 1
+    assert result.explanation is not old
+    assert result.response.schema_version == "ai-explanation-v2"
+    assert (snapshot.normalized_input_json, snapshot.result_json) == before
+    assert old.response_json["headline"] == "Old summary"

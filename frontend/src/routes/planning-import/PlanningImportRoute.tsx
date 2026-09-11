@@ -74,17 +74,14 @@ export function PlanningImportRoute() {
   return (
     <section className="form-page wide" aria-labelledby="planning-import-title">
       <PageHeader
-        description="Bring in one complete GoalWise plan from a prepared CSV file."
         title="Import a plan"
         titleId="planning-import-title"
       />
 
       <div className="import-intro">
         <div>
-          <h2>Review before anything changes</h2>
           <p>
-            This file sets one goal, your cash position, expected income, and planned expenses. It is not a bank statement.
-            Importing replaces the current active plan after you confirm it.
+            Use the GoalWise CSV template. Bank statements are not supported.
           </p>
         </div>
         <a href="/planning-import-template.csv" download>
@@ -102,7 +99,7 @@ export function PlanningImportRoute() {
             type="file"
           />
           <p className="form-help">
-            Use the canonical columns and decimal dollar amounts. Your file is checked before it can change your plan.
+            Enter amounts in dollars.
           </p>
         </div>
         <FormError message={error?.message ?? null} />
@@ -147,9 +144,8 @@ function ImportPreview({
       <div className="section-heading-row">
         <div>
           <h2 id="import-preview-title">Ready to import</h2>
-          <p>{preview.row_count} rows reviewed. Confirming will replace the current active plan.</p>
+          <p>{preview.row_count} rows reviewed.</p>
         </div>
-        <span className="import-validity">Valid plan</span>
       </div>
       <div className="import-summary-grid">
         <SummaryItem label="Goal" value={preview.goal.name} detail={`${formatCents(preview.goal.target_cents)} by ${formatDate(preview.goal.target_date)}`} />
@@ -160,7 +156,7 @@ function ImportPreview({
       <ImportSourceTable title="Expected income" items={preview.income_sources} kind="income" />
       <ImportSourceTable title="Planned expenses" items={preview.planned_expenses} kind="expense" />
       <div className="import-confirmation">
-        <p>Only confirm when these values match the plan you want GoalWise to use.</p>
+        <p>This replaces your goal, cash, income, and expenses.</p>
         <div className="form-actions">
           <Button disabled={isBusy} variant="secondary" type="button" onClick={onCancel}>
             Cancel import

@@ -1,0 +1,41 @@
+"""Representative bounded digest used by service and API tests."""
+
+
+def valid_digest() -> dict[str, object]:
+    return {
+        "schema_version": "ai-explanation-v2",
+        "headline": "Your savings plan has room to breathe",
+        "body": (
+            "Your saved progress is on track and the forecast still covers your goal. "
+            "There is room for weekly spending within the allowance shown, "
+            "based on the plan you saved."
+        ),
+        "observations": [
+            {
+                "kind": "pace",
+                "tone": "positive",
+                "text": (
+                    "Your current savings pace is aligned with the goal timeline. "
+                    "That describes progress so far, rather than a guarantee that future "
+                    "income or expenses will stay the same."
+                ),
+                "metric_refs": ["pace_status", "progress_percentage"],
+            },
+            {
+                "kind": "allowance",
+                "tone": "neutral",
+                "text": (
+                    "The weekly allowance and absence of a projected shortfall point to "
+                    "spending room in this forecast. "
+                    "Treat that room as dependent on the inputs staying accurate, "
+                    "rather than extra cash beyond the plan."
+                ),
+                "metric_refs": ["weekly_safe_to_spend_cents", "projected_shortfall_cents"],
+            },
+        ],
+        "next_step": (
+            "Check that your upcoming income and planned expenses still match what you expect. "
+            "Update any changed entries before relying on the current allowance."
+        ),
+        "next_step_action": "review_inputs",
+    }

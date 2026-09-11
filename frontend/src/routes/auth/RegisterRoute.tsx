@@ -86,9 +86,6 @@ export function RegisterRoute() {
             <span>GoalWise</span>
           </Link>
           <h1 id="register-title">Create account</h1>
-          <p className="auth-copy">
-            Start with one active goal and a few planning assumptions.
-          </p>
         </div>
         <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
           <FormError message={error ?? auth.error} />
@@ -104,6 +101,7 @@ export function RegisterRoute() {
           />
           <TextField
             autoComplete="new-password"
+            description="At least 12 characters."
             id="register-password"
             label="Password"
             minLength={12}

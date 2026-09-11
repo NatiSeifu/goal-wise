@@ -25,13 +25,10 @@ import { Alert } from "../../components/feedback/Alert.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { PageHeader } from "../../components/layout/PageHeader.tsx";
-import { CoachTip, SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
 import { Button, ButtonLink } from "../../components/ui/Button.tsx";
 import { SelectField } from "../../components/ui/SelectField.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
 import { useFinancialInputs } from "../../features/financial-inputs/useFinancialInputs.ts";
-import { useActiveGoal } from "../../features/goal/useActiveGoal.ts";
-import { setupGuideStateFromInputs } from "../../features/setup/setupGuideState.ts";
 import {
   centsToDollarInput,
   dollarInputToCents,
@@ -107,7 +104,6 @@ const emptyExpenseForm: ExpenseFormState = {
 export function FinancialInputsRoute() {
   const queryClient = useQueryClient();
   const inputs = useFinancialInputs();
-  const activeGoal = useActiveGoal();
   const location = useLocation();
   const [profileForm, setProfileForm] = useState<ProfileFormState>(emptyProfileForm);
   const [incomeForm, setIncomeForm] = useState<IncomeFormState>(emptyIncomeForm);
@@ -143,12 +139,12 @@ export function FinancialInputsRoute() {
     });
   }, [inputs.status, location.hash]);
 
-  if (inputs.status === "loading" || activeGoal.status === "loading") {
+  if (inputs.status === "loading") {
     return <RouteLoading fullPage={false} label="Loading financial inputs" />;
   }
 
-  if (inputs.status === "error" || activeGoal.status === "error") {
-    const error = inputs.status === "error" ? inputs.error : activeGoal.error;
+  if (inputs.status === "error") {
+    const error = inputs.error;
 
     return (
       <section className="form-page" aria-labelledby="financial-inputs-title">
@@ -280,6 +276,7 @@ export function FinancialInputsRoute() {
     setIncomeError(null);
     setEditingIncomeId(item.id);
     setIncomeForm(incomeToForm(item));
+    window.requestAnimationFrame(() => document.getElementById("income-name")?.focus());
   }
 
   function startExpenseEdit(item: PlannedExpenseResponse) {
@@ -288,21 +285,12 @@ export function FinancialInputsRoute() {
     setExpenseError(null);
     setEditingExpenseId(item.id);
     setExpenseForm(expenseToForm(item));
+    window.requestAnimationFrame(() => document.getElementById("expense-name")?.focus());
   }
-
-  const hasGoal = activeGoal.data !== null;
-  const guideState = setupGuideStateFromInputs({
-    currentStep: "profile",
-    expenses: inputs.data.expenses,
-    hasGoal,
-    incomeSources: inputs.data.incomeSources,
-    profile: inputs.data.profile,
-  });
 
   return (
     <section className="form-page wide" aria-labelledby="financial-inputs-title">
       <RouteHeader />
-      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} />
       {successMessage === null ? null : (
         <p className="form-success" role="status">
           {successMessage}
@@ -313,7 +301,6 @@ export function FinancialInputsRoute() {
         <div className="section-heading-row">
           <div>
             <h2>Cash picture</h2>
-            <p>Start with the money available today and the reserve you want protected.</p>
           </div>
         </div>
         <FormError message={profileError} />
@@ -379,133 +366,123 @@ export function FinancialInputsRoute() {
           </Button>
         </div>
       </form>
-      <CoachTip title="Reserve buffer">
-        Keep this as money you want excluded from spending guidance. GoalWise will not silently change it after you confirm it.
-      </CoachTip>
 
       <section className="input-section-grid">
-        <form className="form-panel" id="income-sources" onSubmit={(event) => void handleIncomeSubmit(event)}>
-          <div className="section-heading-row">
-            <div>
-              <h2>{editingIncomeId === null ? "Add income source" : "Edit income source"}</h2>
-              <p>Use confirmed for money you are comfortable counting on before the goal date.</p>
-            </div>
-          </div>
-          <FormError message={incomeError} />
-          <div className="source-fields">
-            <SourceFields
-              amountDollars={incomeForm.amountDollars}
-              fields={incomeFields}
-              frequency={incomeForm.frequency}
-              name={incomeForm.name}
-              nextDate={incomeForm.nextDate}
-              prefix="income"
-              onAmountChange={(amountDollars) => setIncomeForm((current) => ({ ...current, amountDollars }))}
-              onFrequencyChange={(frequency) => setIncomeForm((current) => ({ ...current, frequency }))}
-              onNameChange={(name) => setIncomeForm((current) => ({ ...current, name }))}
-              onNextDateChange={(nextDate) => setIncomeForm((current) => ({ ...current, nextDate }))}
-            />
-            <SelectField
-              error={fieldError(incomeFields, "confidence")}
-              id="income-confidence"
-              label="Confidence"
-              onChange={(event) => setIncomeForm((current) => ({ ...current, confidence: event.target.value }))}
-              options={confidenceOptions}
-              value={incomeForm.confidence}
-            />
-          </div>
-          <div className="form-actions">
-            <Button disabled={isBusy} type="submit">
-              {busyAction === "income" ? "Saving income" : editingIncomeId === null ? "Add income" : "Save income"}
-            </Button>
-            {editingIncomeId === null ? null : (
-              <Button
-                disabled={isBusy}
-                variant="secondary"
-                type="button"
-                onClick={resetIncomeForm}
-              >
-                Cancel edit
-              </Button>
-            )}
-          </div>
-        </form>
-
-        <form className="form-panel" id="planned-expenses" onSubmit={(event) => void handleExpenseSubmit(event)}>
-          <div className="section-heading-row">
-            <div>
-              <h2>{editingExpenseId === null ? "Add planned expense" : "Edit planned expense"}</h2>
-              <p>Add bills and known costs that should be reserved before the goal deadline.</p>
-            </div>
-          </div>
-          <FormError message={expenseError} />
-          <div className="source-fields">
-            <SourceFields
-              amountDollars={expenseForm.amountDollars}
-              fields={expenseFields}
-              frequency={expenseForm.frequency}
-              name={expenseForm.name}
-              nextDate={expenseForm.nextDate}
-              prefix="expense"
-              onAmountChange={(amountDollars) => setExpenseForm((current) => ({ ...current, amountDollars }))}
-              onFrequencyChange={(frequency) => setExpenseForm((current) => ({ ...current, frequency }))}
-              onNameChange={(name) => setExpenseForm((current) => ({ ...current, name }))}
-              onNextDateChange={(nextDate) => setExpenseForm((current) => ({ ...current, nextDate }))}
-            />
-            <SelectField
-              error={fieldError(expenseFields, "classification")}
-              id="expense-classification"
-              label="Classification"
-              onChange={(event) =>
-                setExpenseForm((current) => ({ ...current, classification: event.target.value }))
-              }
-              options={classificationOptions}
-              value={expenseForm.classification}
-            />
-          </div>
-          <div className="form-actions">
-            <Button disabled={isBusy} type="submit">
-              {busyAction === "expense"
-                ? "Saving expense"
-                : editingExpenseId === null
-                  ? "Add expense"
-                  : "Save expense"}
-            </Button>
-            {editingExpenseId === null ? null : (
-              <Button
-                disabled={isBusy}
-                variant="secondary"
-                type="button"
-                onClick={resetExpenseForm}
-              >
-                Cancel edit
-              </Button>
-            )}
-          </div>
-        </form>
-      </section>
-
-      <section className="input-section-grid">
-        <ResourceList
-          emptyHelp="Add paychecks, stipends, gifts, or other money you expect before the goal date."
-          emptyLabel="No income sources in this plan yet."
-          items={inputs.data.incomeSources}
-          title="Income in plan"
-          onDeactivate={(item) => void handleDeactivateIncome(item.id)}
-          onEdit={startIncomeEdit}
-          busyAction={busyAction}
-          kind="income"
-        />
-        <ResourceList
-          emptyHelp="Add rent, bills, travel, or other known costs due before your target date."
-          emptyLabel="No planned expenses in this plan yet."
-          items={inputs.data.expenses}
-          title="Planned expenses"
-          onDeactivate={(item) => void handleDeactivateExpense(item.id)}
-          onEdit={startExpenseEdit}
-          busyAction={busyAction}
-          kind="expense"
-        />
+        <div className="input-management">
+          <ResourceList
+            emptyLabel="No income added."
+            items={inputs.data.incomeSources}
+            title="Income in plan"
+            onDeactivate={(item) => void handleDeactivateIncome(item.id)}
+            onEdit={startIncomeEdit}
+            busyAction={busyAction}
+            kind="income"
+          />
+          <details className="input-editor" open={editingIncomeId !== null || inputs.data.incomeSources.length === 0}>
+            <summary>{editingIncomeId === null ? "Add income source" : "Edit income source"}</summary>
+            <form className="form-panel" id="income-sources" onSubmit={(event) => void handleIncomeSubmit(event)}>
+              <FormError message={incomeError} />
+              <div className="source-fields">
+                <SourceFields
+                  amountDollars={incomeForm.amountDollars}
+                  fields={incomeFields}
+                  frequency={incomeForm.frequency}
+                  name={incomeForm.name}
+                  nextDate={incomeForm.nextDate}
+                  prefix="income"
+                  onAmountChange={(amountDollars) => setIncomeForm((current) => ({ ...current, amountDollars }))}
+                  onFrequencyChange={(frequency) => setIncomeForm((current) => ({ ...current, frequency }))}
+                  onNameChange={(name) => setIncomeForm((current) => ({ ...current, name }))}
+                  onNextDateChange={(nextDate) => setIncomeForm((current) => ({ ...current, nextDate }))}
+                />
+                <SelectField
+                  error={fieldError(incomeFields, "confidence")}
+                  id="income-confidence"
+                  label="Confidence"
+                  onChange={(event) => setIncomeForm((current) => ({ ...current, confidence: event.target.value }))}
+                  options={confidenceOptions}
+                  value={incomeForm.confidence}
+                />
+              </div>
+              <p className="form-help">Unconfirmed income is excluded from the calculation.</p>
+              <div className="form-actions">
+                <Button disabled={isBusy} type="submit">
+                  {busyAction === "income" ? "Saving income" : editingIncomeId === null ? "Add income" : "Save income"}
+                </Button>
+                {editingIncomeId === null ? null : (
+                  <Button
+                    disabled={isBusy}
+                    variant="secondary"
+                    type="button"
+                    onClick={resetIncomeForm}
+                  >
+                    Cancel edit
+                  </Button>
+                )}
+              </div>
+            </form>
+          </details>
+        </div>
+        <div className="input-management">
+          <ResourceList
+            emptyLabel="No expenses added."
+            items={inputs.data.expenses}
+            title="Planned expenses"
+            onDeactivate={(item) => void handleDeactivateExpense(item.id)}
+            onEdit={startExpenseEdit}
+            busyAction={busyAction}
+            kind="expense"
+          />
+          <details className="input-editor" open={editingExpenseId !== null || inputs.data.expenses.length === 0}>
+            <summary>{editingExpenseId === null ? "Add planned expense" : "Edit planned expense"}</summary>
+            <form className="form-panel" id="planned-expenses" onSubmit={(event) => void handleExpenseSubmit(event)}>
+              <FormError message={expenseError} />
+              <div className="source-fields">
+                <SourceFields
+                  amountDollars={expenseForm.amountDollars}
+                  fields={expenseFields}
+                  frequency={expenseForm.frequency}
+                  name={expenseForm.name}
+                  nextDate={expenseForm.nextDate}
+                  prefix="expense"
+                  onAmountChange={(amountDollars) => setExpenseForm((current) => ({ ...current, amountDollars }))}
+                  onFrequencyChange={(frequency) => setExpenseForm((current) => ({ ...current, frequency }))}
+                  onNameChange={(name) => setExpenseForm((current) => ({ ...current, name }))}
+                  onNextDateChange={(nextDate) => setExpenseForm((current) => ({ ...current, nextDate }))}
+                />
+                <SelectField
+                  error={fieldError(expenseFields, "classification")}
+                  id="expense-classification"
+                  label="Classification"
+                  onChange={(event) =>
+                    setExpenseForm((current) => ({ ...current, classification: event.target.value }))
+                  }
+                  options={classificationOptions}
+                  value={expenseForm.classification}
+                />
+              </div>
+              <div className="form-actions">
+                <Button disabled={isBusy} type="submit">
+                  {busyAction === "expense"
+                    ? "Saving expense"
+                    : editingExpenseId === null
+                      ? "Add expense"
+                      : "Save expense"}
+                </Button>
+                {editingExpenseId === null ? null : (
+                  <Button
+                    disabled={isBusy}
+                    variant="secondary"
+                    type="button"
+                    onClick={resetExpenseForm}
+                  >
+                    Cancel edit
+                  </Button>
+                )}
+              </div>
+            </form>
+          </details>
+        </div>
       </section>
 
       <div className="form-actions">
@@ -528,7 +505,6 @@ async function invalidateFinancialPlanningQueries(queryClient: QueryClient) {
 function RouteHeader() {
   return (
     <PageHeader
-      description="Start with cash, then add expected income and planned expenses to plan your weekly safe-to-spend amount."
       title="Financial inputs"
       titleId="financial-inputs-title"
     />
@@ -604,7 +580,6 @@ function SourceFields({
 
 function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseResponse>({
   busyAction,
-  emptyHelp,
   emptyLabel,
   items,
   kind,
@@ -613,7 +588,6 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
   title,
 }: {
   busyAction: string | null;
-  emptyHelp: string;
   emptyLabel: string;
   items: TItem[];
   kind: "expense" | "income";
@@ -627,7 +601,6 @@ function ResourceList<TItem extends IncomeSourceResponse | PlannedExpenseRespons
       {items.length === 0 ? (
         <div className="resource-empty">
           <strong>{emptyLabel}</strong>
-          <p>{emptyHelp}</p>
         </div>
       ) : (
           <div className="resource-list">

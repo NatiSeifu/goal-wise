@@ -21,6 +21,7 @@ for (const scenario of scenarios) {
     await expect(page.getByRole("heading", { name: "Weekly safe-to-spend" })).toBeVisible();
     await expect(page.getByText(scenario.name)).toBeVisible();
     await expect(page.getByText(scenario.expectedStatus, { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Goal outlook" })).toBeVisible();
+    await expect(page.getByRole("progressbar", { name: "Goal progress" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Edit goal" })).toBeVisible();
   });
 }

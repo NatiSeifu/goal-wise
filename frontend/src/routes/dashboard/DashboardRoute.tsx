@@ -1,45 +1,26 @@
 import { Link } from "react-router-dom";
 
-import type { DashboardItem, DashboardPaceSummary, JsonValue } from "../../api/types.ts";
+import type { CalculationSnapshotResponse, DashboardItem, DashboardPaceSummary, JsonValue } from "../../api/types.ts";
 import { routes } from "../../app/routes.ts";
 import { Alert } from "../../components/feedback/Alert.tsx";
 import { AIExplanationPanel } from "../../components/dashboard/AIExplanationPanel.tsx";
 import { EmptyState } from "../../components/feedback/EmptyState.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
-import { PageHeader } from "../../components/layout/PageHeader.tsx";
-import { SetupGuide } from "../../components/onboarding/SetupGuide.tsx";
-import { Panel } from "../../components/ui/Panel.tsx";
+import { ButtonLink } from "../../components/ui/Button.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
-import { setupGuideStateFromDashboard } from "../../features/setup/setupGuideState.ts";
+import { useLatestCalculationSnapshot } from "../../features/snapshots/useLatestCalculationSnapshot.ts";
 import { formatCents, formatDate, formatDateTime } from "../../utils/format.ts";
-import { formatInputCategoryList, paceStatusDescription, paceStatusLabel } from "../../utils/labels.ts";
-
-const missingInputLabels: Record<string, { action: string; label: string; to: string }> = {
-  active_goal: {
-    action: "Create the active savings goal for this MVP.",
-    label: "Active goal",
-    to: routes.goal,
-  },
-  calculation_snapshot: {
-    action: "Save your goal and planning assumptions so GoalWise can calculate your weekly plan.",
-    label: "Plan calculation",
-    to: routes.financialInputs,
-  },
-  financial_profile: {
-    action: "Add starting cash, balance date, and reserve buffer.",
-    label: "Cash picture",
-    to: routes.financialInputs,
-  },
-  reserve_buffer_confirmation: {
-    action: "Confirm the reserve buffer before calculating safe-to-spend.",
-    label: "Reserve buffer confirmation",
-    to: routes.financialInputs,
-  },
-};
+import {
+  classificationLabel,
+  formatInputCategoryList,
+  frequencyLabel,
+  paceStatusLabel,
+} from "../../utils/labels.ts";
 
 export function DashboardRoute() {
   const dashboard = useDashboard();
+  const snapshot = useLatestCalculationSnapshot();
 
   if (dashboard.status === "loading") {
     return <RouteLoading fullPage={false} label="Loading dashboard" />;
@@ -60,20 +41,37 @@ export function DashboardRoute() {
     return <SetupRequiredDashboard item={dashboard.data} />;
   }
 
-  return <ReadyDashboard item={dashboard.data} pace={dashboard.data.pace} />;
-}
-
-function DashboardHeader() {
   return (
-    <PageHeader
-      description="Your current savings progress and weekly spending guidance."
-      title="Dashboard"
-      titleId="dashboard-title"
+    <ReadyDashboard
+      item={dashboard.data}
+      pace={dashboard.data.pace}
+      snapshot={snapshot.status === "ready" ? snapshot.data : null}
     />
   );
 }
 
-function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPaceSummary }) {
+function DashboardHeader() {
+  return (
+    <header className="dashboard-page-header">
+      <div>
+        <h1 id="dashboard-title">Dashboard</h1>
+      </div>
+      <Link className="dashboard-header-link" to={routes.financialInputs}>
+        Adjust plan
+      </Link>
+    </header>
+  );
+}
+
+function ReadyDashboard({
+  item,
+  pace,
+  snapshot,
+}: {
+  item: DashboardItem;
+  pace: DashboardPaceSummary;
+  snapshot: CalculationSnapshotResponse | null;
+}) {
   if (item.goal === null) {
     return null;
   }
@@ -82,163 +80,135 @@ function ReadyDashboard({ item, pace }: { item: DashboardItem; pace: DashboardPa
   const changedInputCategories = getStringList(item.changed_from_previous, "changed_input_categories");
   const weeklyDelta = getNumberValue(item.changed_from_previous, "weekly_safe_to_spend_delta_cents");
   const weeklyChangeLabel = formatWeeklyChange(weeklyDelta);
-  const hasPlanChanges = changedInputCategories.length > 0 || weeklyDelta !== null;
+  const unconfirmedIncome = getNumberValue(explanationSummary, "unconfirmed_income_count") ?? 0;
 
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-
       <section className="metric-hero" aria-labelledby="safe-to-spend-title">
         <div>
           <h2 id="safe-to-spend-title">Weekly safe-to-spend</h2>
           <p className="metric-value">{formatCents(pace.weekly_safe_to_spend_cents)}</p>
-          <p className="metric-support">
-            This is the amount left for weekly spending while staying aligned with your goal.
-          </p>
-          <PaceStatusExplanation goal={item.goal} pace={pace} />
         </div>
-        <div className="status-stack">
-          <span className="status-pill">{paceStatusLabel(pace.pace_status)}</span>
-          <span className="status-context">{paceStatusDescription(pace.pace_status)}</span>
-          <span>Updated {formatDateTime(item.calculated_at)}</span>
+        <div className="metric-hero-aside">
+          <Link className="text-link" to={routes.calculation}>View plan details</Link>
+          <span className="status-updated">Updated {formatDateTime(item.calculated_at)}</span>
         </div>
       </section>
 
-      <div className="dashboard-primary-layout">
-        <div className="dashboard-main-column">
-          <section className="dashboard-overview" aria-label="Plan summary">
-            <Panel className="goal-panel" title={item.goal.name}>
-              <ProgressBar label="Goal progress" value={pace.progress_percentage} />
-              <dl className="metric-list">
-                <div>
-                  <dt>Saved</dt>
-                  <dd>{formatCents(item.goal.current_saved_cents)}</dd>
-                </div>
-                <div>
-                  <dt>Target</dt>
-                  <dd>{formatCents(item.goal.target_cents)}</dd>
-                </div>
-                <div>
-                  <dt>Target date</dt>
-                  <dd>{formatDate(item.goal.target_date)}</dd>
-                </div>
-              </dl>
-            </Panel>
+      <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
 
-            <div className="dashboard-supporting-cards">
-              <Panel title="Current week">
-                <dl className="dashboard-feature-metric">
-                  <div>
-                    <dt>Weekly allowance</dt>
-                    <dd>{formatCents(pace.weekly_safe_to_spend_cents)}</dd>
-                  </div>
-                </dl>
-                <dl className="dashboard-supporting-detail">
-                  <div>
-                    <dt>Weeks to target</dt>
-                    <dd>{pace.remaining_weeks}</dd>
-                  </div>
-                </dl>
-              </Panel>
-
-              <Panel title="Goal outlook">
-                <dl className="dashboard-feature-metric">
-                  <div>
-                    <dt>Projected shortfall</dt>
-                    <dd>{formatCents(pace.projected_shortfall_cents)}</dd>
-                  </div>
-                </dl>
-                <p className="dashboard-feature-support">
-                  {pace.projected_shortfall_cents === 0
-                    ? "Your current forecast covers the remaining goal amount."
-                    : "Your current forecast does not cover the remaining goal amount yet."}
-                </p>
-              </Panel>
-            </div>
-          </section>
-
-          <section className={`dashboard-context${hasPlanChanges ? "" : " single"}`} aria-label="Plan context">
-            <div className="dashboard-context-block">
-              <h2>Plan context</h2>
-              <p className="panel-copy">Your dashboard is based on these saved assumptions.</p>
-              <dl className="dashboard-context-summary">
-                <div>
-                  <dt>Confirmed income sources</dt>
-                  <dd>{getNumberValue(explanationSummary, "confirmed_income_count") ?? "0"}</dd>
-                </div>
-                <div>
-                  <dt>Planned expenses</dt>
-                  <dd>{getNumberValue(explanationSummary, "planned_expense_count") ?? "0"}</dd>
-                </div>
-                <div>
-                  <dt>Unconfirmed income</dt>
-                  <dd>{getNumberValue(explanationSummary, "unconfirmed_income_count") ?? "0"}</dd>
-                </div>
-              </dl>
-              <Link className="text-link" to={routes.calculation}>
-                View plan details
-              </Link>
-            </div>
-
-            {hasPlanChanges ? (
-              <div className="dashboard-context-block">
-                <h2>What changed</h2>
-                <p className="panel-copy">{formatInputCategoryList(changedInputCategories)}</p>
-                <p className="panel-copy">{weeklyChangeLabel}</p>
-              </div>
-            ) : null}
-          </section>
+      <section className="dashboard-goal-story" aria-labelledby="goal-story-title">
+        <div className="section-heading-row">
+          <h2 id="goal-story-title">{item.goal.name}</h2>
+          <span className={`status-pill status-pill-${statusTone(pace.pace_status)}`}>
+            {paceStatusLabel(pace.pace_status)}
+          </span>
         </div>
+        <ProgressBar label="Goal progress" value={pace.progress_percentage} />
+        <div className="goal-summary">
+          <span><strong>{formatCents(item.goal.current_saved_cents)}</strong> of {formatCents(item.goal.target_cents)} saved</span>
+          <span>{formatDate(item.goal.target_date)} · {pace.remaining_weeks} weeks left</span>
+        </div>
+        {pace.projected_shortfall_cents > 0 ? (
+          <p className="plan-warning">
+            Projected shortfall: <strong>{formatCents(pace.projected_shortfall_cents)}</strong>.{' '}
+            <Link to={routes.financialInputs}>Review income and expenses</Link>
+          </p>
+        ) : pace.pace_status === "At Risk" ? (
+          <p className="plan-warning">
+            Savings are behind pace; your forecast still covers the goal.{' '}
+            <Link to={routes.goal}>Update savings</Link>
+          </p>
+        ) : null}
+        <Link className="text-link" to={routes.goal}>Edit goal</Link>
+      </section>
 
-        <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
-      </div>
+      {unconfirmedIncome > 0 ? (
+        <p className="plan-warning">
+          {unconfirmedIncome} unconfirmed income {unconfirmedIncome === 1 ? "source is" : "sources are"} excluded.{' '}
+          <Link to={`${routes.financialInputs}#income-sources`}>Review income</Link>
+        </p>
+      ) : null}
+      <UpcomingPlan snapshot={snapshot} />
+      {changedInputCategories.length > 0 || (weeklyDelta !== null && weeklyDelta !== 0) ? (
+        <details className="plan-changes">
+          <summary>Latest changes</summary>
+          {changedInputCategories.length > 0 ? <p>{formatInputCategoryList(changedInputCategories)}</p> : null}
+          {weeklyDelta === null ? null : <p>{weeklyChangeLabel}</p>}
+        </details>
+      ) : null}
     </section>
   );
 }
 
-function PaceStatusExplanation({ goal, pace }: { goal: NonNullable<DashboardItem["goal"]>; pace: DashboardPaceSummary }) {
-  const progressDelta = pace.expected_savings_to_date_cents - goal.current_saved_cents;
-  if (
-    pace.pace_status !== "At Risk" ||
-    !Number.isFinite(pace.expected_savings_to_date_cents) ||
-    progressDelta <= 0
-  ) {
+function UpcomingPlan({ snapshot }: { snapshot: CalculationSnapshotResponse | null }) {
+  if (snapshot === null) {
     return null;
   }
 
+  const input = snapshot.normalized_input_json;
+  const income = getObjectArray(input, "income_sources").map((item) => ({ ...item, kind: "income" as const }));
+  const expenses = getObjectArray(input, "planned_expenses").map((item) => ({ ...item, kind: "expense" as const }));
+  const items = [...income, ...expenses]
+    .filter((item) => getStringValue(item, "next_date") !== null)
+    .sort((left, right) => (getStringValue(left, "next_date") ?? "").localeCompare(getStringValue(right, "next_date") ?? ""))
+    .slice(0, 4);
+
+  if (items.length === 0) return null;
+
   return (
-    <p className="metric-status-explanation">
-      Your saved progress is {formatCents(progressDelta)} behind the target pace. The {formatCents(pace.weekly_safe_to_spend_cents)} shown above is still available based on your forecasted cash flow.
-    </p>
+    <section className="upcoming-plan" aria-labelledby="upcoming-plan-title">
+      <div className="section-heading-row section-heading-row-tight">
+        <div>
+          <h2 id="upcoming-plan-title">Income & expenses</h2>
+        </div>
+        <Link className="text-link" to={routes.financialInputs}>Edit inputs</Link>
+      </div>
+        <ul className="upcoming-list">
+          {items.map((item) => {
+            const kind = item.kind;
+            const name = getStringValue(item, "name") ?? "Unnamed item";
+            const amount = getNumberValue(item, "amount_cents");
+            const nextDate = getStringValue(item, "next_date");
+            const frequency = getStringValue(item, "frequency");
+            const detail = kind === "income"
+              ? getStringValue(item, "confidence") === "confirmed" ? "Confirmed income" : "Needs confirmation"
+              : classificationLabel(getStringValue(item, "classification"));
+
+            return (
+              <li key={`${kind}-${getStringValue(item, "id") ?? name}`}>
+                <span className={`upcoming-kind upcoming-kind-${kind}`} aria-hidden="true" />
+                <span className="upcoming-name">
+                  <strong>{name}</strong>
+                  <small>{nextDate === null ? "Date unavailable" : formatDate(nextDate)} · {detail}</small>
+                </span>
+                <span className="upcoming-amount">
+                  <strong>{amount === null ? "Not available" : formatCents(amount)}</strong>
+                  <small>{frequency === null ? "" : frequencyLabel(frequency)}</small>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+    </section>
   );
 }
 
 function SetupRequiredDashboard({ item }: { item: DashboardItem }) {
-  const guideState = setupGuideStateFromDashboard(item);
+  const needsGoal = item.missing_inputs.includes("active_goal");
+  const needsReserve = item.missing_inputs.includes("reserve_buffer_confirmation");
+  const needsCash = item.missing_inputs.includes("financial_profile");
+  const action = needsGoal ? "Create goal" : needsCash ? "Add cash balance" : needsReserve ? "Confirm reserve" : "Review inputs";
+  const title = needsGoal ? "No savings goal yet" : needsCash ? "Add your cash balance" : needsReserve ? "Confirm your reserve" : "No calculation yet";
 
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-      <SetupGuide activeStep={guideState.activeStep} completedSteps={guideState.completedSteps} />
       <EmptyState
-        title="Finish setup to calculate your weekly plan"
-        description="GoalWise needs a complete goal, cash picture, and confirmed reserve before it can show your weekly number."
+        title={title}
+        action={<ButtonLink variant="primary" to={needsGoal ? routes.goal : `${routes.financialInputs}#cash-picture`}>{action}</ButtonLink>}
       />
-      <div className="setup-list" aria-label="Missing inputs">
-        {item.missing_inputs.map((missingInput) => {
-          const detail = missingInputLabels[missingInput] ?? {
-            action: "Complete this setup item.",
-            label: "Setup item",
-            to: routes.financialInputs,
-          };
-          return (
-            <Link className="setup-item" key={missingInput} to={detail.to}>
-              <span>{detail.label}</span>
-              <span>{detail.action}</span>
-            </Link>
-          );
-        })}
-      </div>
     </section>
   );
 }
@@ -246,6 +216,23 @@ function SetupRequiredDashboard({ item }: { item: DashboardItem }) {
 function getJsonObject(source: Record<string, JsonValue> | null, key: string) {
   const value = source?.[key];
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
+}
+
+function getObjectArray(source: Record<string, JsonValue> | null, key: string) {
+  const value = source?.[key];
+  return value
+    ? Array.isArray(value)
+      ? value.filter(
+          (item): item is Record<string, JsonValue> =>
+            item !== null && typeof item === "object" && !Array.isArray(item),
+        )
+      : []
+    : [];
+}
+
+function getStringValue(source: Record<string, JsonValue> | null, key: string) {
+  const value = source?.[key];
+  return typeof value === "string" ? value : null;
 }
 
 function getNumberValue(source: Record<string, JsonValue> | null, key: string) {
@@ -267,4 +254,15 @@ function formatWeeklyChange(deltaCents: number | null) {
   }
   const direction = deltaCents > 0 ? "increased" : "decreased";
   return `Weekly safe-to-spend ${direction} by ${formatCents(Math.abs(deltaCents))}.`;
+}
+
+function statusTone(status: string) {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("risk") || normalized.includes("pace")) {
+    return "warning";
+  }
+  if (normalized === "completed" || normalized === "ahead" || normalized.includes("track")) {
+    return "positive";
+  }
+  return "neutral";
 }
