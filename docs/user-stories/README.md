@@ -33,3 +33,20 @@ Shared assumptions:
 These are demo-ready narratives, not promises of capabilities outside the MVP.
 Every monetary expectation is an example of the deterministic backend contract;
 the UI should render the returned values rather than reimplement the formulas.
+
+## Local demo accounts
+
+Run `make seed-user-stories` after `make backend-stack-rebuild` and before
+`make dev-up`'s frontend is opened. The script creates the accounts below plus
+the original three stories, then prints each user's calculated status and
+allowance. It is guarded to accept only localhost API URLs.
+
+All seeded accounts use the local-only password
+`CorrectHorseBatteryStaple123!`.
+
+| Account | Story state | Use it to demonstrate |
+| --- | --- | --- |
+| `elena.deductible@example.com` | `On Track` | Unconfirmed bonus, reserve buffer, and a high-consequence one-time expense. |
+| `marcus.freelance@example.com` | `Off Pace` | Conservative treatment of uncertain contract income and explicit shortfall. |
+| `tara.wedding@example.com` | `Ahead` | Recurring income plus a protected one-time venue deposit. |
+| `noah.completed@example.com` | `Completion transition` | Start with a ready near-complete plan, then edit to the target and show completion/archive lifecycle. |
