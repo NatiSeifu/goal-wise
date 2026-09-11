@@ -34,7 +34,8 @@ AI must not be represented as:
 
 ## Asset and IP Notes
 
-- Current deck uses native PowerPoint shapes and text only.
+- The title slide uses `assets/goalwise-main-logo.png`, provided by the user
+  from their local Downloads folder.
 - Existing repo diagrams in `docs/slides/` may be used as evidence or design
   references.
 - Add licensing notes here for any new image, font, icon, template, model, or

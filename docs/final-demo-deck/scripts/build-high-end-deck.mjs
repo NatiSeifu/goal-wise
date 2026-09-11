@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const manifestPath = path.join(root, "deck", "slides.json");
+const logoPath = path.join(root, "assets", "goalwise-main-logo.png");
 const distDir = path.join(root, "dist");
 const outputPath = path.join(distDir, "goalwise-final-demo-high-end-v2.pptx");
 const deck = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
@@ -167,40 +168,12 @@ function title(slide, item, index) {
     color: "B8CEC4",
     margin: 0
   });
-  slide.addShape(pptx.ShapeType.arc, {
-    x: 7.0,
-    y: 1.0,
-    w: 4.4,
-    h: 4.4,
-    adjustPoint: 0.22,
-    line: { color: C.mint, width: 2.2, transparency: 8 }
-  });
-  slide.addShape(pptx.ShapeType.arc, {
-    x: 7.55,
-    y: 1.55,
-    w: 3.3,
-    h: 3.3,
-    adjustPoint: 0.35,
-    line: { color: C.amber, width: 1.5, transparency: 15 }
-  });
-  slide.addShape(pptx.ShapeType.ellipse, {
-    x: 8.43,
-    y: 2.36,
-    w: 1.65,
-    h: 1.65,
-    fill: { color: "172C25", transparency: 0 },
-    line: { color: C.green, width: 1.3 }
-  });
-  slide.addText("$", {
-    x: 8.43,
-    y: 2.62,
-    w: 1.65,
-    h: 0.56,
-    fontSize: 34,
-    bold: true,
-    color: C.mint,
-    align: "center",
-    margin: 0
+  slide.addImage({
+    path: logoPath,
+    x: 6.72,
+    y: 0.72,
+    w: 5.15,
+    h: 5.15
   });
   addMetric(slide, "ONE GOAL", "MVP scope", 6.85, 5.45, C.green, true);
   addMetric(slide, "PACE-v1", "deterministic core", 8.88, 5.45, C.blue, true);
