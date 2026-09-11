@@ -23,6 +23,7 @@ Shared assumptions:
 | [Freelance retainer gap](freelance-retainer-gap.md) | `Off Pace` | A conservative `$0` allowance and explicit shortfall make uncertain contract income actionable. |
 | [Wedding venue deposit](wedding-deposit-ahead.md) | `Ahead` | Recurring income and a one-time obligation produce a protected goal with room to spend. |
 | [Completed emergency goal](completed-emergency-goal.md) | `Completed` | A zero goal gap is a real lifecycle outcome and remains auditable before archival. |
+| [AI-assisted plan revision](ai-assisted-plan-revision.md) | Replacement review | A user can revise a goal mid-plan with a reviewed canonical CSV while AI remains explain-only. |
 
 ## Production demo workflows
 
