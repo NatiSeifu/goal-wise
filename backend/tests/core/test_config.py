@@ -30,8 +30,8 @@ def test_ai_summary_defaults_to_disabled_and_explicit_request() -> None:
     assert settings.ai_summary_provider == "groq"
     assert settings.ai_summary_model == "openai/gpt-oss-120b"
     assert settings.groq_api_key is None
-    assert settings.ai_summary_prompt_version == "ai-explanation-prompt-v3"
-    assert settings.ai_summary_response_schema_version == "ai-explanation-v1"
+    assert settings.ai_summary_prompt_version == "ai-explanation-prompt-v4"
+    assert settings.ai_summary_response_schema_version == "ai-explanation-v2"
     assert settings.ai_summary_timeout_seconds == 4.0
 
 

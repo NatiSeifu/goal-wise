@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { BrandLockup } from "./BrandLockup.tsx";
+
 type PageShellProps = {
   children: ReactNode;
 };
@@ -7,12 +9,7 @@ type PageShellProps = {
 export function PageShell({ children }: PageShellProps) {
   return (
     <main className="page-shell">
-      <div className="brand-lockup" aria-label="GoalWise">
-        <span className="brand-mark" aria-hidden="true">
-          G
-        </span>
-        <span>GoalWise</span>
-      </div>
+      <BrandLockup />
       {children}
     </main>
   );

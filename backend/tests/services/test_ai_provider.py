@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from app.services.ai_prompts import (
-    AI_EXPLANATION_PROMPT_V3,
+    AI_EXPLANATION_PROMPT_V4,
     AI_EXPLANATION_PROMPT_VERSION,
 )
 from app.services.ai_provider import (
@@ -17,11 +17,11 @@ from pydantic import SecretStr
 
 
 def test_active_prompt_version_explains_status_and_spending_together() -> None:
-    assert AI_EXPLANATION_PROMPT_VERSION == "ai-explanation-prompt-v3"
-    assert '"At Risk"' in AI_EXPLANATION_PROMPT_V3
-    assert "projected shortfall is zero" in AI_EXPLANATION_PROMPT_V3
-    assert "cut spending" in AI_EXPLANATION_PROMPT_V3
-    assert "Never contradict a supplied metric" in AI_EXPLANATION_PROMPT_V3
+    assert AI_EXPLANATION_PROMPT_VERSION == "ai-explanation-prompt-v4"
+    assert '"At Risk"' in AI_EXPLANATION_PROMPT_V4
+    assert "projected shortfall is zero" in AI_EXPLANATION_PROMPT_V4
+    assert "cut spending" in AI_EXPLANATION_PROMPT_V4
+    assert "Never contradict a supplied metric" in AI_EXPLANATION_PROMPT_V4
 
 
 class StubHttpResponse:

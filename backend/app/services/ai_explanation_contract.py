@@ -2,13 +2,13 @@
 
 import re
 from collections.abc import Mapping
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from app.schemas.snapshots import SnapshotResultV1
 
-AI_EXPLANATION_SCHEMA_VERSION = "ai-explanation-v1"
+AI_EXPLANATION_SCHEMA_VERSION = "ai-explanation-v2"
 
 PaceMetric = Literal[
     "pace_status",
@@ -52,38 +52,78 @@ class AiSummaryPayload(BaseModel):
     formula_version: str = Field(min_length=1, max_length=32)
 
 
-class AiObservation(BaseModel):
-    """A natural-language observation linked to trusted snapshot metrics."""
+def _validate_prose(value: str) -> str:
+    lowered = value.casefold()
+    if _NUMERIC_TEXT_PATTERN.search(value) is not None:
+        raise ValueError("generated prose must not contain numeric values")
+    if any(term in lowered for term in _PROHIBITED_TERMS):
+        raise ValueError("generated prose contains prohibited advice")
+    return value
 
-    model_config = ConfigDict(extra="forbid")
+
+class AiObservation(BaseModel):
+    """A substantive observation with evidence from the committed snapshot."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     kind: ObservationKind
     tone: ObservationTone
-    metric_refs: list[PaceMetric] = Field(default_factory=list, max_length=4)
+    text: str = Field(min_length=80, max_length=450)
+    metric_refs: list[PaceMetric] = Field(min_length=1, max_length=3)
+
+    @field_validator("text")
+    @classmethod
+    def reject_unsafe_text(cls, value: str) -> str:
+        return _validate_prose(value)
+
+    @model_validator(mode="after")
+    def require_relevant_evidence(self) -> Self:
+        primary_metrics = {
+            "pace": "pace_status",
+            "allowance": "weekly_safe_to_spend_cents",
+            "progress": "progress_percentage",
+            "shortfall": "projected_shortfall_cents",
+        }
+        if primary_metrics[self.kind] not in self.metric_refs:
+            raise ValueError("observation must reference its primary metric")
+        if len(set(self.metric_refs)) != len(self.metric_refs):
+            raise ValueError("metric references must be distinct")
+        return self
 
 
 class AiExplanationResponse(BaseModel):
-    """Validated provider output safe for user-facing rendering."""
+    """Validated, bounded digest; financial values remain snapshot-owned."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    schema_version: Literal["ai-explanation-v1"]
+    schema_version: Literal["ai-explanation-v2"]
     headline: str = Field(min_length=1, max_length=120)
-    body: str = Field(min_length=1, max_length=800)
-    observations: list[AiObservation] = Field(max_length=4)
-    next_step: str | None = Field(default=None, max_length=240)
+    body: str = Field(min_length=80, max_length=600)
+    observations: list[AiObservation] = Field(min_length=2, max_length=3)
+    next_step: str = Field(min_length=40, max_length=360)
+    next_step_action: Literal["review_goal", "review_inputs"]
 
     @field_validator("headline", "body", "next_step")
     @classmethod
-    def reject_unsafe_text(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        lowered = value.casefold()
-        if _NUMERIC_TEXT_PATTERN.search(value) is not None:
-            raise ValueError("generated prose must not contain numeric values")
-        if any(term in lowered for term in _PROHIBITED_TERMS):
-            raise ValueError("generated prose contains prohibited advice")
-        return value
+    def reject_unsafe_text(cls, value: str) -> str:
+        return _validate_prose(value)
+
+    @model_validator(mode="after")
+    def require_bounded_depth(self) -> Self:
+        kinds = [item.kind for item in self.observations]
+        if len(set(kinds)) != len(kinds):
+            raise ValueError("observation topics must be distinct")
+        prose = " ".join(
+            [
+                self.headline,
+                self.body,
+                self.next_step,
+                *(item.text for item in self.observations),
+            ]
+        )
+        if not 90 <= len(prose.split()) <= 240:
+            raise ValueError("digest must contain between ninety and two hundred forty words")
+        return self
 
 
 def build_ai_payload(result: SnapshotResultV1) -> dict[str, object]:

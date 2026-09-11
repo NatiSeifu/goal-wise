@@ -4,6 +4,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { routes } from "../../app/routes.ts";
 import { Button } from "../ui/Button.tsx";
 import { useAuth } from "../../features/auth/AuthProvider.tsx";
+import { BrandLockup } from "./BrandLockup.tsx";
 
 const navItems = [
   { href: routes.dashboard, label: "Dashboard" },
@@ -39,12 +40,7 @@ export function AppShell() {
         Skip to main content
       </a>
       <aside className="sidebar" aria-label="GoalWise app navigation">
-        <NavLink className="brand-lockup brand-link" to={routes.landing}>
-          <span className="brand-mark" aria-hidden="true">
-            G
-          </span>
-          <span>GoalWise</span>
-        </NavLink>
+        <BrandLockup linked />
         <nav className="sidebar-nav" aria-label="Primary">
           {navItems.map((item) => (
             <NavLink

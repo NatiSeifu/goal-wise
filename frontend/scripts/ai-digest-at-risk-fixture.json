@@ -1,0 +1,27 @@
+{
+  "schema_version": "ai-explanation-v2",
+  "headline": "Saved progress lags pace, yet forecast still covers goal with spending room",
+  "body": "Your savings are currently behind the expected pace, triggering an At Risk status. Still, the forecast based on your inputs shows enough resources to meet the goal, and you retain a positive weekly spending allowance.",
+  "observations": [
+    {
+      "kind": "pace",
+      "tone": "caution",
+      "text": "The saved amount trails the projected pace, which is why the plan flags At Risk. Although the forecast still reaches the target, this lag suggests you verify the recorded savings and the goal timeline for accuracy.",
+      "metric_refs": [
+        "pace_status",
+        "progress_percentage"
+      ]
+    },
+    {
+      "kind": "allowance",
+      "tone": "neutral",
+      "text": "Your weekly safe\u2011to\u2011spend amount is positive, providing a cushion for discretionary expenses each week. This allowance remains despite the pace lag, but it depends on the current income and expense inputs staying unchanged.",
+      "metric_refs": [
+        "weekly_safe_to_spend_cents",
+        "projected_shortfall_cents"
+      ]
+    }
+  ],
+  "next_step": "Review the saved progress, target amount, and deadline to ensure the inputs reflect your current situation and why it matters.",
+  "next_step_action": "review_goal"
+}

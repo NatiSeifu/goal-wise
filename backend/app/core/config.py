@@ -33,8 +33,8 @@ class Settings(BaseSettings):
     ai_summary_provider: str = "groq"
     ai_summary_model: str = "openai/gpt-oss-120b"
     groq_api_key: SecretStr | None = None
-    ai_summary_prompt_version: str = "ai-explanation-prompt-v3"
-    ai_summary_response_schema_version: str = "ai-explanation-v1"
+    ai_summary_prompt_version: str = "ai-explanation-prompt-v4"
+    ai_summary_response_schema_version: str = "ai-explanation-v2"
     ai_summary_timeout_seconds: float = 4.0
 
     @field_validator("database_url")

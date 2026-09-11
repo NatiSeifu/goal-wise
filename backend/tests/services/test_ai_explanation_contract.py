@@ -66,29 +66,11 @@ def test_build_ai_payload_rejects_missing_outputs() -> None:
 
 
 def test_validate_ai_response_accepts_natural_language_without_numbers() -> None:
-    response = validate_ai_response(
-        {
-            "schema_version": "ai-explanation-v1",
-            "headline": "Your plan is on track",
-            "body": (
-                "Your current plan leaves room for weekly spending while keeping the goal in view."
-            ),
-            "observations": [
-                {
-                    "kind": "pace",
-                    "tone": "positive",
-                    "metric_refs": ["pace_status", "weekly_safe_to_spend_cents"],
-                }
-            ],
-            "next_step": "Keep your planned expenses up to date.",
-        }
-    )
+    from tests.ai_fixtures import valid_digest
 
-    assert response.schema_version == "ai-explanation-v1"
-    assert response.observations[0].metric_refs == [
-        "pace_status",
-        "weekly_safe_to_spend_cents",
-    ]
+    response = validate_ai_response(valid_digest())
+    assert response.schema_version == "ai-explanation-v2"
+    assert response.observations[0].metric_refs == ["pace_status", "progress_percentage"]
 
 
 @pytest.mark.parametrize(
@@ -130,3 +112,58 @@ def test_validate_ai_response_rejects_unknown_fields_and_metrics() -> None:
                 "provider_raw_text": "must not be accepted",
             }
         )
+
+
+def test_digest_requires_substantive_distinct_observations() -> None:
+    from tests.ai_fixtures import valid_digest
+
+    raw = valid_digest()
+    response = validate_ai_response(raw)
+    assert len(response.observations) == 2
+    assert response.observations[0].text
+    assert response.next_step_action == "review_inputs"
+
+    for observations in [[], [raw["observations"][0]], [raw["observations"][0]] * 2]:
+        with pytest.raises(AiContractError):
+            validate_ai_response({**raw, "observations": observations})
+
+
+@pytest.mark.parametrize("field", ["headline", "body", "next_step", "observation"])
+@pytest.mark.parametrize("unsafe", ["Spend $500 now.", "Consider investing the available cash."])
+def test_digest_rejects_unsafe_prose_in_every_section(field: str, unsafe: str) -> None:
+    from tests.ai_fixtures import valid_digest
+
+    raw = valid_digest()
+    if field == "observation":
+        raw["observations"][0]["text"] += unsafe
+    else:
+        raw[field] += unsafe
+    with pytest.raises(AiContractError):
+        validate_ai_response(raw)
+
+
+def test_digest_rejects_unrelated_evidence_and_unsupported_actions() -> None:
+    from tests.ai_fixtures import valid_digest
+
+    raw = valid_digest()
+    raw["observations"][0]["metric_refs"] = ["formula_version"]
+    with pytest.raises(AiContractError):
+        validate_ai_response(raw)
+    with pytest.raises(AiContractError):
+        validate_ai_response({**valid_digest(), "next_step_action": "transfer_money"})
+    with pytest.raises(AiContractError):
+        validate_ai_response({**valid_digest(), "schema_version": "ai-explanation-v1"})
+
+
+@pytest.mark.parametrize("field", ["body", "next_step", "observation"])
+def test_digest_rejects_unbounded_or_empty_sections(field: str) -> None:
+    from tests.ai_fixtures import valid_digest
+
+    for text in ["", "word " * 700]:
+        raw = valid_digest()
+        if field == "observation":
+            raw["observations"][0]["text"] = text
+        else:
+            raw[field] = text
+        with pytest.raises(AiContractError):
+            validate_ai_response(raw)

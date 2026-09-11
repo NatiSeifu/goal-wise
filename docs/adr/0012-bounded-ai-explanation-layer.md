@@ -59,6 +59,19 @@ flowchart LR
     Error --> Dashboard
 ```
 
+## Digest refinement — 2026-09-09
+
+The user requested a fuller, prominent plan rundown instead of a short summary
+hidden below the dashboard. Keep the approved aggregate payload and explicit
+request mode, but use a versioned digest containing an overview, distinct
+observations with metric evidence, and a suggested input-review action.
+SPEC-0011 bounds the content and routes. This improves explanation depth without
+giving the model more private data or authority over financial decisions.
+
+Prompt and response-schema versions advance together. Existing summaries remain
+stored under their old version tuple; they do not substitute for a new digest.
+The four-second timeout and deterministic calculation boundary remain in force.
+
 ## Alternatives considered
 
 - **AI calculates or recommends the financial result** - Rejected because the

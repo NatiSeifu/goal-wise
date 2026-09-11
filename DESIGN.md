@@ -250,3 +250,38 @@ Response conventions:
 - Raw transaction import, correction, and duplicate handling.
 - Full production load testing and uptime monitoring.
 - Native mobile apps, bank integrations, and multi-goal support.
+
+## Frontend Presentation
+
+The experimental frontend uses a forest navigation rail, warm neutral canvas,
+rounded white cards, and an editorial two-column dashboard. The weekly
+safe-to-spend amount anchors a dark green hero with the GoalWise mark; the goal,
+forecast, saved inputs, upcoming items, and optional AI digest form the first
+viewport. Each metric appears once in the default dashboard, and calculation
+details remain progressively disclosed. The AI digest stays prominent in the
+right rail with explicit generation, a full overview, metric-linked observations,
+and a bounded review action.
+Forms use direct labels without walkthroughs, coaching panels, or generic
+product narration. Field-specific guidance remains where it prevents mistakes.
+
+[SPEC-0012](docs/specs/0012-ui-content-and-hierarchy.md) defines the route-level
+content and action contract. The frontend formats backend-owned dashboard and
+snapshot values; it does not implement pace formulas or derive new financial
+metrics. Calm neutral surfaces, spacing, and dividers establish hierarchy;
+warning color is reserved for conditions requiring attention.
+
+The browser capture utility in `frontend/scripts/capture-dashboard.mjs` uses
+fixed synthetic backend responses to verify every route at desktop, tablet,
+and mobile sizes. Captures are review artifacts, not production data.
+
+The AI explanation edge uses `ai-explanation-v2` and prompt v4. It receives the
+same six aggregate fields as before, validates every prose section, and permits
+only goal/input review links as generated action types. Digests are cached by
+snapshot and version tuple; a schema upgrade does not mutate historical rows.
+The UI renders numeric evidence from the displayed snapshot and rejects a digest
+whose snapshot ID does not match it. See [SPEC-0011](docs/specs/0011-ai-explanation-layer.md).
+
+The dashboard hero uses status-specific transparent logo assets so the mark can
+communicate pace without changing its geometry. A decorative timeseries stroke
+supports the forecast card as a visual texture only; it is not presented as a
+calculated series.

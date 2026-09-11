@@ -3,10 +3,12 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { ApiError } from "../../api/errors.ts";
 import { routes } from "../../app/routes.ts";
+import { BrandLockup } from "../../components/layout/BrandLockup.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { TextField } from "../../components/ui/TextField.tsx";
+import { AuthBrandMark } from "../../components/auth/AuthBrandMark.tsx";
 import { type AuthRedirectState } from "../../features/auth/RequireAuth.tsx";
 import { useAuth } from "../../features/auth/AuthProvider.tsx";
 
@@ -23,12 +25,13 @@ export function LoginRoute() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   if (auth.status === "checking") {
     return <RouteLoading label="Checking your session" />;
   }
 
-  if (auth.status === "authenticated") {
+  if (auth.status === "authenticated" && !isSubmitting && !isTransitioning) {
     return <Navigate replace to={routes.dashboard} />;
   }
 
@@ -39,7 +42,8 @@ export function LoginRoute() {
 
     try {
       await auth.login({ email, password });
-      navigate(destination, { replace: true });
+      setIsTransitioning(true);
+      window.setTimeout(() => navigate(destination, { replace: true }), 760);
     } catch (loginError) {
       setError(
         loginError instanceof ApiError
@@ -54,19 +58,22 @@ export function LoginRoute() {
   }
 
   return (
-    <main className="auth-page">
+    <main className={`auth-page${isTransitioning ? " auth-page-transitioning" : ""}`}>
+      <aside className="auth-brand-panel" aria-label="GoalWise overview">
+        <div className="auth-brand-panel-header"><BrandLockup linked /></div>
+        <div className="auth-brand-copy">
+          <p className="auth-kicker">PLAN · TRACK · ACHIEVE</p>
+          <h2>Know what you can spend.<br /><span>Stay on track for what matters.</span></h2>
+          <p>Goal-based budgeting without the guesswork.</p>
+        </div>
+        <AuthBrandMark />
+        <p className="auth-brand-footer">A more intentional<br />tomorrow.</p>
+      </aside>
       <section className="auth-panel" aria-labelledby="login-title">
         <div>
-          <Link className="brand-lockup brand-link" to={routes.landing}>
-            <span className="brand-mark" aria-hidden="true">
-              G
-            </span>
-            <span>GoalWise</span>
-          </Link>
+          <div className="auth-form-brand"><AuthBrandMark /><span>GoalWise</span></div>
           <h1 id="login-title">Sign in</h1>
-          <p className="auth-copy">
-            Continue to your savings plan.
-          </p>
+          <p className="auth-subtitle">Welcome back.</p>
         </div>
         <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>
           <FormError message={error ?? auth.error} />

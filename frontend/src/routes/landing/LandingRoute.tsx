@@ -20,10 +20,9 @@ export function LandingRoute() {
   return (
     <PageShell>
       <section className="intro-panel" aria-labelledby="intro-title">
-        <h1 id="intro-title">GoalWise</h1>
+        <h1 id="intro-title">Know what you can spend each week.</h1>
         <p className="intro-copy">
-          Plan one savings goal from manual assumptions, then see a weekly safe-to-spend
-          amount you can review and revisit.
+          Set a savings goal. Add your cash, income, and expenses.
         </p>
         <div className="action-row" aria-label="GoalWise actions">
           <ButtonLink variant="primary" to={routes.register}>
@@ -33,34 +32,6 @@ export function LandingRoute() {
             Sign in
           </ButtonLink>
         </div>
-      </section>
-      <nav className="landing-links" aria-label="Landing page details">
-        <a href="#mvp-boundary">MVP boundary</a>
-        <a href="#security">Security</a>
-        <a href="#structure">Structure</a>
-      </nav>
-      <section className="detail-grid" aria-label="GoalWise product details">
-        <article className="detail-panel" id="mvp-boundary">
-          <h2>Consistent money logic</h2>
-          <p>
-            GoalWise uses deterministic rules for safe-to-spend, shortfall, plan status,
-            and saved plan details.
-          </p>
-        </article>
-        <article className="detail-panel" id="security">
-          <h2>Private account access</h2>
-          <p>
-            Your plan requires sign-in, protected sessions, and request checks before
-            account changes are accepted.
-          </p>
-        </article>
-        <article className="detail-panel" id="structure">
-          <h2>Focused MVP workflow</h2>
-          <p>
-            The current app supports account access, one active goal, manual inputs,
-            deterministic dashboard results, and calculation details.
-          </p>
-        </article>
       </section>
     </PageShell>
   );

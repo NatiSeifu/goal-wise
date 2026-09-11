@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { dateFromToday, testPassword, uniqueEmail } from "./support/flows.ts";
+import { createGoal, registerUser, dateFromToday, testPassword, uniqueEmail } from "./support/flows.ts";
 
 test("registers a user and reaches the authenticated dashboard setup state", async ({ page }) => {
   await page.goto("/register");
@@ -12,13 +12,13 @@ test("registers a user and reaches the authenticated dashboard setup state", asy
 
   await expect(page).toHaveURL(/\/goal$/);
   await expect(page.getByRole("heading", { name: "Goal setup" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Dashboard:/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Dashboard", exact: true })).toBeVisible();
 
-  await page.getByRole("link", { name: /Dashboard:/ }).click();
+  await page.getByRole("link", { name: "Dashboard", exact: true }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
-  await expect(page.getByText("Finish setup to calculate your weekly plan")).toBeVisible();
+  await expect(page.getByText("No savings goal yet")).toBeVisible();
 });
 
 test("logs out and signs back in to a protected account", async ({ page }) => {
@@ -62,8 +62,8 @@ test("completes the first-run setup and reaches a ready dashboard", async ({ pag
   await page.getByRole("button", { name: "Create goal" }).click();
   await expect(page.getByRole("status")).toContainText("Goal saved");
 
-  await page.getByRole("link", { name: /Cash:/ }).click();
-  await expect(page).toHaveURL(/\/financial-inputs#cash-picture$/);
+  await page.getByRole("link", { name: "Continue to inputs" }).click();
+  await expect(page).toHaveURL(/\/financial-inputs$/);
   const cashForm = page.locator("form#cash-picture");
   await cashForm.getByLabel("Starting cash").fill("1200");
   await cashForm.getByLabel("Balance as of").fill(dateFromToday(-1));
@@ -95,4 +95,16 @@ test("completes the first-run setup and reaches a ready dashboard", async ({ pag
   await expect(page.getByRole("heading", { name: "Weekly safe-to-spend" })).toBeVisible();
   await expect(page.getByText("Emergency fund")).toBeVisible();
   await expect(page.getByText(/^(Completed|Needs attention|Ahead of pace|At risk|On track)$/)).toBeVisible();
+});
+
+
+test("points a saved goal to missing cash instead of creating another goal", async ({ page }) => {
+  await registerUser(page);
+  await createGoal(page, { name: "Moving fund", target: 3000, currentSaved: 500, startingCash: 0 });
+  await page.getByRole("link", { name: "Dashboard", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Add your cash balance" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Create goal", exact: true })).not.toBeVisible();
+  await expect(page.getByRole("heading", { name: "Weekly safe-to-spend" })).not.toBeVisible();
+  await page.getByRole("link", { name: "Add cash balance" }).click();
+  await expect(page.locator("form#cash-picture")).toBeVisible();
 });

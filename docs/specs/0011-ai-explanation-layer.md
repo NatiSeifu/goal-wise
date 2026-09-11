@@ -1,7 +1,7 @@
 # SPEC-0011: Bounded AI Explanation Layer
 
 Status: Accepted
-Last Updated: 2026-08-29
+Last Updated: 2026-09-09
 Related ADRs: ADR-0002, ADR-0003, ADR-0007, ADR-0012
 Related Specs: SPEC-0002, SPEC-0003, SPEC-0004, SPEC-0007
 Source Requirements: FR-AI-001 through FR-AI-007, NFR-PRI-003, NFR-REL-003, NFR-AIQ-001 through NFR-AIQ-003
@@ -62,7 +62,7 @@ Required configuration concepts:
 - provider timeout fixed at four seconds for this increment;
 - prompt version and response schema version controlled by the application.
 
-The active prompt is `ai-explanation-prompt-v3`. It requires the explanation to
+The active prompt is `ai-explanation-prompt-v4`. It requires the explanation to
 interpret pace status, weekly spending room, and projected shortfall together.
 For example, an `At Risk` pace with positive weekly spending room and no
 projected shortfall must be described as a goal-pace concern, not as an
@@ -111,27 +111,37 @@ provide or alter the provider payload.
 ## Provider response contract
 
 The provider must return JSON matching the active response schema. The first
-schema is intentionally small:
+digest schema replaces the earlier single-paragraph response:
 
 ```json
 {
-  "schema_version": "ai-explanation-v1",
+  "schema_version": "ai-explanation-v2",
   "headline": "string",
   "body": "string",
   "observations": [
     {
       "kind": "pace | allowance | progress | shortfall",
       "tone": "positive | neutral | caution",
+      "text": "a distinct observation grounded in the referenced metrics",
       "metric_refs": ["weekly_safe_to_spend_cents"]
     }
   ],
-  "next_step": "string or null"
+  "next_step": "a concrete input-review suggestion and its rationale",
+  "next_step_action": "review_goal | review_inputs"
 }
 ```
 
 Rules:
 
-- `headline`, `body`, and `next_step` are natural-language user-facing text;
+- `headline`, `body`, observation `text`, and `next_step` are natural-language user-facing text;
+- headline is 1–120 characters; overview body is 80–600 characters;
+- two or three observations have distinct kinds, each with 80–450 characters;
+- each observation references one to three distinct allowlisted metrics and must
+  include its kind's primary metric (pace/status, allowance/weekly spending,
+  progress/progress percentage, shortfall/projected shortfall);
+- next step is 40–360 characters; its action is an allowlisted link to goal or
+  financial-input review. It does not submit changes or prescribe financial amounts;
+- combined prose is 90–240 whitespace-delimited words; the prompt targets 120–180;
 - `observations` may reference only an approved metric enum;
 - the provider must not emit authoritative numeric values in prose; the UI
   renders trusted values from the snapshot when a metric is referenced;
@@ -143,6 +153,43 @@ Rules:
 
 This lets the provider sound natural while trusted numbers remain rendered from
 the deterministic snapshot rather than copied from generated prose.
+
+## Digest presentation
+
+The digest sits directly below the authoritative green weekly-spending card,
+before goal progress. It is visible when AI is enabled, and generation still
+requires an explicit button press. Do not automatically call the provider on a
+visit, input save, or disclosure toggle.
+
+After generation, show the complete overview, distinct observations with
+backend-owned evidence values, and a next-step link. Use a visually prominent
+dark surface with readable light text, a compact AI identifier, and restrained
+loading/reveal motion that respects reduced-motion preferences. Avoid static
+coaching paragraphs and repeated instructional copy.
+
+A response whose snapshot ID differs from the currently displayed dashboard is
+not rendered as current. A new dashboard snapshot remounts the digest state.
+Pending generation, failure/retry, disabled availability, and stale response
+states do not hide or modify official financial outputs.
+
+Suggested next steps are limited to reviewing the existing goal or financial
+inputs. AI does not know contribution rates, the cause of a shortfall, actual
+spending history, or whether an allowance is comfortable. It must not infer
+those facts, call an At Risk pace On Track, guarantee success, or suggest
+changing a deadline merely to remove a warning.
+
+## Upgrade and implementation plan
+
+- Use prompt v4 and response schema v2 in the cache key, so saved v1 summaries
+  cannot satisfy a new digest request. Historical rows remain untouched.
+- Deploy backend validation, prompt, and default versions before the frontend.
+  Existing database JSON columns already hold the response; no migration is needed.
+- Render generated observation prose as text and resolve action enums to local
+  routes. Never accept URLs, HTML, or financial amounts from generated prose.
+- Verify bounded text, references, unsupported actions, snapshot isolation, cache
+  upgrade, request-only generation, failures, and responsive display.
+- Evaluate synthetic At Risk, Off Pace, On Track, and Completed scenarios with
+  the configured provider. Keep the four-second timeout and minimized payload.
 
 ## Persistence
 

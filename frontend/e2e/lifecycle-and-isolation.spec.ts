@@ -18,10 +18,11 @@ test("archives an active goal and allows a replacement goal", async ({ page }) =
   await registerUser(page);
   await createGoal(page, lifecycleGoal);
 
-  await expect(page.getByText("Trip fund")).toBeVisible();
+  await expect(page.getByLabel("Goal name")).toHaveValue("Trip fund");
+  await page.locator("summary").filter({ hasText: "Archive goal" }).click();
   await page.getByRole("button", { name: "Archive active goal" }).click();
   await expect(page.getByRole("status")).toContainText("Goal archived.");
-  await expect(page.getByText("Trip fund")).not.toBeVisible();
+  await expect(page.getByLabel("Goal name")).toHaveValue("");
 
   await page.getByLabel("Goal name").fill("Replacement fund");
   await page.getByLabel("Target amount").fill("2000");
@@ -32,7 +33,7 @@ test("archives an active goal and allows a replacement goal", async ({ page }) =
   await page.getByRole("button", { name: "Create goal" }).click();
 
   await expect(page.getByRole("status")).toContainText("Goal saved.");
-  await expect(page.getByText("Replacement fund")).toBeVisible();
+  await expect(page.getByLabel("Goal name")).toHaveValue("Replacement fund");
 });
 
 test("rejects another user's attempt to archive the goal", async ({ browser }) => {
@@ -52,10 +53,10 @@ test("rejects another user's attempt to archive the goal", async ({ browser }) =
     const goalId = (await goalResponse.json()).item.id as string;
 
     await registerUser(otherPage);
-    const currentUserResponse = await otherPage.request.get("http://localhost:8000/api/v1/auth/me");
+    const currentUserResponse = await otherPage.request.get(`${new URL(goalResponse.url()).origin}/api/v1/auth/me`);
     const { item } = await currentUserResponse.json();
 
-    const archiveResponse = await otherPage.request.post(`http://localhost:8000/api/v1/goals/${goalId}/archive`, {
+    const archiveResponse = await otherPage.request.post(`${new URL(goalResponse.url()).origin}/api/v1/goals/${goalId}/archive`, {
       headers: { "X-CSRF-Token": item.csrf_token },
     });
 
