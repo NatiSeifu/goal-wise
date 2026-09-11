@@ -2,6 +2,8 @@ const DEFAULT_BASE_URL = "http://127.0.0.1:8000";
 const BASE_URL = process.env.GOALWISE_API_BASE_URL ?? DEFAULT_BASE_URL;
 const PASSWORD = "CorrectHorseBatteryStaple123!";
 
+// These accounts are intentionally deterministic and local-only. The seeder
+// refuses non-local URLs and never targets staging or production.
 const users = [
   {
     email: "maya.student@example.com",
@@ -162,6 +164,167 @@ const users = [
       reserve_buffer_cents: 30_000,
       reserve_buffer_confirmed: true,
       starting_cash_cents: 70_000,
+    },
+  },
+  {
+    email: "elena.deductible@example.com",
+    goal: {
+      current_saved_cents: 50_000,
+      initial_saved_cents: 40_000,
+      name: "Medical deductible",
+      start_date: "2026-08-01",
+      target_cents: 180_000,
+      target_date: "2026-12-31",
+    },
+    incomes: [
+      {
+        amount_cents: 180_000,
+        confidence: "confirmed",
+        frequency: "biweekly",
+        name: "Employer paycheck",
+        next_date: "2026-08-28",
+      },
+      {
+        amount_cents: 100_000,
+        confidence: "unconfirmed",
+        frequency: "one_time",
+        name: "Annual bonus",
+        next_date: "2026-10-01",
+      },
+    ],
+    expenses: [
+      {
+        amount_cents: 90_000,
+        classification: "essential",
+        frequency: "monthly",
+        name: "Rent",
+        next_date: "2026-09-01",
+      },
+      {
+        amount_cents: 60_000,
+        classification: "essential",
+        frequency: "one_time",
+        name: "Deductible payment",
+        next_date: "2026-10-15",
+      },
+    ],
+    profile: {
+      balance_as_of_date: "2026-08-14",
+      reserve_buffer_cents: 30_000,
+      reserve_buffer_confirmed: true,
+      starting_cash_cents: 120_000,
+    },
+  },
+  {
+    email: "marcus.freelance@example.com",
+    goal: {
+      current_saved_cents: 25_000,
+      initial_saved_cents: 25_000,
+      name: "Freelance runway",
+      start_date: "2026-08-01",
+      target_cents: 300_000,
+      target_date: "2026-12-31",
+    },
+    incomes: [
+      {
+        amount_cents: 75_000,
+        confidence: "confirmed",
+        frequency: "monthly",
+        name: "Monthly retainer",
+        next_date: "2026-08-21",
+      },
+      {
+        amount_cents: 250_000,
+        confidence: "unconfirmed",
+        frequency: "one_time",
+        name: "Pending contract",
+        next_date: "2026-09-01",
+      },
+    ],
+    expenses: [
+      {
+        amount_cents: 90_000,
+        classification: "essential",
+        frequency: "monthly",
+        name: "Rent",
+        next_date: "2026-09-01",
+      },
+      {
+        amount_cents: 30_000,
+        classification: "essential",
+        frequency: "monthly",
+        name: "Tax set-aside",
+        next_date: "2026-08-31",
+      },
+    ],
+    profile: {
+      balance_as_of_date: "2026-08-14",
+      reserve_buffer_cents: 20_000,
+      reserve_buffer_confirmed: true,
+      starting_cash_cents: 60_000,
+    },
+  },
+  {
+    email: "tara.wedding@example.com",
+    goal: {
+      current_saved_cents: 180_000,
+      initial_saved_cents: 100_000,
+      name: "Wedding venue deposit",
+      start_date: "2026-08-01",
+      target_cents: 500_000,
+      target_date: "2026-12-31",
+    },
+    incomes: [
+      {
+        amount_cents: 250_000,
+        confidence: "confirmed",
+        frequency: "biweekly",
+        name: "Household salary",
+        next_date: "2026-08-28",
+      },
+    ],
+    expenses: [
+      {
+        amount_cents: 120_000,
+        classification: "essential",
+        frequency: "monthly",
+        name: "Rent",
+        next_date: "2026-09-01",
+      },
+      {
+        amount_cents: 150_000,
+        classification: "essential",
+        frequency: "one_time",
+        name: "Venue deposit",
+        next_date: "2026-10-15",
+      },
+    ],
+    profile: {
+      balance_as_of_date: "2026-08-14",
+      reserve_buffer_cents: 50_000,
+      reserve_buffer_confirmed: true,
+      starting_cash_cents: 300_000,
+    },
+  },
+  {
+    email: "noah.completed@example.com",
+    goal: {
+      // Seed just below target so the dashboard is ready; the demo then edits
+      // this value to 120_000 to show the completed lifecycle transition.
+      current_saved_cents: 119_900,
+      initial_saved_cents: 0,
+      name: "Laptop replacement fund",
+      start_date: "2026-08-01",
+      target_cents: 120_000,
+      target_date: "2026-12-31",
+    },
+    incomes: [],
+    expenses: [],
+    profile: {
+      balance_as_of_date: "2026-08-14",
+      reserve_buffer_cents: 10_000,
+      reserve_buffer_confirmed: true,
+      starting_cash_cents: 50_000,
     },
   },
 ];

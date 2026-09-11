@@ -1,0 +1,7 @@
+record_type,name,target_amount,initial_saved,current_saved,starting_cash,balance_date,reserve_buffer,amount,date,frequency,confidence,classification,start_date,target_date
+goal,Medical deductible - revised estimate,2400.00,400.00,1300.00,,,,,,,,,2026-08-01,2027-02-28
+cash,,,,,2200.00,2026-09-11,500.00,,,,,,,
+income,Employer paycheck,,,,,,,1800.00,2026-09-18,biweekly,confirmed,,
+income,Performance bonus,,,,,,,1000.00,2026-12-15,one_time,unconfirmed,,
+expense,Rent,,,,,,,900.00,2026-10-01,monthly,,essential,
+expense,Deductible payment,,,,,,,1100.00,2026-11-15,one_time,,essential,
