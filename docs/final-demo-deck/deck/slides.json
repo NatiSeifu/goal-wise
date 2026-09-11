@@ -1,0 +1,127 @@
+{
+  "title": "GoalWise Final Demo",
+  "subtitle": "Editable PowerPoint source package",
+  "slides": [
+    {
+      "kind": "title",
+      "kicker": "Graduate CS Final Demo",
+      "title": "GoalWise",
+      "subtitle": "One focused planning loop for one savings goal",
+      "bullets": [
+        "User question: am I on pace, and what can I safely spend this week?",
+        "Success claim: deterministic backend outputs make the answer explainable and defensible."
+      ],
+      "notes": "0:45. Open with the user problem, then state the engineering claim: GoalWise is intentionally narrow so the calculation and demo can be defended."
+    },
+    {
+      "kind": "scope",
+      "kicker": "Product Scope",
+      "title": "A narrow MVP beats a broad budget app",
+      "subtitle": "GoalWise deliberately optimizes around one active goal and manual assumptions.",
+      "bullets": [
+        "One active savings goal",
+        "Manual income and planned expense inputs",
+        "Backend-owned dashboard values",
+        "Canonical planning CSV import as a structured edge input",
+        "Deferred: bank sync, raw transactions, multi-goal support, background scheduling"
+      ],
+      "notes": "0:55. Make the scope explicit. This prevents the audience from evaluating the project as a full Mint-style budget app."
+    },
+    {
+      "kind": "architecture",
+      "kicker": "System Architecture",
+      "title": "The financial core is isolated and auditable",
+      "subtitle": "React renders values; FastAPI validates, calculates, persists, and explains.",
+      "bullets": [
+        "React + Vite frontend over versioned /api/v1 JSON",
+        "FastAPI service layer owns validation and ownership checks",
+        "Pure pace engine returns deterministic pace-v1 results",
+        "SQLAlchemy/Alembic persist PostgreSQL-compatible records",
+        "Snapshots and dashboard read model expose committed results"
+      ],
+      "notes": "1:00. Walk left to right: browser, API, services, pace engine, snapshots, dashboard. Emphasize the frontend does not copy the formula."
+    },
+    {
+      "kind": "decision",
+      "kicker": "Decision 1",
+      "title": "Deterministic pace-v1, no AI in the money path",
+      "subtitle": "Financial outputs must be reproducible for identical inputs.",
+      "bullets": [
+        "Claim: safe-to-spend, shortfall, and pace status come from a deterministic engine.",
+        "Evidence: pace-engine contract and golden tests target stable results.",
+        "Rejected alternative: AI-generated calculations would be harder to verify.",
+        "Risk: simple formulas may feel less adaptive than personalized advice.",
+        "Mitigation: keep explanations separate from the calculation authority."
+      ],
+      "notes": "1:00. This is the strongest architecture decision. Use claim, evidence, alternative, risk, mitigation, falsifier."
+    },
+    {
+      "kind": "decision",
+      "kicker": "Decision 2",
+      "title": "Immutable snapshots make results defensible",
+      "subtitle": "Every committed calculation keeps normalized inputs and versioned results.",
+      "bullets": [
+        "Claim: calculations are stored as immutable snapshots after input changes.",
+        "Evidence: snapshot schema and repository tests protect stored results.",
+        "Rejected alternative: recompute-only history would hide what the user saw.",
+        "Risk: snapshots add storage and schema discipline.",
+        "Mitigation: store normalized aggregate inputs, not raw transaction descriptions."
+      ],
+      "notes": "0:55. Tie this to auditability: the system can explain what it showed at the time without mutating old records."
+    },
+    {
+      "kind": "decision",
+      "kicker": "Decision 3",
+      "title": "Security boundaries match the hosted demo",
+      "subtitle": "Auth, CSRF, ownership checks, and Railway config are treated as product behavior.",
+      "bullets": [
+        "HTTP-only server-side sessions with hashed opaque tokens",
+        "CSRF required for authenticated unsafe methods",
+        "Cross-user private resource access returns 404",
+        "Railway uses secure cookies, explicit origin allowlists, and PostgreSQL",
+        "Failure case: unauthorized or cross-user access fails without leaking private data"
+      ],
+      "notes": "0:55. Explain that these are not decorative backend details; they define whether a hosted financial demo is trustworthy."
+    },
+    {
+      "kind": "pipeline",
+      "kicker": "AI and Review",
+      "title": "AI is useful at the edge, not in control",
+      "subtitle": "The runtime AI layer explains committed snapshots and can fail without blocking planning.",
+      "bullets": [
+        "Allowed: explanation prose from minimized aggregate snapshot fields",
+        "Allowed: development support for tests, diagrams, review, and slides",
+        "Blocked: AI calculating, overriding, or recommending official money outputs",
+        "Review gate: schema validation, snapshot matching, and human claim approval"
+      ],
+      "notes": "0:55. Be precise about the boundary. The course can ask about AI use, so separate runtime behavior from development assistance."
+    },
+    {
+      "kind": "verification",
+      "kicker": "Verification",
+      "title": "Tests target the risky contracts",
+      "subtitle": "The evidence is strongest where correctness, privacy, and deployment could fail.",
+      "bullets": [
+        "Pace-engine golden scenarios for calculation behavior",
+        "API tests for auth, dashboard, financial inputs, CSV import, and AI explanations",
+        "Cross-user access tests for ownership isolation",
+        "Migration smoke checks for PostgreSQL-compatible persistence",
+        "Frontend lint, TypeScript, Vite build, and visual capture scripts"
+      ],
+      "notes": "1:00. Say what testing proves and one honest gap if asked: it does not prove production load behavior or every future financial scenario."
+    },
+    {
+      "kind": "demo",
+      "kicker": "Live Demo Contract",
+      "title": "Now we will prove the core path",
+      "subtitle": "The demo is scoped to value, safe failure, and engineering evidence.",
+      "bullets": [
+        "Value path: create or load a plan and view weekly safe-to-spend",
+        "Failure path: invalid or unauthorized access fails safely",
+        "Evidence path: show snapshot/test/deployment proof",
+        "Transition: browser app first, terminal evidence second"
+      ],
+      "notes": "0:25. Keep this slide short. It is the handoff into the live app, not another architecture explanation."
+    }
+  ]
+}
