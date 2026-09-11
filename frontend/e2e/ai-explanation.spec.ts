@@ -26,7 +26,8 @@ test("shows a substantial digest near the top only after an explicit request", a
   const panel = page.getByRole("region", { name: "Plan digest" });
   await expect(panel.getByRole("button", { name: "Generate digest" })).toBeVisible();
   expect(calls).toBe(0);
-  expect(await panel.evaluate((element) => element.nextElementSibling?.classList.contains("dashboard-goal-story"))).toBe(true);
+  expect(await panel.evaluate((element) => element.closest(".dashboard-rail") !== null)).toBe(true);
+  expect(await page.locator(".metric-hero").isVisible()).toBe(true);
   await panel.getByRole("button", { name: "Generate digest" }).click();
   await expect(panel.getByRole("heading", { name: digest.headline })).toBeVisible();
   for (const observation of digest.observations) await expect(panel.getByText(observation.text, { exact: true })).toBeVisible();

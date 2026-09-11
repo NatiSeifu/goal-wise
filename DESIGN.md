@@ -253,12 +253,14 @@ Response conventions:
 
 ## Frontend Presentation
 
-The experimental frontend retains GoalWise's green and neutral palette and
-left navigation, with a compact layout centered on the weekly safe-to-spend
-amount on a green background with white text, and one savings goal. Each metric appears once in the default dashboard;
-calculation details are progressively disclosed. The optional AI digest sits
-directly below weekly safe-to-spend, with explicit generation and a full overview,
-metric-linked observations, and a bounded review action.
+The experimental frontend uses a forest navigation rail, warm neutral canvas,
+rounded white cards, and an editorial two-column dashboard. The weekly
+safe-to-spend amount anchors a dark green hero with the GoalWise mark; the goal,
+forecast, saved inputs, upcoming items, and optional AI digest form the first
+viewport. Each metric appears once in the default dashboard, and calculation
+details remain progressively disclosed. The AI digest stays prominent in the
+right rail with explicit generation, a full overview, metric-linked observations,
+and a bounded review action.
 Forms use direct labels without walkthroughs, coaching panels, or generic
 product narration. Field-specific guidance remains where it prevents mistakes.
 
@@ -278,3 +280,8 @@ only goal/input review links as generated action types. Digests are cached by
 snapshot and version tuple; a schema upgrade does not mutate historical rows.
 The UI renders numeric evidence from the displayed snapshot and rejects a digest
 whose snapshot ID does not match it. See [SPEC-0011](docs/specs/0011-ai-explanation-layer.md).
+
+The dashboard hero uses status-specific transparent logo assets so the mark can
+communicate pace without changing its geometry. A decorative timeseries stroke
+supports the forecast card as a visual texture only; it is not presented as a
+calculated series.

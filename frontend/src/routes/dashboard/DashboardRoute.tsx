@@ -10,7 +10,7 @@ import { ButtonLink } from "../../components/ui/Button.tsx";
 import { ProgressBar } from "../../components/ui/ProgressBar.tsx";
 import { useDashboard } from "../../features/dashboard/useDashboard.ts";
 import { useLatestCalculationSnapshot } from "../../features/snapshots/useLatestCalculationSnapshot.ts";
-import { formatCents, formatDate, formatDateTime } from "../../utils/format.ts";
+import { formatCents, formatDate } from "../../utils/format.ts";
 import {
   classificationLabel,
   formatInputCategoryList,
@@ -85,52 +85,99 @@ function ReadyDashboard({
   return (
     <section className="dashboard-page" aria-labelledby="dashboard-title">
       <DashboardHeader />
-      <section className="metric-hero" aria-labelledby="safe-to-spend-title">
-        <div>
-          <h2 id="safe-to-spend-title">Weekly safe-to-spend</h2>
-          <p className="metric-value">{formatCents(pace.weekly_safe_to_spend_cents)}</p>
-        </div>
-        <div className="metric-hero-aside">
-          <Link className="text-link" to={routes.calculation}>View plan details</Link>
-          <span className="status-updated">Updated {formatDateTime(item.calculated_at)}</span>
-        </div>
-      </section>
+      <div className="dashboard-layout">
+        <div className="dashboard-main-column">
+          <section className="metric-hero" aria-labelledby="safe-to-spend-title">
+            <div className="metric-hero-copy">
+              <h2 id="safe-to-spend-title">Weekly safe-to-spend</h2>
+              <p className="metric-value">{formatCents(pace.weekly_safe_to_spend_cents)}</p>
+              <p className="metric-hero-note">
+                {pace.pace_status === "At Risk" ? "Your forecast still covers the goal." : "Your plan is tracking toward the goal."}
+              </p>
+              <Link className="button metric-hero-action" to={routes.financialInputs}>Adjust plan <span aria-hidden="true">→</span></Link>
+            </div>
+            <div className="metric-hero-visual" aria-hidden="true">
+              <img className={`metric-hero-logo ${logoTone(pace.pace_status)}`} src={`/goalwise-${logoTone(pace.pace_status)}.png`} alt="" />
+            </div>
+            <div className="metric-hero-aside">
+              <strong>{formatCents(item.goal.current_saved_cents)}</strong>
+              <span>saved of {formatCents(item.goal.target_cents)}</span>
+              <span className="metric-hero-divider" />
+              <strong>{Math.round(pace.progress_percentage)}%</strong>
+              <span>complete</span>
+            </div>
+          </section>
 
-      <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
+          <section className="dashboard-goal-card" aria-labelledby="goal-story-title">
+            <div className="goal-card-heading">
+              <div>
+                <h2 id="goal-story-title">{item.goal.name}</h2>
+                <p>One goal, clearly in view.</p>
+              </div>
+              <Link className="icon-link" aria-label="Edit goal" to={routes.goal}>→</Link>
+            </div>
+            <ProgressBar label="Goal progress" value={pace.progress_percentage} />
+            <div className="goal-summary">
+              <span><strong>{formatCents(item.goal.current_saved_cents)}</strong> of {formatCents(item.goal.target_cents)}</span>
+              <span>{formatDate(item.goal.target_date)} · {pace.remaining_weeks} weeks left</span>
+            </div>
+            {pace.projected_shortfall_cents > 0 ? (
+              <p className="plan-warning">
+                Projected shortfall: <strong>{formatCents(pace.projected_shortfall_cents)}</strong>.{' '}
+                <Link to={routes.financialInputs}>Review inputs</Link>
+              </p>
+            ) : pace.pace_status === "At Risk" ? (
+              <p className="plan-warning">
+                Savings are behind pace; your forecast still covers the goal.{' '}
+                <Link to={routes.goal}>Review goal</Link>
+              </p>
+            ) : null}
+          </section>
 
-      <section className="dashboard-goal-story" aria-labelledby="goal-story-title">
-        <div className="section-heading-row">
-          <h2 id="goal-story-title">{item.goal.name}</h2>
-          <span className={`status-pill status-pill-${statusTone(pace.pace_status)}`}>
-            {paceStatusLabel(pace.pace_status)}
-          </span>
+          <section className="dashboard-panel dashboard-inputs-card" aria-labelledby="inputs-card-title">
+            <div className="section-heading-row">
+              <div>
+                <h2 id="inputs-card-title">Income & expenses</h2>
+                <p className="panel-subtitle">The inputs behind this plan.</p>
+              </div>
+              <Link className="text-link" to={routes.financialInputs}>Edit inputs</Link>
+            </div>
+            {unconfirmedIncome > 0 ? (
+              <p className="plan-warning">
+                {unconfirmedIncome} unconfirmed income {unconfirmedIncome === 1 ? "source is" : "sources are"} excluded.{' '}
+                <Link to={`${routes.financialInputs}#income-sources`}>Review income</Link>
+              </p>
+            ) : null}
+            <UpcomingPlan snapshot={snapshot} compact />
+          </section>
         </div>
-        <ProgressBar label="Goal progress" value={pace.progress_percentage} />
-        <div className="goal-summary">
-          <span><strong>{formatCents(item.goal.current_saved_cents)}</strong> of {formatCents(item.goal.target_cents)} saved</span>
-          <span>{formatDate(item.goal.target_date)} · {pace.remaining_weeks} weeks left</span>
-        </div>
-        {pace.projected_shortfall_cents > 0 ? (
-          <p className="plan-warning">
-            Projected shortfall: <strong>{formatCents(pace.projected_shortfall_cents)}</strong>.{' '}
-            <Link to={routes.financialInputs}>Review income and expenses</Link>
-          </p>
-        ) : pace.pace_status === "At Risk" ? (
-          <p className="plan-warning">
-            Savings are behind pace; your forecast still covers the goal.{' '}
-            <Link to={routes.goal}>Update savings</Link>
-          </p>
-        ) : null}
-        <Link className="text-link" to={routes.goal}>Edit goal</Link>
-      </section>
 
-      {unconfirmedIncome > 0 ? (
-        <p className="plan-warning">
-          {unconfirmedIncome} unconfirmed income {unconfirmedIncome === 1 ? "source is" : "sources are"} excluded.{' '}
-          <Link to={`${routes.financialInputs}#income-sources`}>Review income</Link>
-        </p>
-      ) : null}
-      <UpcomingPlan snapshot={snapshot} />
+        <aside className="dashboard-rail">
+          <section className="forecast-card" aria-labelledby="forecast-title">
+            <svg className="forecast-timeseries" viewBox="0 0 260 110" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M0 87 C22 82 30 70 52 74 S79 88 101 69 S126 62 145 67 S169 73 185 50 S210 45 226 48 S246 36 260 18" />
+            </svg>
+            <div className="forecast-heading">
+              <span className={`status-pill status-pill-${statusTone(pace.pace_status)}`}>
+                {paceStatusLabel(pace.pace_status)}
+              </span>
+              <Link className="icon-link" aria-label="View plan details" to={routes.calculation}>→</Link>
+            </div>
+            <h2 id="forecast-title">Target date</h2>
+            <strong>{formatDate(item.goal.target_date)}</strong>
+            <p>{pace.remaining_weeks} weeks left</p>
+            <div className="forecast-note">{pace.projected_shortfall_cents > 0 ? "Review your inputs to understand the gap." : "Your saved inputs still cover the forecast."}</div>
+          </section>
+          <AIExplanationPanel key={item.snapshot_id} pace={pace} snapshotId={item.snapshot_id ?? ""} />
+          <section className="dashboard-panel upcoming-rail-card" aria-labelledby="upcoming-rail-title">
+            <div className="section-heading-row">
+              <h2 id="upcoming-rail-title">Upcoming</h2>
+              <Link className="text-link" to={routes.financialInputs}>View all</Link>
+            </div>
+            <UpcomingPlan snapshot={snapshot} compact />
+          </section>
+        </aside>
+      </div>
       {changedInputCategories.length > 0 || (weeklyDelta !== null && weeklyDelta !== 0) ? (
         <details className="plan-changes">
           <summary>Latest changes</summary>
@@ -142,7 +189,7 @@ function ReadyDashboard({
   );
 }
 
-function UpcomingPlan({ snapshot }: { snapshot: CalculationSnapshotResponse | null }) {
+function UpcomingPlan({ snapshot, compact = false }: { snapshot: CalculationSnapshotResponse | null; compact?: boolean }) {
   if (snapshot === null) {
     return null;
   }
@@ -158,13 +205,15 @@ function UpcomingPlan({ snapshot }: { snapshot: CalculationSnapshotResponse | nu
   if (items.length === 0) return null;
 
   return (
-    <section className="upcoming-plan" aria-labelledby="upcoming-plan-title">
-      <div className="section-heading-row section-heading-row-tight">
-        <div>
-          <h2 id="upcoming-plan-title">Income & expenses</h2>
+    <section className={`upcoming-plan${compact ? " upcoming-plan-compact" : ""}`} aria-label={compact ? "Upcoming plan items" : "Income and expenses"}>
+      {compact ? null : (
+        <div className="section-heading-row section-heading-row-tight">
+          <div>
+            <h2 id="upcoming-plan-title">Income & expenses</h2>
+          </div>
+          <Link className="text-link" to={routes.financialInputs}>Edit inputs</Link>
         </div>
-        <Link className="text-link" to={routes.financialInputs}>Edit inputs</Link>
-      </div>
+      )}
         <ul className="upcoming-list">
           {items.map((item) => {
             const kind = item.kind;
@@ -265,4 +314,12 @@ function statusTone(status: string) {
     return "positive";
   }
   return "neutral";
+}
+
+function logoTone(status: string) {
+  if (status === "Completed") return "logo-completed";
+  if (status === "Ahead") return "logo-ahead";
+  if (status === "At Risk") return "logo-at-risk";
+  if (status === "Off Pace") return "logo-off-pace";
+  return "logo-on-track";
 }

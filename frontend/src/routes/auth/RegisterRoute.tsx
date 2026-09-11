@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { ApiError } from "../../api/errors.ts";
 import { routes } from "../../app/routes.ts";
+import { BrandLockup } from "../../components/layout/BrandLockup.tsx";
 import { FormError } from "../../components/feedback/FormError.tsx";
 import { RouteLoading } from "../../components/feedback/RouteLoading.tsx";
 import { Button } from "../../components/ui/Button.tsx";
@@ -79,12 +80,7 @@ export function RegisterRoute() {
     <main className="auth-page">
       <section className="auth-panel" aria-labelledby="register-title">
         <div>
-          <Link className="brand-lockup brand-link" to={routes.landing}>
-            <span className="brand-mark" aria-hidden="true">
-              G
-            </span>
-            <span>GoalWise</span>
-          </Link>
+          <BrandLockup linked />
           <h1 id="register-title">Create account</h1>
         </div>
         <form className="auth-form" onSubmit={(event) => void handleSubmit(event)}>

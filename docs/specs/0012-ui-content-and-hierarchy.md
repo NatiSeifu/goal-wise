@@ -45,13 +45,23 @@ the backend reports a nonzero allowance change. Unconfirmed income is shown as
 an actionable warning only when its count is positive. The income/expense list
 shows saved dates, not computed recurrence or claims that dates are in the future.
 
-The optional AI digest is visible directly below weekly safe-to-spend and above
-goal progress. It has an explicit Generate digest action; generation is not
-automatic. The expanded result shows an overview, distinct observations with
-trusted evidence values, and a suggested review action linked to goal or input
-editing. The richer content and its bounds are defined by SPEC-0011. Failure
-offers retry, disabled availability hides the panel, and a digest for a different
-snapshot is never paired with the current dashboard's values.
+The optional AI digest is prominent in the dashboard's first viewport, beside
+the authoritative weekly safe-to-spend hero and above the upcoming detail. It
+has an explicit Generate digest action; generation is not automatic. The
+expanded result shows an overview, distinct observations with trusted evidence
+values, and a suggested review action linked to goal or input editing. The
+richer content and its bounds are defined by SPEC-0011. Failure offers retry,
+disabled availability hides the panel, and a digest for a different snapshot is
+never paired with the current dashboard's values.
+
+The dashboard hero uses the same GoalWise mark as the shared brand lockup. Its
+outer arc, inner arc, and leaf retain their geometry while state-specific assets
+encode pace status: mint and pale mint for Completed, aqua and mint for Ahead,
+mint and soft gold for On Track, mint and amber for At Risk, and mint with muted
+coral for Off Pace. The state label remains visible so color is supportive rather
+than the only status signal. The forecast card includes a decorative timeseries
+stroke to echo the visual language of the reference; it is not a financial chart
+and does not represent additional backend data.
 
 ## Data and calculation boundary
 
