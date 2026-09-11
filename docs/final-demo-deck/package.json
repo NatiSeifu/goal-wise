@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-deck.mjs"
+    "build": "node scripts/build-deck.mjs",
+    "build:high-end": "node scripts/build-high-end-deck.mjs",
+    "build:all": "npm run build && npm run build:high-end"
   },
   "dependencies": {
     "pptxgenjs": "^3.12.0"
