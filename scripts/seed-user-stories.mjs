@@ -1,9 +1,10 @@
 const DEFAULT_BASE_URL = "http://127.0.0.1:8000";
 const BASE_URL = process.env.GOALWISE_API_BASE_URL ?? DEFAULT_BASE_URL;
 const PASSWORD = "CorrectHorseBatteryStaple123!";
+const ALLOW_STAGING_SEED = process.env.GOALWISE_ALLOW_STAGING_SEED === "true";
 
-// These accounts are intentionally deterministic and local-only. The seeder
-// refuses non-local URLs and never targets staging or production.
+// These accounts are deterministic synthetic data. Remote writes are refused
+// unless the caller explicitly opts into the exact staging API host below.
 const users = [
   {
     email: "maya.student@example.com",
@@ -329,7 +330,7 @@ const users = [
   },
 ];
 
-assertLocalBaseUrl(BASE_URL);
+assertAllowedSeedTarget(BASE_URL);
 
 for (const user of users) {
   await seedUser(user);
@@ -459,12 +460,18 @@ function updateCsrf(session, body) {
   }
 }
 
-function assertLocalBaseUrl(rawBaseUrl) {
+function assertAllowedSeedTarget(rawBaseUrl) {
   const url = new URL(rawBaseUrl);
   const localHosts = new Set(["127.0.0.1", "localhost", "::1"]);
-  if (!localHosts.has(url.hostname)) {
+  const stagingHost = "api-staging-aff5.up.railway.app";
+  const isLocal = localHosts.has(url.hostname);
+  const isExplicitStaging =
+    ALLOW_STAGING_SEED && url.protocol === "https:" && url.hostname === stagingHost;
+
+  if (!isLocal && !isExplicitStaging) {
     throw new Error(
-      `Refusing to seed non-local API URL: ${rawBaseUrl}. Set GOALWISE_API_BASE_URL to a localhost URL.`,
+      `Refusing to seed API URL: ${rawBaseUrl}. Use localhost, or set ` +
+        `GOALWISE_ALLOW_STAGING_SEED=true for ${stagingHost}.`,
     );
   }
 }
