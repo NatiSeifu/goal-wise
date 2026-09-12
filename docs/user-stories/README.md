@@ -42,8 +42,25 @@ Run `make seed-user-stories` after `make backend-stack-rebuild` and before
 the original three stories, then prints each user's calculated status and
 allowance. It is guarded to accept only localhost API URLs.
 
-All seeded accounts use the local-only password
-`CorrectHorseBatteryStaple123!`.
+All seeded accounts use the demo password `CorrectHorseBatteryStaple123!`.
+The seeder defaults to localhost and refuses other targets. For the dedicated
+Railway staging API only, use the explicit `GOALWISE_ALLOW_STAGING_SEED=true`
+opt-in documented in the demo runbook. Never use it with production.
+
+To seed the Railway staging environment from the repository root:
+
+```bash
+GOALWISE_API_BASE_URL=https://api-staging-aff5.up.railway.app \
+GOALWISE_ALLOW_STAGING_SEED=true \
+railway run \
+  --project 3bb8120b-99a0-497b-8af7-2840c23cd1ae \
+  --environment 5741b168-1bc9-4e2f-8d37-1a81bee414cd \
+  --service api \
+  -- node scripts/seed-user-stories.mjs
+```
+
+This creates synthetic story accounts through the application API. Existing
+accounts are skipped; it does not reset or delete staging data.
 
 | Account | Story state | Use it to demonstrate |
 | --- | --- | --- |
